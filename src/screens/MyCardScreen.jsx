@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
-import { userAPI } from "../utils/api"
+import { cardAPI, userAPI } from "../utils/api"
 import CardForm from "../components/CardForm"
 import CardDisplay from "../components/CardDisplay"
 import LoadingSpinner from "../components/LoadingSpinner"
@@ -17,8 +17,24 @@ import { COLORS } from "../utils/constants"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
+  const [data, setData] = useState([])
   const [isEditing, setIsEditing] = useState(!user?.isProfileComplete)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await cardAPI.getMyCard()
+        setData(response.data)
+      } catch (error) {
+        Alert.alert("Error", "Failed to fetch my card")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [data])
 
   const handleSave = async (formData, imageFiles) => {
     setLoading(true)
@@ -97,7 +113,7 @@ export default function MyCardScreen() {
               <>
                 {/* Card Display Section */}
                 <View style={styles.cardContainer}>
-                  <CardDisplay user={user} />
+                  <CardDisplay user={data} />
                 </View>
 
                 {/* Quick Actions Section */}

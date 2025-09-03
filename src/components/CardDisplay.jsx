@@ -1,6 +1,11 @@
 import React, { useState } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons"
+import {
+  Ionicons,
+  MaterialIcons,
+  FontAwesome5,
+  Feather,
+} from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
 
 export default function CardDisplay({ user, children }) {
@@ -142,19 +147,12 @@ export default function CardDisplay({ user, children }) {
         return (
           <View style={styles.tabContent}>
             <View style={styles.noDataContainer}>
-              <MaterialIcons
-                name='info-outline'
+              <Feather
+                name='box'
                 size={40}
-                color='#ccc'
+                color='#562727ff'
               />
-              <Text style={styles.noDataMessage}>No data added</Text>
-              <Text style={styles.noDataSubtext}>
-                {activeTab === "Services" &&
-                  "Add your services to showcase what you offer"}
-                {activeTab === "Products" &&
-                  "Add your products to display your catalog"}
-                {activeTab === "Gallery" && "Add images to create your gallery"}
-              </Text>
+              <Text style={styles.noDataMessage}>No {activeTab} listed</Text>
             </View>
           </View>
         )

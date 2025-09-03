@@ -57,6 +57,9 @@ export const authAPI = {
   register: (username, email, password) => {
     return api.post("/auth/register", { username, email, password })
   },
+  forgotPassword: (email, newPassword) => {
+    return api.post("/auth/forgot-password", { email, newPassword })
+  },
 }
 
 // User API
@@ -66,7 +69,6 @@ export const userAPI = {
   },
   updateProfile: (data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.put("/users/profile", formData, {
@@ -95,7 +97,6 @@ export const cardAPI = {
   },
   createTeamCard: (data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.post("/cards/team", formData, {
@@ -110,7 +111,6 @@ export const cardAPI = {
   },
   createBusinessCard: (data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.post("/cards/business", formData, {
@@ -125,7 +125,6 @@ export const cardAPI = {
   },
   updateTeamCard: (id, data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.put(`/cards/team/${id}`, formData, {
@@ -140,7 +139,6 @@ export const cardAPI = {
   },
   updateBusinessCard: (id, data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.put(`/cards/business/${id}`, formData, {
