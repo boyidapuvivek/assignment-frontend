@@ -5,6 +5,7 @@ import MyCardScreen from "../screens/MyCardScreen"
 import TeamCardsScreen from "../screens/TeamCardsScreen"
 import BusinessCardsScreen from "../screens/BusinessCardsScreen"
 import CustomDrawerContent from "../components/CustomDrawerContent"
+import { COLORS } from "../utils/constants"
 
 const Drawer = createDrawerNavigator()
 
@@ -13,10 +14,8 @@ export default function DrawerNavigator() {
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
-        headerStyle: {
-          backgroundColor: "#2196F3",
-        },
-        headerTintColor: "#fff",
+        headerTitle: "",
+        headerTintColor: "#000000",
         headerTitleStyle: {
           fontWeight: "bold",
         },

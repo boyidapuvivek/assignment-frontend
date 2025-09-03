@@ -10,6 +10,18 @@ import { Ionicons } from "@expo/vector-icons"
 import CardDisplay from "./CardDisplay"
 
 export default function CardList({ cards, onDelete, emptyMessage }) {
+  const TrashButton = ({ cardId }) => (
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={() => onDelete(cardId)}>
+      <Ionicons
+        name='trash'
+        size={20}
+        color='#fff'
+      />
+    </TouchableOpacity>
+  )
+
   if (cards.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -29,16 +41,9 @@ export default function CardList({ cards, onDelete, emptyMessage }) {
         <View
           key={card._id}
           style={styles.cardContainer}>
-          <CardDisplay user={card} />
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => onDelete(card._id)}>
-            <Ionicons
-              name='trash'
-              size={20}
-              color='#fff'
-            />
-          </TouchableOpacity>
+          <CardDisplay user={card}>
+            <TrashButton cardId={card._id} />
+          </CardDisplay>
         </View>
       ))}
     </ScrollView>
@@ -60,7 +65,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   cardContainer: {
-    marginBottom: 20,
+    marginBottom: 50,
     position: "relative",
   },
   deleteButton: {

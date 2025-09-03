@@ -12,6 +12,7 @@ import { userAPI } from "../utils/api"
 import CardForm from "../components/CardForm"
 import CardDisplay from "../components/CardDisplay"
 import LoadingSpinner from "../components/LoadingSpinner"
+import { COLORS } from "../utils/constants"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
@@ -46,11 +47,7 @@ export default function MyCardScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={handleEdit}>
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Digital Business Card</Text>
       </View>
 
       {isEditing ? (
@@ -61,7 +58,22 @@ export default function MyCardScreen() {
           showCancel={user?.isProfileComplete}
         />
       ) : (
-        <CardDisplay user={user} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.dataContainer}>
+            <CardDisplay
+              user={user}
+              title={"My Digital Bussiness Card"}
+            />
+            <View style={styles.quickActions}>
+              <Text>Quick Actions</Text>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleEdit}>
+                <Text style={styles.editButtonText}>Edit Card</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       )}
     </ScrollView>
   )
@@ -70,14 +82,19 @@ export default function MyCardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 40,
+    paddingTop: 20,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 40,
+  },
+  headerTitle: {
+    fontSize: 25,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   title: {
     fontSize: 24,
@@ -93,5 +110,17 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  quickActions: {
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    borderColor: COLORS.border,
+    gap: 10,
+  },
+  dataContainer: {
+    gap: 30,
+    paddingBottom: 50,
   },
 })

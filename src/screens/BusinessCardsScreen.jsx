@@ -7,11 +7,12 @@ import {
   StyleSheet,
   Alert,
 } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { cardAPI } from "../utils/api"
 import CardForm from "../components/CardForm"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
+import { COLORS } from "../utils/constants"
 
 export default function BusinessCardsScreen() {
   const [businessCards, setBusinessCards] = useState([])
@@ -45,8 +46,8 @@ export default function BusinessCardsScreen() {
         "Error",
         error.response?.data?.message || "Failed to create business card"
       )
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   const handleDeleteCard = async (cardId) => {
@@ -78,38 +79,63 @@ export default function BusinessCardsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Business Cards</Text>
-        {!isCreating && (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setIsCreating(true)}>
-            <Ionicons
-              name='add'
-              size={24}
-              color='#fff'
+      {/* Header Section */}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <MaterialIcons
+              name='business-center'
+              size={28}
+              color={COLORS.primary}
+              style={styles.titleIcon}
             />
-          </TouchableOpacity>
-        )}
+            <Text style={styles.title}>Business Cards</Text>
+          </View>
+          <Text style={styles.subtitle}>
+            Create and manage your business cards
+          </Text>
+          {!isCreating && (
+            <TouchableOpacity
+              style={styles.newCard}
+              onPress={() => setIsCreating(true)}
+              activeOpacity={0.8}>
+              <View style={styles.addButton}>
+                <MaterialIcons
+                  name='add'
+                  size={26}
+                  color={COLORS.white}
+                />
+              </View>
+              <Text style={styles.newCardText}>Create New Card</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {isCreating ? (
-        <ScrollView>
-          <CardForm
-            onSave={handleCreateCard}
-            onCancel={() => setIsCreating(false)}
-            showCancel={true}
-            isCreating={true}
-            title='Create Business Card'
-          />
-        </ScrollView>
-      ) : (
-        <CardList
-          cards={businessCards}
-          onDelete={handleDeleteCard}
-          emptyMessage='No business cards yet. Create your first business card!'
-        />
-      )}
+      {/* Content Section */}
+      <View style={styles.contentWrapper}>
+        <View style={styles.dataContainer}>
+          {isCreating ? (
+            <View style={styles.formContainer}>
+              <CardForm
+                onSubmit={handleCreateCard}
+                onCancel={() => setIsCreating(false)}
+                showCancel={true}
+                isCreating={true}
+                title='Create Business Card'
+              />
+            </View>
+          ) : (
+            <View style={styles.listContainer}>
+              <CardList
+                cards={businessCards}
+                onDelete={handleDeleteCard}
+                loading={loading}
+              />
+            </View>
+          )}
+        </View>
+      </View>
     </View>
   )
 }
@@ -117,26 +143,104 @@ export default function BusinessCardsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    backgroundColor: "#f8f9fa",
+  },
+  headerContainer: {
+    backgroundColor: COLORS.white,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    paddingBottom: 20,
     alignItems: "center",
-    marginBottom: 20,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  titleIcon: {
+    marginRight: 12,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#6b7280",
+    marginBottom: 20,
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  newCard: {
+    width: "90%",
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    shadowColor: COLORS.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+    marginBottom: 5,
   },
   addButton: {
-    backgroundColor: "#4CAF50",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    borderRadius: 18,
+    marginRight: 15,
+  },
+  newCardText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: COLORS.white,
+    letterSpacing: 0.3,
+  },
+  contentWrapper: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
+  dataContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+  formContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  listContainer: {
+    flex: 1,
   },
 })
