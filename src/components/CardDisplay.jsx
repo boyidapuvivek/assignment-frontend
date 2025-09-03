@@ -6,10 +6,6 @@ import { COLORS } from "../utils/constants"
 export default function CardDisplay({ user, children }) {
   const [activeTab, setActiveTab] = useState("Contact")
 
-  useEffect(() => {
-    console.log(user)
-  }, [user])
-
   const TabButton = ({ title, isActive, onPress }) => (
     <TouchableOpacity
       style={[styles.tabButton, isActive && styles.activeTabButton]}
