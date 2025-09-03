@@ -6,7 +6,7 @@ const BASE_URL = "http://192.168.2.119:5000/api"
 // Create axios instance
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 })
 
 // Add token to requests
@@ -17,6 +17,37 @@ api.interceptors.request.use(async (config) => {
   }
   return config
 })
+
+// Helper function to create FormData - FIXED VERSION
+const createFormData = (data, imageFiles = {}) => {
+  const formData = new FormData()
+
+  // Add text fields
+  Object.keys(data).forEach((key) => {
+    if (data[key] !== null && data[key] !== undefined && data[key] !== "") {
+      formData.append(key, String(data[key]))
+    }
+  })
+
+  // Add image files - CORRECTED FORMAT
+  if (imageFiles.avatar) {
+    formData.append("avatar", {
+      uri: imageFiles.avatar.uri,
+      type: "image/jpeg",
+      name: "avatar.jpg",
+    })
+  }
+
+  if (imageFiles.coverImage) {
+    formData.append("coverImage", {
+      uri: imageFiles.coverImage.uri,
+      type: "image/jpeg",
+      name: "cover.jpg",
+    })
+  }
+
+  return formData
+}
 
 // Auth API
 export const authAPI = {
@@ -33,8 +64,21 @@ export const userAPI = {
   getProfile: () => {
     return api.get("/users/profile")
   },
-  updateProfile: (data) => {
-    return api.put("/users/profile", data)
+  updateProfile: (data, imageFiles = {}) => {
+    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+
+    if (hasImages) {
+      const formData = createFormData(data, imageFiles)
+      return api.put("/users/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: () => formData, // Important for React Native
+      })
+    } else {
+      // Send as JSON if no images
+      return api.put("/users/profile", data)
+    }
   },
 }
 
@@ -49,17 +93,65 @@ export const cardAPI = {
   getBusinessCards: () => {
     return api.get("/cards/business")
   },
-  createTeamCard: (data) => {
-    return api.post("/cards/team", data)
+  createTeamCard: (data, imageFiles = {}) => {
+    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+
+    if (hasImages) {
+      const formData = createFormData(data, imageFiles)
+      return api.post("/cards/team", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: () => formData,
+      })
+    } else {
+      return api.post("/cards/team", data)
+    }
   },
-  createBusinessCard: (data) => {
-    return api.post("/cards/business", data)
+  createBusinessCard: (data, imageFiles = {}) => {
+    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+
+    if (hasImages) {
+      const formData = createFormData(data, imageFiles)
+      return api.post("/cards/business", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: () => formData,
+      })
+    } else {
+      return api.post("/cards/business", data)
+    }
   },
-  updateTeamCard: (id, data) => {
-    return api.put(`/cards/team/${id}`, data)
+  updateTeamCard: (id, data, imageFiles = {}) => {
+    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+
+    if (hasImages) {
+      const formData = createFormData(data, imageFiles)
+      return api.put(`/cards/team/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: () => formData,
+      })
+    } else {
+      return api.put(`/cards/team/${id}`, data)
+    }
   },
-  updateBusinessCard: (id, data) => {
-    return api.put(`/cards/business/${id}`, data)
+  updateBusinessCard: (id, data, imageFiles = {}) => {
+    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+
+    if (hasImages) {
+      const formData = createFormData(data, imageFiles)
+      return api.put(`/cards/business/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: () => formData,
+      })
+    } else {
+      return api.put(`/cards/business/${id}`, data)
+    }
   },
   deleteTeamCard: (id) => {
     return api.delete(`/cards/team/${id}`)

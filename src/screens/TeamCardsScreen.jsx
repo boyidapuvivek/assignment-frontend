@@ -34,20 +34,23 @@ export default function TeamCardsScreen() {
     }
   }
 
-  const handleCreateCard = async (formData) => {
+  // CORRECTED: Fixed the handleCreateCard function
+  const handleCreateCard = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      await cardAPI.createTeamCard(formData)
+      // For TeamCardsScreen - use createTeamCard
+      await cardAPI.createTeamCard(formData, imageFiles)
       setIsCreating(false)
-      fetchTeamCards()
+      fetchTeamCards() // Correct function call for team cards
       Alert.alert("Success", "Team member created successfully!")
     } catch (error) {
       Alert.alert(
         "Error",
         error.response?.data?.message || "Failed to create team member"
       )
+    } finally {
+      setLoading(false) // Fixed: moved to finally block
     }
-    setLoading(false)
   }
 
   const handleDeleteCard = async (cardId) => {
@@ -84,24 +87,25 @@ export default function TeamCardsScreen() {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
-              name='people'
+              name='group'
               size={28}
-              color={COLORS.primary}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.title}>Team Business Cards</Text>
           </View>
           <Text style={styles.subtitle}>Manage your team member cards</Text>
+
           {!isCreating && (
             <TouchableOpacity
               style={styles.newCard}
               onPress={() => setIsCreating(true)}
               activeOpacity={0.8}>
               <View style={styles.addButton}>
-                <MaterialIcons
+                <Ionicons
                   name='add'
-                  size={26}
-                  color={COLORS.white}
+                  size={20}
+                  color='#fff'
                 />
               </View>
               <Text style={styles.newCardText}>Add New Member</Text>
@@ -116,7 +120,7 @@ export default function TeamCardsScreen() {
           {isCreating ? (
             <View style={styles.formContainer}>
               <CardForm
-                onSubmit={handleCreateCard}
+                onSave={handleCreateCard}
                 onCancel={() => setIsCreating(false)}
                 showCancel={true}
                 isCreating={true}
@@ -128,7 +132,7 @@ export default function TeamCardsScreen() {
               <CardList
                 cards={teamCards}
                 onDelete={handleDeleteCard}
-                loading={loading}
+                type='team'
               />
             </View>
           )}
@@ -226,6 +230,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   formContainer: {
+    flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 20,

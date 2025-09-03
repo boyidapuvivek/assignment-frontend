@@ -34,20 +34,23 @@ export default function BusinessCardsScreen() {
     }
   }
 
-  const handleCreateCard = async (formData) => {
+  // CORRECTED: Fixed the handleCreateCard function for business cards
+  const handleCreateCard = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      await cardAPI.createBusinessCard(formData)
+      // For BusinessCardsScreen - use createBusinessCard (NOT createTeamCard)
+      await cardAPI.createBusinessCard(formData, imageFiles)
       setIsCreating(false)
-      fetchBusinessCards()
+      fetchBusinessCards() // Correct function call for business cards
       Alert.alert("Success", "Business card created successfully!")
     } catch (error) {
       Alert.alert(
         "Error",
         error.response?.data?.message || "Failed to create business card"
       )
+    } finally {
+      setLoading(false) // Fixed: moved to finally block
     }
-    setLoading(false)
   }
 
   const handleDeleteCard = async (cardId) => {
@@ -86,7 +89,7 @@ export default function BusinessCardsScreen() {
             <MaterialIcons
               name='business-center'
               size={28}
-              color={COLORS.primary}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.title}>Business Cards</Text>
@@ -94,16 +97,17 @@ export default function BusinessCardsScreen() {
           <Text style={styles.subtitle}>
             Create and manage your business cards
           </Text>
+
           {!isCreating && (
             <TouchableOpacity
               style={styles.newCard}
               onPress={() => setIsCreating(true)}
               activeOpacity={0.8}>
               <View style={styles.addButton}>
-                <MaterialIcons
+                <Ionicons
                   name='add'
-                  size={26}
-                  color={COLORS.white}
+                  size={20}
+                  color='#fff'
                 />
               </View>
               <Text style={styles.newCardText}>Create New Card</Text>
@@ -118,7 +122,7 @@ export default function BusinessCardsScreen() {
           {isCreating ? (
             <View style={styles.formContainer}>
               <CardForm
-                onSubmit={handleCreateCard}
+                onSave={handleCreateCard}
                 onCancel={() => setIsCreating(false)}
                 showCancel={true}
                 isCreating={true}
@@ -130,7 +134,7 @@ export default function BusinessCardsScreen() {
               <CardList
                 cards={businessCards}
                 onDelete={handleDeleteCard}
-                loading={loading}
+                type='business'
               />
             </View>
           )}
@@ -228,6 +232,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   formContainer: {
+    flex: 1,
     backgroundColor: COLORS.white,
     borderRadius: 16,
     padding: 20,

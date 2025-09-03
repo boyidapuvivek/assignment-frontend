@@ -20,14 +20,15 @@ export default function MyCardScreen() {
   const [isEditing, setIsEditing] = useState(!user?.isProfileComplete)
   const [loading, setLoading] = useState(false)
 
-  const handleSave = async (formData) => {
+  const handleSave = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      const response = await userAPI.updateProfile(formData)
+      const response = await userAPI.updateProfile(formData, imageFiles)
       updateUser(response.data.user)
       setIsEditing(false)
       Alert.alert("Success", "Profile updated successfully!")
     } catch (error) {
+      console.log("😊", error)
       Alert.alert(
         "Error",
         error.response?.data?.message || "Failed to update profile"
@@ -52,9 +53,9 @@ export default function MyCardScreen() {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
-              name='account-circle'
-              size={32}
-              color={COLORS.primary}
+              name='badge'
+              size={28}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.headerTitle}>My Digital Business Card</Text>
@@ -68,74 +69,70 @@ export default function MyCardScreen() {
       </View>
 
       {/* Content Section */}
-      <ScrollView
-        style={styles.contentWrapper}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
-        <View style={styles.dataContainer}>
-          {isEditing ? (
-            <View style={styles.formContainer}>
-              <View style={styles.formHeader}>
-                <MaterialIcons
-                  name='edit'
-                  size={24}
-                  color={COLORS.primary}
-                />
-                <Text style={styles.formTitle}>
-                  {user?.isProfileComplete
-                    ? "Edit Your Card"
-                    : "Create Your Card"}
-                </Text>
-              </View>
-              <CardForm
-                onSubmit={handleSave}
-                onCancel={
-                  user?.isProfileComplete && (() => setIsEditing(false))
-                }
-                showCancel={user?.isProfileComplete}
-                initialData={user}
-              />
-            </View>
-          ) : (
-            <>
-              {/* Card Display Section */}
-              <View style={styles.cardContainer}>
-                <CardDisplay user={user} />
-              </View>
-
-              {/* Quick Actions Section */}
-              <View style={styles.actionsContainer}>
-                <View style={styles.actionsHeader}>
+      <View style={styles.contentWrapper}>
+        <ScrollView style={styles.scrollContent}>
+          <View style={styles.dataContainer}>
+            {isEditing ? (
+              <View style={styles.formContainer}>
+                <View style={styles.formHeader}>
                   <MaterialIcons
-                    name='settings'
-                    size={20}
-                    color='#6b7280'
+                    name='edit'
+                    size={24}
+                    color='#2196F3'
                   />
-                  <Text style={styles.actionsTitle}>Quick Actions</Text>
+                  <Text style={styles.formTitle}>
+                    {user?.isProfileComplete
+                      ? "Edit Your Card"
+                      : "Create Your Card"}
+                  </Text>
+                </View>
+                <CardForm
+                  onSave={handleSave}
+                  onCancel={() => setIsEditing(false)}
+                  showCancel={user?.isProfileComplete}
+                  initialData={user}
+                />
+              </View>
+            ) : (
+              <>
+                {/* Card Display Section */}
+                <View style={styles.cardContainer}>
+                  <CardDisplay user={user} />
                 </View>
 
-                <TouchableOpacity
-                  style={styles.editButton}
-                  onPress={handleEdit}
-                  activeOpacity={0.8}>
-                  <View style={styles.editButtonContent}>
+                {/* Quick Actions Section */}
+                <View style={styles.actionsContainer}>
+                  <View style={styles.actionsHeader}>
                     <MaterialIcons
-                      name='edit'
+                      name='flash-on'
                       size={20}
-                      color={COLORS.white}
+                      color='#2196F3'
                     />
-                    <Text style={styles.editButtonText}>Edit Card</Text>
+                    <Text style={styles.actionsTitle}>Quick Actions</Text>
                   </View>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      </ScrollView>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={handleEdit}>
+                    <View style={styles.editButtonContent}>
+                      <MaterialIcons
+                        name='edit'
+                        size={18}
+                        color='#fff'
+                      />
+                      <Text style={styles.editButtonText}>Edit Card</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      </View>
     </View>
   )
 }
 
+// Styles remain the same as original
 const styles = StyleSheet.create({
   container: {
     flex: 1,

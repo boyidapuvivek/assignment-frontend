@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
 
 export default function CardDisplay({ user, children }) {
@@ -24,17 +24,17 @@ export default function CardDisplay({ user, children }) {
             <Text style={styles.sectionTitle}>Personal Contact</Text>
             <View style={styles.contactItem}>
               <Ionicons
-                name='call-outline'
+                name='call'
                 size={18}
                 color='#2196F3'
               />
               <Text style={styles.contactText}>
-                {user?.phone || "+916301401268"}
+                {user?.phoneNumber || "+916301401268"}
               </Text>
             </View>
             <View style={styles.contactItem}>
               <Ionicons
-                name='mail-outline'
+                name='mail'
                 size={18}
                 color='#2196F3'
               />
@@ -42,16 +42,57 @@ export default function CardDisplay({ user, children }) {
                 {user?.email || "vivekboyidapu12@gmail.com"}
               </Text>
             </View>
+            {user?.location && (
+              <View style={styles.contactItem}>
+                <Ionicons
+                  name='location'
+                  size={18}
+                  color='#2196F3'
+                />
+                <Text style={styles.contactText}>{user.location}</Text>
+              </View>
+            )}
           </View>
         )
       case "Services":
         return (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Business Details</Text>
-            <Text style={styles.businessDescription}>
-              {user?.businessDescription ||
-                "React Native Developer specializing in mobile app development with expertise in cross-platform solutions."}
-            </Text>
+            {user?.businessName && (
+              <View style={styles.contactItem}>
+                <MaterialIcons
+                  name='business'
+                  size={18}
+                  color='#2196F3'
+                />
+                <Text style={styles.contactText}>{user.businessName}</Text>
+              </View>
+            )}
+            {user?.businessEmail && (
+              <View style={styles.contactItem}>
+                <MaterialIcons
+                  name='email'
+                  size={18}
+                  color='#2196F3'
+                />
+                <Text style={styles.contactText}>{user.businessEmail}</Text>
+              </View>
+            )}
+            {user?.businessNumber && (
+              <View style={styles.contactItem}>
+                <MaterialIcons
+                  name='phone'
+                  size={18}
+                  color='#2196F3'
+                />
+                <Text style={styles.contactText}>{user.businessNumber}</Text>
+              </View>
+            )}
+            {user?.businessDescription && (
+              <Text style={styles.businessDescription}>
+                {user.businessDescription}
+              </Text>
+            )}
           </View>
         )
       case "Products":
@@ -83,37 +124,51 @@ export default function CardDisplay({ user, children }) {
 
   return (
     <View style={styles.container}>
-      {/* Header with Cover Photo */}
       <View style={styles.mainContainer}>
+        {/* Header with Cover Photo */}
         <View style={styles.header}>
           {children}
-          <View style={styles.coverPhotoContainer}>
-            <Ionicons
-              name='camera-outline'
-              size={24}
-              color='#fff'
+          {user?.coverImage?.url ? (
+            <Image
+              source={{ uri: user.coverImage.url }}
+              style={styles.coverImage}
+              resizeMode='cover'
             />
-            <Text style={styles.coverPhotoText}>Cover Photo</Text>
-          </View>
+          ) : (
+            <View style={styles.coverPhotoContainer}>
+              <MaterialIcons
+                name='photo-camera'
+                size={32}
+                color='#fff'
+              />
+              <Text style={styles.coverPhotoText}>Cover Photo</Text>
+            </View>
+          )}
         </View>
 
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <Ionicons
-              name='person'
-              size={30}
-              color='#2196F3'
-            />
+            {user?.avatar?.url ? (
+              <Image
+                source={{ uri: user.avatar.url }}
+                style={styles.avatarImage}
+                resizeMode='cover'
+              />
+            ) : (
+              <MaterialIcons
+                name='person'
+                size={40}
+                color='#ccc'
+              />
+            )}
           </View>
-
           <Text style={styles.username}>
-            {user?.name || "VENKAT VIVEK BOYIDAPU"}
+            {user?.username || user?.name || "VENKAT VIVEK BOYIDAPU"}
           </Text>
           <Text style={styles.profession}>
-            {user?.profession || "React Native Developer"}
+            {user?.businessName || user?.profession || "React Native Developer"}
           </Text>
-
           <View style={styles.locationContainer}>
             <Text style={styles.location}>{user?.location || "VIEK"}</Text>
             <Text style={styles.locationSubtext}>
@@ -128,19 +183,18 @@ export default function CardDisplay({ user, children }) {
             style={styles.shareButton}
             onPress={handleShare}>
             <Ionicons
-              name='share-outline'
-              size={18}
+              name='share-social'
+              size={16}
               color='#fff'
             />
             <Text style={styles.buttonText}>Share</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.qrButton}
             onPress={handleQRCode}>
             <Ionicons
-              name='qr-code-outline'
-              size={18}
+              name='qr-code'
+              size={16}
               color='#2196F3'
             />
             <Text style={styles.qrButtonText}>QR Code</Text>
@@ -172,7 +226,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
   },
-
   mainContainer: {
     width: "100%",
     backgroundColor: "#fff",
@@ -183,12 +236,15 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 140,
-    background: "linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%)",
     backgroundColor: "#2196F3",
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
   },
-
+  coverImage: {
+    width: "100%",
+    height: "100%",
+  },
   coverPhotoContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -208,7 +264,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 80,
     height: 80,
-    borderRadius: 50,
+    borderRadius: 40,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
@@ -218,6 +274,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 40,
   },
   username: {
     fontSize: 18,
@@ -330,6 +392,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     lineHeight: 20,
+    marginTop: 10,
   },
   comingSoon: {
     fontSize: 16,
