@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+
 import {
   View,
   Text,
@@ -32,7 +33,7 @@ export default function CardForm({
   const [createData, setCreateData] = useState({
     username: "",
     email: "",
-    password: "",
+    // Removed password from createData since it will be auto-generated
   })
 
   const [images, setImages] = useState({
@@ -54,7 +55,6 @@ export default function CardForm({
   }
 
   // Update the pickImage function in CardForm.jsx:
-
   const pickImage = async (type) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
@@ -76,7 +76,6 @@ export default function CardForm({
     if (!result.canceled) {
       const asset = result.assets[0]
       setImages((prev) => ({ ...prev, [type]: asset.uri }))
-
       // Store the complete asset info for upload
       setImageFiles((prev) => ({
         ...prev,
@@ -99,8 +98,9 @@ export default function CardForm({
 
   const handleSubmit = () => {
     if (isCreating) {
-      if (!createData.username || !createData.email || !createData.password) {
-        Alert.alert("Error", "Username, email, and password are required")
+      // Removed password validation since it will be auto-generated
+      if (!createData.username || !createData.email) {
+        Alert.alert("Error", "Username and email are required")
         return
       }
     }
@@ -110,60 +110,58 @@ export default function CardForm({
   }
 
   const renderImagePicker = (type, label, aspectRatio) => (
-    <View style={styles.imageSection}>
+    <View style={styles.imageContainer}>
       <Text style={styles.sectionSubtitle}>{label}</Text>
-      <View style={styles.imageContainer}>
-        {images[type] ? (
-          <View style={styles.imageWrapper}>
-            <Image
-              source={{ uri: images[type] }}
-              style={[
-                styles.imagePreview,
-                type === "avatar" ? styles.avatarPreview : styles.coverPreview,
-              ]}
-            />
-            <TouchableOpacity
-              style={styles.removeImageButton}
-              onPress={() => removeImage(type)}>
-              <Ionicons
-                name='close-circle'
-                size={24}
-                color='#ff4444'
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
+      {images[type] ? (
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: images[type] }}
             style={[
-              styles.imagePlaceholder,
-              type === "avatar"
-                ? styles.avatarPlaceholder
-                : styles.coverPlaceholder,
+              styles.imagePreview,
+              type === "avatar" ? styles.avatarPreview : styles.coverPreview,
             ]}
-            onPress={() => pickImage(type)}>
-            <Ionicons
-              name={type === "avatar" ? "person-add" : "image"}
-              size={type === "avatar" ? 40 : 50}
-              color='#999'
-            />
-            <Text style={styles.imagePlaceholderText}>
-              {type === "avatar" ? "Add Profile Photo" : "Add Cover Image"}
-            </Text>
-          </TouchableOpacity>
-        )}
-        {images[type] && (
+          />
           <TouchableOpacity
-            style={styles.changeImageButton}
-            onPress={() => pickImage(type)}>
-            <MaterialIcons
-              name='edit'
-              size={16}
-              color='#007BFF'
+            style={styles.removeImageButton}
+            onPress={() => removeImage(type)}>
+            <Ionicons
+              name='close-circle'
+              size={24}
+              color='#ff4444'
             />
-            <Text style={styles.changeImageText}>Change</Text>
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[
+            styles.imagePlaceholder,
+            type === "avatar"
+              ? styles.avatarPlaceholder
+              : styles.coverPlaceholder,
+          ]}
+          onPress={() => pickImage(type)}>
+          <Ionicons
+            name='camera'
+            size={32}
+            color='#999'
+          />
+          <Text style={styles.imagePlaceholderText}>
+            {type === "avatar" ? "Add Profile Photo" : "Add Cover Image"}
+          </Text>
+        </TouchableOpacity>
+      )}
+      {images[type] && (
+        <TouchableOpacity
+          style={styles.changeImageButton}
+          onPress={() => pickImage(type)}>
+          <Ionicons
+            name='camera'
+            size={16}
+            color='#007BFF'
+          />
+          <Text style={styles.changeImageText}>Change</Text>
+        </TouchableOpacity>
+      )}
     </View>
   )
 
@@ -179,7 +177,7 @@ export default function CardForm({
           <MaterialIcons
             name='photo-camera'
             size={20}
-            color='#007BFF'
+            color='#333'
           />{" "}
           Profile Images
         </Text>
@@ -194,12 +192,13 @@ export default function CardForm({
             <MaterialIcons
               name='account-circle'
               size={20}
-              color='#007BFF'
+              color='#333'
             />{" "}
             Account Details
           </Text>
+
           <View style={styles.inputContainer}>
-            <MaterialIcons
+            <Ionicons
               name='person'
               size={20}
               color='#666'
@@ -213,9 +212,10 @@ export default function CardForm({
               autoCapitalize='none'
             />
           </View>
+
           <View style={styles.inputContainer}>
-            <MaterialIcons
-              name='email'
+            <Ionicons
+              name='mail'
               size={20}
               color='#666'
               style={styles.inputIcon}
@@ -229,21 +229,8 @@ export default function CardForm({
               autoCapitalize='none'
             />
           </View>
-          <View style={styles.inputContainer}>
-            <MaterialIcons
-              name='lock'
-              size={20}
-              color='#666'
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder='Password'
-              value={createData.password}
-              onChangeText={(value) => updateCreateData("password", value)}
-              secureTextEntry
-            />
-          </View>
+
+          {/* Removed password input field */}
         </View>
       )}
 
@@ -251,15 +238,16 @@ export default function CardForm({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
           <MaterialIcons
-            name='phone'
+            name='contact-phone'
             size={20}
-            color='#007BFF'
+            color='#333'
           />{" "}
           Personal Contact
         </Text>
+
         <View style={styles.inputContainer}>
-          <MaterialIcons
-            name='phone'
+          <Ionicons
+            name='call'
             size={20}
             color='#666'
             style={styles.inputIcon}
@@ -272,9 +260,10 @@ export default function CardForm({
             keyboardType='phone-pad'
           />
         </View>
+
         <View style={styles.inputContainer}>
-          <MaterialIcons
-            name='location-on'
+          <Ionicons
+            name='location'
             size={20}
             color='#666'
             style={styles.inputIcon}
@@ -294,12 +283,13 @@ export default function CardForm({
           <MaterialIcons
             name='business'
             size={20}
-            color='#007BFF'
+            color='#333'
           />{" "}
           Business Contact
         </Text>
+
         <View style={styles.inputContainer}>
-          <MaterialIcons
+          <Ionicons
             name='business'
             size={20}
             color='#666'
@@ -312,9 +302,10 @@ export default function CardForm({
             onChangeText={(value) => updateFormData("businessName", value)}
           />
         </View>
+
         <View style={styles.inputContainer}>
-          <MaterialIcons
-            name='email'
+          <Ionicons
+            name='mail'
             size={20}
             color='#666'
             style={styles.inputIcon}
@@ -327,9 +318,10 @@ export default function CardForm({
             keyboardType='email-address'
           />
         </View>
+
         <View style={styles.inputContainer}>
-          <MaterialIcons
-            name='phone'
+          <Ionicons
+            name='call'
             size={20}
             color='#666'
             style={styles.inputIcon}
@@ -350,10 +342,11 @@ export default function CardForm({
           <MaterialIcons
             name='description'
             size={20}
-            color='#007BFF'
+            color='#333'
           />{" "}
           Business Description
         </Text>
+
         <View style={styles.textAreaContainer}>
           <MaterialIcons
             name='description'
@@ -363,7 +356,7 @@ export default function CardForm({
           />
           <TextInput
             style={styles.textArea}
-            placeholder='Describe your business or services...'
+            placeholder='Describe your business...'
             value={formData.businessDescription}
             onChangeText={(value) =>
               updateFormData("businessDescription", value)
@@ -380,8 +373,8 @@ export default function CardForm({
         <TouchableOpacity
           style={styles.saveButton}
           onPress={handleSubmit}>
-          <MaterialIcons
-            name='save'
+          <Ionicons
+            name='checkmark'
             size={20}
             color='#fff'
           />
