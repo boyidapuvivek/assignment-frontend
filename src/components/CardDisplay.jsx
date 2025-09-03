@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
-import { Ionicons, MaterialIcons } from "@expo/vector-icons"
+import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
 
 export default function CardDisplay({ user, children }) {
@@ -21,6 +21,7 @@ export default function CardDisplay({ user, children }) {
       case "Contact":
         return (
           <View style={styles.tabContent}>
+            {/* Personal Contact Section */}
             <Text style={styles.sectionTitle}>Personal Contact</Text>
             <View style={styles.contactItem}>
               <Ionicons
@@ -52,13 +53,12 @@ export default function CardDisplay({ user, children }) {
                 <Text style={styles.contactText}>{user.location}</Text>
               </View>
             )}
-          </View>
-        )
-      case "Services":
-        return (
-          <View style={styles.tabContent}>
-            <Text style={styles.sectionTitle}>Business Details</Text>
-            {user?.businessName && (
+
+            {/* Business Contact Section */}
+            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+              Business Contact
+            </Text>
+            {user?.businessName ? (
               <View style={styles.contactItem}>
                 <MaterialIcons
                   name='business'
@@ -67,8 +67,10 @@ export default function CardDisplay({ user, children }) {
                 />
                 <Text style={styles.contactText}>{user.businessName}</Text>
               </View>
+            ) : (
+              <Text style={styles.noDataText}>No business name added</Text>
             )}
-            {user?.businessEmail && (
+            {user?.businessEmail ? (
               <View style={styles.contactItem}>
                 <MaterialIcons
                   name='email'
@@ -77,8 +79,10 @@ export default function CardDisplay({ user, children }) {
                 />
                 <Text style={styles.contactText}>{user.businessEmail}</Text>
               </View>
+            ) : (
+              <Text style={styles.noDataText}>No business email added</Text>
             )}
-            {user?.businessNumber && (
+            {user?.businessNumber ? (
               <View style={styles.contactItem}>
                 <MaterialIcons
                   name='phone'
@@ -87,26 +91,74 @@ export default function CardDisplay({ user, children }) {
                 />
                 <Text style={styles.contactText}>{user.businessNumber}</Text>
               </View>
+            ) : (
+              <Text style={styles.noDataText}>No business phone added</Text>
             )}
-            {user?.businessDescription && (
-              <Text style={styles.businessDescription}>
-                {user.businessDescription}
-              </Text>
-            )}
+
+            {/* Social Media Section */}
+            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+              Social Media
+            </Text>
+            <View style={styles.socialMediaContainer}>
+              <TouchableOpacity style={styles.socialIcon}>
+                <FontAwesome5
+                  name='facebook'
+                  size={24}
+                  color='#3b5998'
+                />
+                <Text style={styles.socialLabel}>Facebook</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialIcon}>
+                <FontAwesome5
+                  name='twitter'
+                  size={24}
+                  color='#1da1f2'
+                />
+                <Text style={styles.socialLabel}>Twitter</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialIcon}>
+                <FontAwesome5
+                  name='linkedin'
+                  size={24}
+                  color='#0077b5'
+                />
+                <Text style={styles.socialLabel}>LinkedIn</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialIcon}>
+                <FontAwesome5
+                  name='instagram'
+                  size={24}
+                  color='#e1306c'
+                />
+                <Text style={styles.socialLabel}>Instagram</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )
+
+      case "Services":
       case "Products":
-        return (
-          <View style={styles.tabContent}>
-            <Text style={styles.comingSoon}>Coming Soon</Text>
-          </View>
-        )
       case "Gallery":
         return (
           <View style={styles.tabContent}>
-            <Text style={styles.comingSoon}>Coming Soon</Text>
+            <View style={styles.noDataContainer}>
+              <MaterialIcons
+                name='info-outline'
+                size={40}
+                color='#ccc'
+              />
+              <Text style={styles.noDataMessage}>No data added</Text>
+              <Text style={styles.noDataSubtext}>
+                {activeTab === "Services" &&
+                  "Add your services to showcase what you offer"}
+                {activeTab === "Products" &&
+                  "Add your products to display your catalog"}
+                {activeTab === "Gallery" && "Add images to create your gallery"}
+              </Text>
+            </View>
           </View>
         )
+
       default:
         return null
     }
@@ -127,7 +179,6 @@ export default function CardDisplay({ user, children }) {
       <View style={styles.mainContainer}>
         {/* Header with Cover Photo */}
         <View style={styles.header}>
-          {children}
           {user?.coverImage?.url ? (
             <Image
               source={{ uri: user.coverImage.url }}
@@ -136,6 +187,7 @@ export default function CardDisplay({ user, children }) {
             />
           ) : (
             <View style={styles.coverPhotoContainer}>
+              {children}
               <MaterialIcons
                 name='photo-camera'
                 size={32}
@@ -372,7 +424,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
     color: "#333",
     marginBottom: 15,
@@ -388,17 +440,57 @@ const styles = StyleSheet.create({
     color: "#333",
     flex: 1,
   },
+  noDataText: {
+    fontSize: 14,
+    color: "#999",
+    fontStyle: "italic",
+    marginBottom: 8,
+    marginLeft: 28,
+  },
+  socialMediaContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 15,
+    paddingVertical: 10,
+  },
+  socialIcon: {
+    alignItems: "center",
+    padding: 10,
+  },
+  socialLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 5,
+  },
+  placeholderText: {
+    fontSize: 12,
+    color: "#999",
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  noDataMessage: {
+    fontSize: 18,
+    color: "#999",
+    marginTop: 15,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  noDataSubtext: {
+    fontSize: 14,
+    color: "#ccc",
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 20,
+  },
   businessDescription: {
     fontSize: 14,
     color: "#666",
     lineHeight: 20,
     marginTop: 10,
-  },
-  comingSoon: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
-    fontStyle: "italic",
   },
 })
