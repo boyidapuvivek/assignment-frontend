@@ -1,5 +1,12 @@
 import React, { useState } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from "react-native"
 import {
   Ionicons,
   MaterialIcons,
@@ -10,6 +17,14 @@ import { COLORS } from "../utils/constants"
 
 export default function CardDisplay({ user, children }) {
   const [activeTab, setActiveTab] = useState("Contact")
+
+  // Hardcoded data
+  const hardcodedServices = [{ name: "food", price: 1000 }]
+
+  const hardcodedProducts = [{ name: "Chocolate", price: 100 }]
+
+  // You'll need to add these images to your assets folder
+  const hardcodedGallery = [require("../../assets/business.jpg")]
 
   const TabButton = ({ title, isActive, onPress }) => (
     <TouchableOpacity
@@ -25,136 +40,271 @@ export default function CardDisplay({ user, children }) {
     switch (activeTab) {
       case "Contact":
         return (
-          <View style={styles.tabContent}>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
             {/* Personal Contact Section */}
-            <Text style={styles.sectionTitle}>Personal Contact</Text>
-            <View style={styles.contactItem}>
-              <Ionicons
-                name='call'
-                size={18}
-                color='#2196F3'
-              />
-              <Text style={styles.contactText}>
-                {user?.phoneNumber || "+916301401268"}
-              </Text>
-            </View>
-            <View style={styles.contactItem}>
-              <Ionicons
-                name='mail'
-                size={18}
-                color='#2196F3'
-              />
-              <Text style={styles.contactText}>
-                {user?.email || "vivekboyidapu12@gmail.com"}
-              </Text>
-            </View>
-            {user?.location && (
+            <View style={styles.contactSection}>
+              <Text style={styles.sectionTitle}>Personal Contact</Text>
               <View style={styles.contactItem}>
-                <Ionicons
-                  name='location'
-                  size={18}
-                  color='#2196F3'
-                />
-                <Text style={styles.contactText}>{user.location}</Text>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='call'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>
+                  {user?.phoneNumber || "+916301401268"}
+                </Text>
               </View>
-            )}
+              <View style={styles.contactItem}>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='mail'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>
+                  {user?.email || "vivekboyidapu12@gmail.com"}
+                </Text>
+              </View>
+              {user?.location && (
+                <View style={styles.contactItem}>
+                  <View style={styles.contactIconContainer}>
+                    <Ionicons
+                      name='location'
+                      size={18}
+                      color='#2196F3'
+                    />
+                  </View>
+                  <Text style={styles.contactText}>{user.location}</Text>
+                </View>
+              )}
+            </View>
 
             {/* Business Contact Section */}
-            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
-              Business Contact
-            </Text>
-            {user?.businessName ? (
+            <View style={styles.contactSection}>
+              <Text style={styles.sectionTitle}>Business Contact</Text>
               <View style={styles.contactItem}>
-                <MaterialIcons
-                  name='business'
-                  size={18}
-                  color='#2196F3'
-                />
-                <Text style={styles.contactText}>{user.businessName}</Text>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='business'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                {user?.businessName ? (
+                  <Text style={styles.contactText}>{user.businessName}</Text>
+                ) : (
+                  <Text style={styles.noDataText}>No business name added</Text>
+                )}
               </View>
-            ) : (
-              <Text style={styles.noDataText}>No business name added</Text>
-            )}
-            {user?.businessEmail ? (
               <View style={styles.contactItem}>
-                <MaterialIcons
-                  name='email'
-                  size={18}
-                  color='#2196F3'
-                />
-                <Text style={styles.contactText}>{user.businessEmail}</Text>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='mail'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                {user?.businessEmail ? (
+                  <Text style={styles.contactText}>{user.businessEmail}</Text>
+                ) : (
+                  <Text style={styles.noDataText}>No business email added</Text>
+                )}
               </View>
-            ) : (
-              <Text style={styles.noDataText}>No business email added</Text>
-            )}
-            {user?.businessNumber ? (
               <View style={styles.contactItem}>
-                <MaterialIcons
-                  name='phone'
-                  size={18}
-                  color='#2196F3'
-                />
-                <Text style={styles.contactText}>{user.businessNumber}</Text>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='call'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                {user?.businessNumber ? (
+                  <Text style={styles.contactText}>{user.businessNumber}</Text>
+                ) : (
+                  <Text style={styles.noDataText}>No business phone added</Text>
+                )}
               </View>
-            ) : (
-              <Text style={styles.noDataText}>No business phone added</Text>
-            )}
+            </View>
 
             {/* Social Media Section */}
-            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
-              Social Media
-            </Text>
-            <View style={styles.socialMediaContainer}>
-              <TouchableOpacity style={styles.socialIcon}>
-                <FontAwesome5
-                  name='facebook'
-                  size={24}
-                  color='#3b5998'
-                />
-                <Text style={styles.socialLabel}>Facebook</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon}>
-                <FontAwesome5
-                  name='twitter'
-                  size={24}
-                  color='#1da1f2'
-                />
-                <Text style={styles.socialLabel}>Twitter</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon}>
-                <FontAwesome5
-                  name='linkedin'
-                  size={24}
-                  color='#0077b5'
-                />
-                <Text style={styles.socialLabel}>LinkedIn</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.socialIcon}>
-                <FontAwesome5
-                  name='instagram'
-                  size={24}
-                  color='#e1306c'
-                />
-                <Text style={styles.socialLabel}>Instagram</Text>
-              </TouchableOpacity>
+            <View style={styles.contactSection}>
+              <Text style={styles.sectionTitle}>Social Media</Text>
+              <View style={styles.socialMediaContainer}>
+                <TouchableOpacity style={styles.socialIcon}>
+                  <View
+                    style={[
+                      styles.socialIconBg,
+                      { backgroundColor: "#1877F2" },
+                    ]}>
+                    <Ionicons
+                      name='logo-facebook'
+                      size={20}
+                      color='#fff'
+                    />
+                  </View>
+                  <Text style={styles.socialLabel}>Facebook</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialIcon}>
+                  <View
+                    style={[
+                      styles.socialIconBg,
+                      { backgroundColor: "#1DA1F2" },
+                    ]}>
+                    <Ionicons
+                      name='logo-twitter'
+                      size={20}
+                      color='#fff'
+                    />
+                  </View>
+                  <Text style={styles.socialLabel}>Twitter</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialIcon}>
+                  <View
+                    style={[
+                      styles.socialIconBg,
+                      { backgroundColor: "#0A66C2" },
+                    ]}>
+                    <Ionicons
+                      name='logo-linkedin'
+                      size={20}
+                      color='#fff'
+                    />
+                  </View>
+                  <Text style={styles.socialLabel}>LinkedIn</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialIcon}>
+                  <View
+                    style={[
+                      styles.socialIconBg,
+                      { backgroundColor: "#E4405F" },
+                    ]}>
+                    <Ionicons
+                      name='logo-instagram'
+                      size={20}
+                      color='#fff'
+                    />
+                  </View>
+                  <Text style={styles.socialLabel}>Instagram</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         )
 
       case "Services":
+        return (
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Our Services</Text>
+            {hardcodedServices.map((service, index) => (
+              <View
+                key={index}
+                style={styles.serviceCard}>
+                <View style={styles.serviceHeader}>
+                  <View style={styles.serviceIconContainer}>
+                    <MaterialIcons
+                      name='restaurant'
+                      size={24}
+                      color='#2196F3'
+                    />
+                  </View>
+                  <View style={styles.serviceDetails}>
+                    <Text style={styles.serviceName}>{service.name}</Text>
+                    <Text style={styles.serviceDescription}>
+                      Delicious food services
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.priceLabel}>Starting from</Text>
+                  <Text style={styles.priceText}>₹{service.price}</Text>
+                </View>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.inquireButton}>
+              <Ionicons
+                name='chatbubble-ellipses'
+                size={20}
+                color='#fff'
+              />
+              <Text style={styles.inquireButtonText}>Inquire Now</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        )
+
       case "Products":
+        return (
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Our Products</Text>
+            {hardcodedProducts.map((product, index) => (
+              <View
+                key={index}
+                style={styles.productCard}>
+                <View style={styles.productImageContainer}>
+                  <View style={styles.productImagePlaceholder}>
+                    <MaterialIcons
+                      name='inventory'
+                      size={32}
+                      color='#2196F3'
+                    />
+                  </View>
+                </View>
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName}>{product.name}</Text>
+                  <Text style={styles.productDescription}>
+                    Premium quality chocolate
+                  </Text>
+                  <View style={styles.productPriceContainer}>
+                    <Text style={styles.productPrice}>₹{product.price}</Text>
+                    <TouchableOpacity style={styles.addToCartButton}>
+                      <Ionicons
+                        name='bag-add'
+                        size={16}
+                        color='#fff'
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.viewAllButton}>
+              <Text style={styles.viewAllButtonText}>View All Products</Text>
+              <Ionicons
+                name='arrow-forward'
+                size={18}
+                color='#2196F3'
+              />
+            </TouchableOpacity>
+          </ScrollView>
+        )
+
       case "Gallery":
         return (
-          <View style={styles.tabContent}>
-            <View style={styles.noDataContainer}>
-              <Feather
-                name='box'
-                size={40}
-                color='#562727ff'
-              />
-              <Text style={styles.noDataMessage}>No {activeTab} listed</Text>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
+            <Text style={styles.sectionTitle}>Gallery</Text>
+            <View style={styles.galleryGrid}>
+              {/* Since we can't use require() with dynamic paths in this context, 
+                  I'll show placeholder images. In a real app, you'd replace these 
+                  with actual image sources */}
+              {hardcodedGallery.map((item, index) => (
+                <Image
+                  key={index}
+                  style={styles.galleryItem}
+                  source={item}
+                />
+              ))}
             </View>
-          </View>
+          </ScrollView>
         )
 
       default:
@@ -181,16 +331,10 @@ export default function CardDisplay({ user, children }) {
             <Image
               source={{ uri: user.coverImage.url }}
               style={styles.coverImage}
-              resizeMode='cover'
             />
           ) : (
             <View style={styles.coverPhotoContainer}>
               {children}
-              <MaterialIcons
-                name='photo-camera'
-                size={32}
-                color='#fff'
-              />
               <Text style={styles.coverPhotoText}>Cover Photo</Text>
             </View>
           )}
@@ -203,12 +347,11 @@ export default function CardDisplay({ user, children }) {
               <Image
                 source={{ uri: user.avatar.url }}
                 style={styles.avatarImage}
-                resizeMode='cover'
               />
             ) : (
-              <MaterialIcons
+              <Ionicons
                 name='person'
-                size={40}
+                size={35}
                 color='#ccc'
               />
             )}
@@ -372,6 +515,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     gap: 5,
+    shadowColor: "#2196F3",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   qrButton: {
     flexDirection: "row",
@@ -417,78 +565,241 @@ const styles = StyleSheet.create({
     color: "#2196F3",
     fontWeight: "600",
   },
-  tabContent: {
-    padding: 20,
-    minHeight: 100,
+  tabContent: {},
+  contactSection: {
+    marginBottom: 25,
+    paddingHorizontal: 20,
+    paddingTop: 15,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     color: "#333",
     marginBottom: 15,
   },
   contactItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    gap: 10,
+    marginBottom: 15,
+    backgroundColor: "#f8f9fa",
+    padding: 12,
+    borderRadius: 10,
+  },
+  contactIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(33, 150, 243, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   contactText: {
     fontSize: 15,
     color: "#333",
     flex: 1,
+    fontWeight: "500",
   },
   noDataText: {
     fontSize: 14,
     color: "#999",
     fontStyle: "italic",
-    marginBottom: 8,
-    marginLeft: 28,
+    flex: 1,
   },
   socialMediaContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 15,
     paddingVertical: 10,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 15,
   },
   socialIcon: {
     alignItems: "center",
     padding: 10,
   },
+  socialIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
   socialLabel: {
     fontSize: 12,
     color: "#666",
-    marginTop: 5,
-  },
-  placeholderText: {
-    fontSize: 12,
-    color: "#999",
-    textAlign: "center",
-    fontStyle: "italic",
-  },
-  noDataContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-  },
-  noDataMessage: {
-    fontSize: 18,
-    color: "#999",
-    marginTop: 15,
-    marginBottom: 8,
     fontWeight: "500",
   },
-  noDataSubtext: {
-    fontSize: 14,
-    color: "#ccc",
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: 20,
+  // Services Styles
+  serviceCard: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 15,
+    padding: 16,
+    marginBottom: 15,
+    borderLeft: 4,
+    borderLeftColor: "#2196F3",
   },
-  businessDescription: {
+  serviceHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  serviceIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(33, 150, 243, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  serviceDetails: {
+    flex: 1,
+  },
+  serviceName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+    textTransform: "capitalize",
+  },
+  serviceDescription: {
     fontSize: 14,
     color: "#666",
-    lineHeight: 20,
+    marginTop: 2,
+  },
+  priceContainer: {
+    alignItems: "flex-end",
+  },
+  priceLabel: {
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 2,
+  },
+  priceText: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2196F3",
+  },
+  inquireButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2196F3",
+    paddingVertical: 14,
+    borderRadius: 12,
     marginTop: 10,
+    gap: 8,
+  },
+  inquireButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Products Styles
+  productCard: {
+    flexDirection: "row",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 15,
+    padding: 16,
+    marginBottom: 15,
+  },
+  productImageContainer: {
+    marginRight: 15,
+  },
+  productImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: "rgba(33, 150, 243, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  productInfo: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  productName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 4,
+  },
+  productDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 12,
+  },
+  productPriceContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2196F3",
+  },
+  addToCartButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#2196F3",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  viewAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderWidth: 2,
+    borderColor: "#2196F3",
+    borderRadius: 12,
+    marginTop: 10,
+    gap: 8,
+  },
+  viewAllButtonText: {
+    color: "#2196F3",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Gallery Styles
+  galleryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+  },
+  galleryItem: {
+    width: "48%",
+    aspectRatio: 1,
+    marginBottom: 15,
+    borderRadius: 15,
+    overflow: "hidden",
+    position: "relative",
+  },
+  galleryImagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(33, 150, 243, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  galleryImageText: {
+    fontSize: 12,
+    color: "#2196F3",
+    fontWeight: "600",
+    marginTop: 8,
+  },
+  galleryOverlay: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 })

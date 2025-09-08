@@ -1,7 +1,7 @@
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
-const BASE_URL = "http://192.168.2.119:5000/api"
+const BASE_URL = "https://assignment-backend-xpu8.onrender.com/api"
 
 // Create axios instance
 const api = axios.create({
@@ -18,18 +18,26 @@ api.interceptors.request.use(async (config) => {
   return config
 })
 
-// Helper function to create FormData - FIXED VERSION
+// Enhanced helper function to create FormData with support for arrays and objects
 const createFormData = (data, imageFiles = {}) => {
   const formData = new FormData()
 
-  // Add text fields
+  // Add text fields with support for nested objects and arrays
   Object.keys(data).forEach((key) => {
     if (data[key] !== null && data[key] !== undefined && data[key] !== "") {
-      formData.append(key, String(data[key]))
+      if (typeof data[key] === "object" && !Array.isArray(data[key])) {
+        // Handle nested objects (like socialMediaLinks)
+        formData.append(key, JSON.stringify(data[key]))
+      } else if (Array.isArray(data[key])) {
+        // Handle arrays (like services, products, gallery)
+        formData.append(key, JSON.stringify(data[key]))
+      } else {
+        formData.append(key, String(data[key]))
+      }
     }
   })
 
-  // Add image files - CORRECTED FORMAT
+  // Add single image files
   if (imageFiles.avatar) {
     formData.append("avatar", {
       uri: imageFiles.avatar.uri,
@@ -43,6 +51,17 @@ const createFormData = (data, imageFiles = {}) => {
       uri: imageFiles.coverImage.uri,
       type: "image/jpeg",
       name: "cover.jpg",
+    })
+  }
+
+  // Add gallery images
+  if (imageFiles.gallery && Array.isArray(imageFiles.gallery)) {
+    imageFiles.gallery.forEach((image, index) => {
+      formData.append("gallery", {
+        uri: image.uri,
+        type: "image/jpeg",
+        name: `gallery_${index}.jpg`,
+      })
     })
   }
 
@@ -75,10 +94,9 @@ export const userAPI = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        transformRequest: () => formData, // Important for React Native
+        transformRequest: () => formData,
       })
     } else {
-      // Send as JSON if no images
       return api.put("/users/profile", data)
     }
   },
@@ -110,7 +128,12 @@ export const cardAPI = {
     }
   },
   createBusinessCard: (data, imageFiles = {}) => {
-    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+    const hasImages = Object.keys(imageFiles).some(
+      (key) =>
+        imageFiles[key] &&
+        (!Array.isArray(imageFiles[key]) || imageFiles[key].length > 0)
+    )
+
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.post("/cards/business", formData, {
@@ -138,7 +161,12 @@ export const cardAPI = {
     }
   },
   updateBusinessCard: (id, data, imageFiles = {}) => {
-    const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])
+    const hasImages = Object.keys(imageFiles).some(
+      (key) =>
+        imageFiles[key] &&
+        (!Array.isArray(imageFiles[key]) || imageFiles[key].length > 0)
+    )
+
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.put(`/cards/business/${id}`, formData, {

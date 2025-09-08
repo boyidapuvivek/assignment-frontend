@@ -44,7 +44,6 @@ export default function MyCardScreen() {
       setIsEditing(false)
       Alert.alert("Success", "Profile updated successfully!")
     } catch (error) {
-      console.log("😊", error)
       Alert.alert(
         "Error",
         error.response?.data?.message || "Failed to update profile"
@@ -235,7 +234,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    padding: 20,
+    // padding: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

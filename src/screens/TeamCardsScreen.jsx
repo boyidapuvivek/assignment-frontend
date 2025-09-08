@@ -23,10 +23,6 @@ export default function TeamCardsScreen() {
     fetchTeamCards()
   }, [])
 
-  useEffect(() => {
-    console.log("😊", teamCards)
-  }, [teamCards])
-
   const fetchTeamCards = async () => {
     try {
       const response = await cardAPI.getTeamCards()

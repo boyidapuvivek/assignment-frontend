@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { cardAPI } from "../utils/api"
-import CardForm from "../components/CardForm"
+import BusinessCardForm from "../components/BusinessCardForm" // Import the new component
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
@@ -34,14 +34,14 @@ export default function BusinessCardsScreen() {
     }
   }
 
-  // CORRECTED: Fixed the handleCreateCard function for business cards
   const handleCreateCard = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      // For BusinessCardsScreen - use createBusinessCard (NOT createTeamCard)
+      console.log("@", imageFiles)
+
       await cardAPI.createBusinessCard(formData, imageFiles)
       setIsCreating(false)
-      fetchBusinessCards() // Correct function call for business cards
+      fetchBusinessCards()
       Alert.alert("Success", "Business card created successfully!")
     } catch (error) {
       Alert.alert(
@@ -49,7 +49,7 @@ export default function BusinessCardsScreen() {
         error.response?.data?.message || "Failed to create business card"
       )
     } finally {
-      setLoading(false) // Fixed: moved to finally block
+      setLoading(false)
     }
   }
 
@@ -89,7 +89,7 @@ export default function BusinessCardsScreen() {
             <MaterialIcons
               name='business-center'
               size={28}
-              color='#2196F3'
+              color={COLORS.primary}
               style={styles.titleIcon}
             />
             <Text style={styles.title}>Business Cards</Text>
@@ -107,7 +107,7 @@ export default function BusinessCardsScreen() {
                 <Ionicons
                   name='add'
                   size={20}
-                  color='#fff'
+                  color={COLORS.white}
                 />
               </View>
               <Text style={styles.newCardText}>Create New Card</Text>
@@ -118,32 +118,33 @@ export default function BusinessCardsScreen() {
 
       {/* Content Section */}
       <View style={styles.contentWrapper}>
-        <View style={styles.dataContainer}>
-          {isCreating ? (
-            <View style={styles.formContainer}>
-              <CardForm
-                onSave={handleCreateCard}
-                onCancel={() => setIsCreating(false)}
-                showCancel={true}
-                isCreating={true}
-                title='Create Business Card'
-              />
-            </View>
-          ) : (
+        {isCreating ? (
+          <View style={styles.formContainer}>
+            <BusinessCardForm
+              onSave={handleCreateCard}
+              onCancel={() => setIsCreating(false)}
+              showCancel={true}
+              isCreating={true}
+              title='Create Business Card'
+            />
+          </View>
+        ) : (
+          <View style={styles.dataContainer}>
             <View style={styles.listContainer}>
               <CardList
                 cards={businessCards}
-                onDelete={handleDeleteCard}
-                type='business'
+                onDeleteCard={handleDeleteCard}
+                cardType='business'
               />
             </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
     </View>
   )
 }
 
+// Keep the existing styles...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
