@@ -10,12 +10,14 @@ import {
   Platform,
   ScrollView,
 } from "react-native"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../../context/AuthContext"
+import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
-import { authAPI } from "../utils/api"
-import Logo from "../../assets/logo.svg"
-import Google from "../../assets/icons/google_icon.svg"
-import { COLORS } from "../utils/constants"
+import { authAPI } from "../../utils/api"
+import Logo from "../../../assets/logo.svg"
+import Google from "../../../assets/icons/google_icon.svg"
+import { COLORS } from "../../utils/constants"
+import axios from "axios"
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true)
@@ -31,7 +33,9 @@ export default function LoginScreen() {
     newPassword: "",
   })
   const [loading, setLoading] = useState(false)
+
   const { login, register } = useAuth()
+  const navigation = useNavigation()
 
   const handleSubmit = async () => {
     if (isForgotPassword) {
@@ -72,9 +76,17 @@ export default function LoginScreen() {
     setLoading(true)
     try {
       const result = await login(formData.email, formData.password)
-      if (!result.success) {
+
+      if (result.success && result.requiresOTP) {
+        // Navigate to OTP screen if backend requires OTP for login
+        navigation.navigate("OTPScreen", {
+          email: formData.email,
+          isRegistration: false,
+        })
+      } else if (!result.success) {
         Alert.alert("Error", result.message)
       }
+      // If login is successful without OTP, user state will be updated automatically
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.")
     } finally {
@@ -84,20 +96,17 @@ export default function LoginScreen() {
 
   const handleRegister = async () => {
     setLoading(true)
+
     try {
-      const result = await register(
-        formData.username,
-        formData.email,
-        formData.password
-      )
-      if (!result.success) {
-        Alert.alert("Error", result.message)
-      }
-    } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.")
-    } finally {
-      setLoading(false)
-    }
+      const res = axios.post("http://192.168.3.172:5000/api/auth/register")
+    } catch (error) {}
+
+    navigation.navigate("OTPScreen", {
+      email: formData.email,
+      isRegistration: true,
+    })
+
+    setLoading(false)
   }
 
   const handleForgotPassword = async () => {
@@ -107,6 +116,7 @@ export default function LoginScreen() {
         formData.email,
         formData.newPassword
       )
+
       Alert.alert(
         "Success",
         "Password updated successfully! You can now login with your new password.",
@@ -173,16 +183,16 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <View style={styles.header}>
-        <Logo
-          width={150}
-          height={50}
-        />
-      </View>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}>
         {/* Header with Logo */}
+        <View style={styles.header}>
+          <Logo
+            width={120}
+            height={40}
+          />
+        </View>
 
         {/* Main Card */}
         <View style={styles.card}>
@@ -221,8 +231,6 @@ export default function LoginScreen() {
                 <Text style={styles.inputLabel}>Full Name</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder='John Doe'
-                  placeholderTextColor='#999'
                   value={formData.username}
                   onChangeText={(value) => updateFormData("username", value)}
                   autoCapitalize='words'
@@ -234,8 +242,6 @@ export default function LoginScreen() {
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
                 style={styles.input}
-                placeholder='your.email@example.com'
-                placeholderTextColor='#999'
                 value={formData.email}
                 onChangeText={(value) => updateFormData("email", value)}
                 keyboardType='email-address'
@@ -249,8 +255,6 @@ export default function LoginScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder='••••••••'
-                    placeholderTextColor='#999'
                     value={formData.password}
                     onChangeText={(value) => updateFormData("password", value)}
                     secureTextEntry={!showPassword}
@@ -261,7 +265,7 @@ export default function LoginScreen() {
                     <Ionicons
                       name={showPassword ? "eye" : "eye-off"}
                       size={20}
-                      color='#999'
+                      color='#666'
                     />
                   </TouchableOpacity>
                 </View>
@@ -274,8 +278,6 @@ export default function LoginScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder='••••••••'
-                    placeholderTextColor='#999'
                     value={formData.confirmPassword}
                     onChangeText={(value) =>
                       updateFormData("confirmPassword", value)
@@ -288,7 +290,7 @@ export default function LoginScreen() {
                     <Ionicons
                       name={showConfirmPassword ? "eye" : "eye-off"}
                       size={20}
-                      color='#999'
+                      color='#666'
                     />
                   </TouchableOpacity>
                 </View>
@@ -300,8 +302,6 @@ export default function LoginScreen() {
                 <Text style={styles.inputLabel}>New Password</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder='Enter new password'
-                  placeholderTextColor='#999'
                   value={formData.newPassword}
                   onChangeText={(value) => updateFormData("newPassword", value)}
                   secureTextEntry
@@ -321,7 +321,7 @@ export default function LoginScreen() {
                   {agreeToTerms && (
                     <Ionicons
                       name='checkmark'
-                      size={16}
+                      size={12}
                       color='#fff'
                     />
                   )}
@@ -357,8 +357,8 @@ export default function LoginScreen() {
                   style={styles.googleButton}
                   onPress={handleGoogleLogin}>
                   <Google
-                    height='22'
-                    width='22'
+                    width={20}
+                    height={20}
                   />
                   <Text style={styles.googleButtonText}>Google</Text>
                 </TouchableOpacity>
@@ -369,7 +369,9 @@ export default function LoginScreen() {
             <View style={styles.footer}>
               {isLogin && !isForgotPassword && (
                 <TouchableOpacity onPress={() => setIsForgotPassword(true)}>
-                  <Text style={styles.linkText}>Forgot Password?</Text>
+                  <Text style={styles.footerText}>
+                    <Text style={styles.linkText}>Forgot Password?</Text>
+                  </Text>
                 </TouchableOpacity>
               )}
 
@@ -388,7 +390,9 @@ export default function LoginScreen() {
 
               {isForgotPassword && (
                 <TouchableOpacity onPress={switchToLogin}>
-                  <Text style={styles.linkText}>Back to Login</Text>
+                  <Text style={styles.footerText}>
+                    <Text style={styles.linkText}>Back to Login</Text>
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

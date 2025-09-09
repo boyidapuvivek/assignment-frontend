@@ -1,7 +1,7 @@
 import React from "react"
 import { createStackNavigator } from "@react-navigation/stack"
 import { useAuth } from "../context/AuthContext"
-import LoginScreen from "../screens/LoginScreen"
+import AuthNavigator from "./AuthNavigator"
 import DrawerNavigator from "./DrawerNavigator"
 import { ActivityIndicator, View } from "react-native"
 
@@ -15,7 +15,7 @@ export default function AppNavigator() {
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator
           size='large'
-          color='#2196F3'
+          color='#4A90E2'
         />
       </View>
     )
@@ -30,8 +30,8 @@ export default function AppNavigator() {
         />
       ) : (
         <Stack.Screen
-          name='Login'
-          component={LoginScreen}
+          name='Auth'
+          component={AuthNavigator}
         />
       )}
     </Stack.Navigator>

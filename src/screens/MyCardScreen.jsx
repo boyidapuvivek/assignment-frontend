@@ -21,20 +21,20 @@ export default function MyCardScreen() {
   const [isEditing, setIsEditing] = useState(!user?.isProfileComplete)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await cardAPI.getMyCard()
-        setData(response.data)
-      } catch (error) {
-        Alert.alert("Error", "Failed to fetch my card")
-      } finally {
-        setLoading(false)
-      }
-    }
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await cardAPI.getMyCard()
+  //       setData(response.data)
+  //     } catch (error) {
+  //       Alert.alert("Error", "Failed to fetch my card")
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   }
 
-    fetchData()
-  }, [data])
+  //   fetchData()
+  // }, [data])
 
   const handleSave = async (formData, imageFiles) => {
     setLoading(true)
