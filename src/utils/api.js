@@ -21,7 +21,6 @@ api.interceptors.request.use(async (config) => {
 // Enhanced helper function to create FormData with support for arrays and objects
 const createFormData = (data, imageFiles = {}) => {
   const formData = new FormData()
-
   // Add text fields with support for nested objects and arrays
   Object.keys(data).forEach((key) => {
     if (data[key] !== null && data[key] !== undefined && data[key] !== "") {
@@ -79,6 +78,20 @@ export const authAPI = {
   forgotPassword: (email, newPassword) => {
     return api.post("/auth/forgot-password", { email, newPassword })
   },
+
+  // OTP APIs
+  sendOTP: (name, email, password) => {
+    return api.post("/auth/send-otp", { name, email, password })
+  },
+  verifyOTP: (email, otp) => {
+    return api.post("/auth/verify-otp", { email, otp })
+  },
+  verifyResetOTP: (email, otp) => {
+    return api.post("/auth/verify-reset-otp", { email, otp })
+  },
+  resendOTP: (email) => {
+    return api.post("/auth/send-otp", { email })
+  },
 }
 
 // User API
@@ -133,7 +146,6 @@ export const cardAPI = {
         imageFiles[key] &&
         (!Array.isArray(imageFiles[key]) || imageFiles[key].length > 0)
     )
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.post("/cards/business", formData, {
@@ -166,7 +178,6 @@ export const cardAPI = {
         imageFiles[key] &&
         (!Array.isArray(imageFiles[key]) || imageFiles[key].length > 0)
     )
-
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
       return api.put(`/cards/business/${id}`, formData, {

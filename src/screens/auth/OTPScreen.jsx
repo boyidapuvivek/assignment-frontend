@@ -11,13 +11,19 @@ import {
   ScrollView,
 } from "react-native"
 import { useAuth } from "../../context/AuthContext"
+import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { authAPI } from "../../utils/api"
 import Logo from "../../../assets/logo.svg"
 import { COLORS } from "../../utils/constants"
 
-export default function OTPScreen({ route, navigation }) {
-  const { email, isRegistration = false } = route.params || {}
+export default function OTPScreen({ route }) {
+  const {
+    email,
+    username,
+    password,
+    isRegistration = false,
+  } = route.params || {}
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
@@ -25,7 +31,8 @@ export default function OTPScreen({ route, navigation }) {
   const [canResend, setCanResend] = useState(false)
 
   const inputRefs = useRef([])
-  const { login } = useAuth()
+  const navigation = useNavigation()
+  const { verifyOTPAndLogin } = useAuth()
 
   useEffect(() => {
     // Start countdown timer
@@ -75,9 +82,9 @@ export default function OTPScreen({ route, navigation }) {
 
     setLoading(true)
     try {
-      const response = await authAPI.verifyOTP(email, otpString)
+      const result = await verifyOTPAndLogin(email, otpString)
 
-      if (response.success) {
+      if (result.success) {
         Alert.alert(
           "Success",
           isRegistration
@@ -87,19 +94,14 @@ export default function OTPScreen({ route, navigation }) {
             {
               text: "OK",
               onPress: () => {
-                if (isRegistration) {
-                  // For registration, navigate to login or directly login
-                  navigation.navigate("Home")
-                } else {
-                  // For password reset or login OTP
-                  navigation.navigate("Home")
-                }
+                // Navigation will be handled automatically by AppNavigator
+                // since user state is now set in AuthContext
               },
             },
           ]
         )
       } else {
-        Alert.alert("Error", response.message || "Invalid OTP")
+        Alert.alert("Error", result.message || "Invalid OTP")
       }
     } catch (error) {
       const errorMessage =
@@ -115,9 +117,16 @@ export default function OTPScreen({ route, navigation }) {
 
     setResendLoading(true)
     try {
-      const response = await authAPI.resendOTP(email)
+      let response
+      if (isRegistration && username && password) {
+        // Resend registration OTP
+        response = await authAPI.sendOTP(username, email, password)
+      } else {
+        // Resend reset OTP
+        response = await authAPI.resendOTP(email)
+      }
 
-      if (response.success) {
+      if (response.data) {
         Alert.alert("Success", "OTP has been resent to your email")
         setTimer(60)
         setCanResend(false)
@@ -135,10 +144,13 @@ export default function OTPScreen({ route, navigation }) {
           })
         }, 1000)
       } else {
-        Alert.alert("Error", response.message || "Failed to resend OTP")
+        Alert.alert("Error", "Failed to resend OTP")
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to resend OTP. Please try again.")
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to resend OTP. Please try again."
+      Alert.alert("Error", errorMessage)
     } finally {
       setResendLoading(false)
     }
@@ -154,9 +166,7 @@ export default function OTPScreen({ route, navigation }) {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header with Logo */}
         <View style={styles.header}>
           <Logo

@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedToken = await AsyncStorage.getItem("token")
       const storedUser = await AsyncStorage.getItem("user")
-
       if (storedToken && storedUser) {
         setToken(storedToken)
         setUser(JSON.parse(storedUser))
@@ -41,15 +40,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login(email, password)
       console.log("😊", response)
-
       const { token: newToken, user: userData } = response.data
 
       await AsyncStorage.setItem("token", newToken)
       await AsyncStorage.setItem("user", JSON.stringify(userData))
-
       setToken(newToken)
       setUser(userData)
-
       return { success: true }
     } catch (error) {
       return {
@@ -61,21 +57,61 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      const response = await authAPI.register(username, email, password)
-      const { token: newToken, user: userData } = response.data
+      // Call send-otp API instead of direct registration
+      const response = await authAPI.sendOTP(username, email, password)
+      console.log("OTP sent:", response)
 
-      await AsyncStorage.setItem("token", newToken)
-      await AsyncStorage.setItem("user", JSON.stringify(userData))
-
-      setToken(newToken)
-      setUser(userData)
-
-      return { success: true }
+      return {
+        success: true,
+        requiresOTP: true,
+        message: response.data?.message || "OTP sent successfully",
+      }
     } catch (error) {
       return {
         success: false,
         message: error.response?.data?.message || "Registration failed",
       }
+    }
+  }
+
+  const verifyOTPAndLogin = async (email, otp) => {
+    try {
+      const response = await authAPI.verifyOTP(email, otp)
+      console.log("OTP verified:", response)
+
+      if (response.data?.token && response.data?.user) {
+        const { token: newToken, user: userData } = response.data
+
+        await AsyncStorage.setItem("token", newToken)
+        await AsyncStorage.setItem("user", JSON.stringify(userData))
+        setToken(newToken)
+        setUser(userData)
+
+        return { success: true }
+      }
+
+      return {
+        success: false,
+        message: response.data?.message || "OTP verification failed",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "OTP verification failed",
+      }
+    }
+  }
+
+  const loginWithToken = async (token, userData) => {
+    try {
+      await AsyncStorage.setItem("token", token)
+      await AsyncStorage.setItem("user", JSON.stringify(userData))
+      setToken(token)
+      setUser(userData)
+      return { success: true }
+    } catch (error) {
+      console.error("Token login error:", error)
+      return { success: false, message: "Failed to authenticate with token" }
     }
   }
 
@@ -103,6 +139,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    verifyOTPAndLogin,
+    loginWithToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

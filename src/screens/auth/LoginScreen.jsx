@@ -17,7 +17,6 @@ import { authAPI } from "../../utils/api"
 import Logo from "../../../assets/logo.svg"
 import Google from "../../../assets/icons/google_icon.svg"
 import { COLORS } from "../../utils/constants"
-import axios from "axios"
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true)
@@ -76,17 +75,10 @@ export default function LoginScreen() {
     setLoading(true)
     try {
       const result = await login(formData.email, formData.password)
-
-      if (result.success && result.requiresOTP) {
-        // Navigate to OTP screen if backend requires OTP for login
-        navigation.navigate("OTPScreen", {
-          email: formData.email,
-          isRegistration: false,
-        })
-      } else if (!result.success) {
+      if (!result.success) {
         Alert.alert("Error", result.message)
       }
-      // If login is successful without OTP, user state will be updated automatically
+      // If login is successful, user state will be updated automatically
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.")
     } finally {
@@ -96,17 +88,29 @@ export default function LoginScreen() {
 
   const handleRegister = async () => {
     setLoading(true)
-
     try {
-      const res = axios.post("http://192.168.3.172:5000/api/auth/register")
-    } catch (error) {}
+      const result = await register(
+        formData.username,
+        formData.email,
+        formData.password
+      )
 
-    navigation.navigate("OTPScreen", {
-      email: formData.email,
-      isRegistration: true,
-    })
-
-    setLoading(false)
+      if (result.success && result.requiresOTP) {
+        // Navigate to OTP screen after successful OTP send
+        navigation.navigate("OTPScreen", {
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+          isRegistration: true,
+        })
+      } else if (!result.success) {
+        Alert.alert("Error", result.message)
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleForgotPassword = async () => {
@@ -183,9 +187,7 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header with Logo */}
         <View style={styles.header}>
           <Logo
