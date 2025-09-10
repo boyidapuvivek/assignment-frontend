@@ -15,6 +15,7 @@ import CardForm from "../components/CardForm"
 import CardDisplay from "../components/CardDisplay"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
+import Header from "../components/Header"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
@@ -93,6 +94,7 @@ export default function MyCardScreen() {
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.headerContainer}>
+        <Header />
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.headerTitle}>My Digital Bussiness Card</Text>
