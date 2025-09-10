@@ -13,29 +13,58 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
 
-export default function BusinessCardForm({
+interface BusinessCardFormProps {
+  initialData?: any
+  onSave: (data: any, files: any) => void
+  onCancel?: () => void
+  showCancel?: boolean
+  isCreating?: boolean
+  title?: string
+}
+
+interface FormData {
+  username: string
+  email: string
+  phoneNumber: string
+  businessEmail: string
+  businessNumber: string
+  businessDescription: string
+  location: string
+  businessName: string
+  socialMediaLinks: Array<{
+    facebook: string
+    twitter: string
+    linkedIn: string
+    instagram: string
+  }>
+  services: Array<{ name: string; price: number }>
+  products: Array<{ name: string; price: number }>
+}
+
+interface ImageFiles {
+  avatar: any
+  coverImage: any
+  gallery: any[]
+}
+
+const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   initialData = {},
   onSave,
   onCancel,
   showCancel = false,
   isCreating = false,
   title = "Create Business Card",
-}) {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState({
-    // Account Details
+}) => {
+  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [formData, setFormData] = useState<FormData>({
     username: "",
     email: "",
-
-    // Contact Information
     phoneNumber: initialData.phoneNumber || "",
     businessEmail: initialData.businessEmail || "",
     businessNumber: initialData.businessNumber || "",
     businessDescription: initialData.businessDescription || "",
     location: initialData.location || "",
     businessName: initialData.businessName || "",
-
-    // Social Media Links
     socialMediaLinks: [
       {
         facebook: initialData.socialMediaLinks?.facebook || "",
@@ -44,34 +73,41 @@ export default function BusinessCardForm({
         instagram: initialData.socialMediaLinks?.instagram || "",
       },
     ],
-
-    // Services and Products
     services: initialData.services || [],
     products: initialData.products || [],
   })
 
-  const [images, setImages] = useState({
+  const [images, setImages] = useState<{
+    avatar: string | null
+    coverImage: string | null
+  }>({
     avatar: initialData.avatar?.url || null,
     coverImage: initialData.coverImage?.url || null,
   })
 
-  const [imageFiles, setImageFiles] = useState({
+  const [imageFiles, setImageFiles] = useState<ImageFiles>({
     avatar: null,
     coverImage: null,
     gallery: [],
   })
 
-  const [galleryImages, setGalleryImages] = useState(initialData.gallery || [])
+  const [galleryImages, setGalleryImages] = useState<any[]>(
+    initialData.gallery || []
+  )
 
-  const steps = ["Contact Info", "Services & Products", "Gallery & Images"]
+  const steps: string[] = [
+    "Contact Info",
+    "Services & Products",
+    "Gallery & Images",
+  ]
 
-  const updateFormData = (field, value) => {
+  const updateFormData = (field: string, value: any): void => {
     if (field.includes(".")) {
       const [parent, child] = field.split(".")
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent],
+          ...prev[parent as keyof FormData],
           [child]: value,
         },
       }))
@@ -80,14 +116,14 @@ export default function BusinessCardForm({
     }
   }
 
-  const addService = () => {
+  const addService = (): void => {
     setFormData((prev) => ({
       ...prev,
       services: [...prev.services, { name: "", price: 0 }],
     }))
   }
 
-  const updateService = (index, field, value) => {
+  const updateService = (index: number, field: string, value: any): void => {
     setFormData((prev) => ({
       ...prev,
       services: prev.services.map((service, i) =>
@@ -96,21 +132,21 @@ export default function BusinessCardForm({
     }))
   }
 
-  const removeService = (index) => {
+  const removeService = (index: number): void => {
     setFormData((prev) => ({
       ...prev,
       services: prev.services.filter((_, i) => i !== index),
     }))
   }
 
-  const addProduct = () => {
+  const addProduct = (): void => {
     setFormData((prev) => ({
       ...prev,
       products: [...prev.products, { name: "", price: 0 }],
     }))
   }
 
-  const updateProduct = (index, field, value) => {
+  const updateProduct = (index: number, field: string, value: any): void => {
     setFormData((prev) => ({
       ...prev,
       products: prev.products.map((product, i) =>
@@ -119,14 +155,14 @@ export default function BusinessCardForm({
     }))
   }
 
-  const removeProduct = (index) => {
+  const removeProduct = (index: number): void => {
     setFormData((prev) => ({
       ...prev,
       products: prev.products.filter((_, i) => i !== index),
     }))
   }
 
-  const pickImage = async (type) => {
+  const pickImage = async (type: "avatar" | "coverImage"): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
       Alert.alert(
@@ -161,7 +197,7 @@ export default function BusinessCardForm({
     }
   }
 
-  const pickGalleryImages = async () => {
+  const pickGalleryImages = async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
       Alert.alert(
@@ -202,7 +238,7 @@ export default function BusinessCardForm({
     }
   }
 
-  const removeGalleryImage = (index) => {
+  const removeGalleryImage = (index: number): void => {
     setGalleryImages((prev) => prev.filter((_, i) => i !== index))
     setImageFiles((prev) => ({
       ...prev,
@@ -210,7 +246,7 @@ export default function BusinessCardForm({
     }))
   }
 
-  const validateStep = () => {
+  const validateStep = (): boolean => {
     switch (currentStep) {
       case 0:
         if (isCreating && (!formData.username || !formData.email)) {
@@ -219,25 +255,25 @@ export default function BusinessCardForm({
         }
         return true
       case 1:
-        return true // Services and products are optional
+        return true
       case 2:
-        return true // Gallery is optional
+        return true
       default:
         return true
     }
   }
 
-  const nextStep = () => {
+  const nextStep = (): void => {
     if (validateStep()) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
     }
   }
 
-  const prevStep = () => {
+  const prevStep = (): void => {
     setCurrentStep((prev) => Math.max(prev - 1, 0))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     if (!validateStep()) return
 
     const submitData = {

@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-
 import {
   View,
   Text,
@@ -13,15 +12,48 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
 
-export default function CardForm({
+interface CardFormProps {
+  initialData?: any
+  onSave: (data: any, files: any) => void
+  onCancel?: () => void
+  showCancel?: boolean
+  isCreating?: boolean
+  title?: string
+}
+
+interface FormData {
+  phoneNumber: string
+  businessEmail: string
+  businessNumber: string
+  businessDescription: string
+  location: string
+  businessName: string
+}
+
+interface CreateData {
+  username: string
+  email: string
+}
+
+interface Images {
+  avatar: string | null
+  coverImage: string | null
+}
+
+interface ImageFiles {
+  avatar: any
+  coverImage: any
+}
+
+const CardForm: React.FC<CardFormProps> = ({
   initialData = {},
   onSave,
   onCancel,
   showCancel = false,
   isCreating = false,
   title = "Edit Card",
-}) {
-  const [formData, setFormData] = useState({
+}) => {
+  const [formData, setFormData] = useState<FormData>({
     phoneNumber: initialData.phoneNumber || "",
     businessEmail: initialData.businessEmail || "",
     businessNumber: initialData.businessNumber || "",
@@ -30,32 +62,30 @@ export default function CardForm({
     businessName: initialData.businessName || "",
   })
 
-  const [createData, setCreateData] = useState({
+  const [createData, setCreateData] = useState<CreateData>({
     username: "",
     email: "",
-    // Removed password from createData since it will be auto-generated
   })
 
-  const [images, setImages] = useState({
+  const [images, setImages] = useState<Images>({
     avatar: initialData.avatar?.url || null,
     coverImage: initialData.coverImage?.url || null,
   })
 
-  const [imageFiles, setImageFiles] = useState({
+  const [imageFiles, setImageFiles] = useState<ImageFiles>({
     avatar: null,
     coverImage: null,
   })
 
-  const updateFormData = (field, value) => {
+  const updateFormData = (field: keyof FormData, value: string): void => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const updateCreateData = (field, value) => {
+  const updateCreateData = (field: keyof CreateData, value: string): void => {
     setCreateData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Update the pickImage function in CardForm.jsx:
-  const pickImage = async (type) => {
+  const pickImage = async (type: "avatar" | "coverImage"): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
       Alert.alert(
@@ -69,14 +99,13 @@ export default function CardForm({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: type === "avatar" ? [1, 1] : [16, 9],
-      quality: 0.7, // Reduced quality to avoid large files
+      quality: 0.7,
       allowsMultipleSelection: false,
     })
 
     if (!result.canceled) {
       const asset = result.assets[0]
       setImages((prev) => ({ ...prev, [type]: asset.uri }))
-      // Store the complete asset info for upload
       setImageFiles((prev) => ({
         ...prev,
         [type]: {
@@ -91,14 +120,13 @@ export default function CardForm({
     }
   }
 
-  const removeImage = (type) => {
+  const removeImage = (type: "avatar" | "coverImage"): void => {
     setImages((prev) => ({ ...prev, [type]: null }))
     setImageFiles((prev) => ({ ...prev, [type]: null }))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     if (isCreating) {
-      // Removed password validation since it will be auto-generated
       if (!createData.username || !createData.email) {
         Alert.alert("Error", "Username and email are required")
         return
@@ -109,24 +137,29 @@ export default function CardForm({
     onSave(submitData, imageFiles)
   }
 
-  const renderImagePicker = (type, label, aspectRatio) => (
+  const renderImagePicker = (
+    type: "avatar" | "coverImage",
+    label: string,
+    aspectRatio: number[]
+  ): JSX.Element => (
     <View style={styles.imageContainer}>
       <Text style={styles.sectionSubtitle}>{label}</Text>
       {images[type] ? (
         <View style={styles.imageWrapper}>
           <Image
-            source={{ uri: images[type] }}
+            source={{ uri: images[type]! }}
             style={[
               styles.imagePreview,
               type === "avatar" ? styles.avatarPreview : styles.coverPreview,
             ]}
+            resizeMode='cover'
           />
           <TouchableOpacity
             style={styles.removeImageButton}
             onPress={() => removeImage(type)}>
             <Ionicons
-              name='close-circle'
-              size={24}
+              name='close'
+              size={16}
               color='#ff4444'
             />
           </TouchableOpacity>
@@ -142,7 +175,7 @@ export default function CardForm({
           onPress={() => pickImage(type)}>
           <Ionicons
             name='camera'
-            size={32}
+            size={30}
             color='#999'
           />
           <Text style={styles.imagePlaceholderText}>
@@ -150,6 +183,7 @@ export default function CardForm({
           </Text>
         </TouchableOpacity>
       )}
+
       {images[type] && (
         <TouchableOpacity
           style={styles.changeImageButton}
@@ -166,16 +200,14 @@ export default function CardForm({
   )
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>{title}</Text>
 
       {/* Images Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          <MaterialIcons
-            name='photo-camera'
+          <Ionicons
+            name='images'
             size={20}
             color='#333'
           />{" "}
@@ -189,8 +221,8 @@ export default function CardForm({
       {isCreating && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            <MaterialIcons
-              name='account-circle'
+            <Ionicons
+              name='person-add'
               size={20}
               color='#333'
             />{" "}
@@ -229,16 +261,14 @@ export default function CardForm({
               autoCapitalize='none'
             />
           </View>
-
-          {/* Removed password input field */}
         </View>
       )}
 
       {/* Personal Contact Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          <MaterialIcons
-            name='contact-phone'
+          <Ionicons
+            name='person'
             size={20}
             color='#333'
           />{" "}
@@ -280,7 +310,7 @@ export default function CardForm({
       {/* Business Contact Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          <MaterialIcons
+          <Ionicons
             name='business'
             size={20}
             color='#333'
@@ -339,8 +369,8 @@ export default function CardForm({
       {/* Business Description Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
-          <MaterialIcons
-            name='description'
+          <Ionicons
+            name='document-text'
             size={20}
             color='#333'
           />{" "}
@@ -348,8 +378,8 @@ export default function CardForm({
         </Text>
 
         <View style={styles.textAreaContainer}>
-          <MaterialIcons
-            name='description'
+          <Ionicons
+            name='document-text'
             size={20}
             color='#666'
             style={styles.textAreaIcon}
@@ -392,6 +422,8 @@ export default function CardForm({
     </ScrollView>
   )
 }
+
+export default CardForm
 
 const styles = StyleSheet.create({
   container: {

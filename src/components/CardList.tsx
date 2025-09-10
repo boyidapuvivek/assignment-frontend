@@ -9,14 +9,34 @@ import {
 import { Ionicons } from "@expo/vector-icons"
 import CardDisplay from "./CardDisplay"
 
-export default function CardList({ cards, onDelete, emptyMessage }) {
-  const TrashButton = ({ cardId }) => (
+interface Card {
+  id: string
+  // Add other card properties as needed
+  [key: string]: any
+}
+
+interface CardListProps {
+  cards: Card[]
+  onDelete: (cardId: string) => void
+  emptyMessage: string
+}
+
+interface TrashButtonProps {
+  cardId: string
+}
+
+const CardList: React.FC<CardListProps> = ({
+  cards,
+  onDelete,
+  emptyMessage,
+}) => {
+  const TrashButton: React.FC<TrashButtonProps> = ({ cardId }) => (
     <TouchableOpacity
       style={styles.deleteButton}
       onPress={() => onDelete(cardId)}>
       <Ionicons
         name='trash'
-        size={20}
+        size={18}
         color='#fff'
       />
     </TouchableOpacity>
@@ -26,8 +46,8 @@ export default function CardList({ cards, onDelete, emptyMessage }) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons
-          name='card-outline'
-          size={60}
+          name='documents-outline'
+          size={80}
           color='#ccc'
         />
         <Text style={styles.emptyText}>{emptyMessage}</Text>
@@ -36,19 +56,21 @@ export default function CardList({ cards, onDelete, emptyMessage }) {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView>
       {cards.map((card) => (
         <View
-          key={card._id}
+          key={card.id}
           style={styles.cardContainer}>
-          <CardDisplay user={card}>
-            <TrashButton cardId={card._id} />
+          <CardDisplay businessCard={card}>
+            <TrashButton cardId={card.id} />
           </CardDisplay>
         </View>
       ))}
     </ScrollView>
   )
 }
+
+export default CardList
 
 const styles = StyleSheet.create({
   emptyContainer: {

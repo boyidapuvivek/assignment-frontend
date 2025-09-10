@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Button,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
@@ -80,6 +81,10 @@ export default function MyCardScreen() {
     setIsEditing(true)
   }
 
+  const handleLogout = () => {
+    updateUser("")
+  }
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -90,19 +95,13 @@ export default function MyCardScreen() {
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <MaterialIcons
-              name='credit-card'
-              size={28}
-              color='#1a1a1a'
-              style={styles.titleIcon}
-            />
-            <Text style={styles.headerTitle}>My Card</Text>
+            <Text style={styles.headerTitle}>My Digital Bussiness Card</Text>
           </View>
-          <Text style={styles.subtitle}>
-            {businessCard
-              ? "Your digital business card"
-              : "Create your business card to get started"}
-          </Text>
+          {!businessCard && (
+            <Text style={styles.subtitle}>
+              "Create your business card to get started"
+            </Text>
+          )}
         </View>
       </View>
 
@@ -166,6 +165,16 @@ export default function MyCardScreen() {
           )}
         </View>
       </ScrollView>
+
+      <TouchableOpacity
+        style={{
+          backgroundColor: COLORS.warning,
+
+          alignItems: "center",
+        }}
+        onPress={handleLogout}>
+        <Text style={{ color: COLORS.text }}>Logout</Text>
+      </TouchableOpacity>
     </View>
   )
 }
