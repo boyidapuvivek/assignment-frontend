@@ -15,16 +15,8 @@ import {
 } from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
 
-export default function CardDisplay({ user, children }) {
+export default function CardDisplay({ businessCard, children }) {
   const [activeTab, setActiveTab] = useState("Contact")
-
-  // Hardcoded data
-  const hardcodedServices = [{ name: "food", price: 1000 }]
-
-  const hardcodedProducts = [{ name: "Chocolate", price: 100 }]
-
-  // You'll need to add these images to your assets folder
-  const hardcodedGallery = [require("../../assets/business.jpg")]
 
   const TabButton = ({ title, isActive, onPress }) => (
     <TouchableOpacity
@@ -40,271 +32,281 @@ export default function CardDisplay({ user, children }) {
     switch (activeTab) {
       case "Contact":
         return (
-          <ScrollView
-            style={styles.tabContent}
-            showsVerticalScrollIndicator={false}>
+          <View style={styles.contactSection}>
             {/* Personal Contact Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Personal Contact</Text>
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='call'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {user?.phoneNumber || "+916301401268"}
-                </Text>
+            <Text style={styles.sectionTitle}>Personal Contact</Text>
+
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='call'
+                  size={18}
+                  color='#2196F3'
+                />
               </View>
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='mail'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {user?.email || "vivekboyidapu12@gmail.com"}
-                </Text>
-              </View>
-              {user?.location && (
-                <View style={styles.contactItem}>
-                  <View style={styles.contactIconContainer}>
-                    <Ionicons
-                      name='location'
-                      size={18}
-                      color='#2196F3'
-                    />
-                  </View>
-                  <Text style={styles.contactText}>{user.location}</Text>
-                </View>
-              )}
+              <Text style={styles.contactText}>
+                {businessCard?.phone || "No phone number"}
+              </Text>
             </View>
+
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <MaterialIcons
+                  name='email'
+                  size={18}
+                  color='#2196F3'
+                />
+              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.email || "No email"}
+              </Text>
+            </View>
+
+            {businessCard?.address && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='location'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>{businessCard.address}</Text>
+              </View>
+            )}
 
             {/* Business Contact Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Business Contact</Text>
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='business'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                {user?.businessName ? (
-                  <Text style={styles.contactText}>{user.businessName}</Text>
-                ) : (
-                  <Text style={styles.noDataText}>No business name added</Text>
-                )}
+            <Text style={styles.sectionTitle}>Business Contact</Text>
+
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <MaterialIcons
+                  name='business'
+                  size={18}
+                  color='#2196F3'
+                />
               </View>
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='mail'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                {user?.businessEmail ? (
-                  <Text style={styles.contactText}>{user.businessEmail}</Text>
-                ) : (
-                  <Text style={styles.noDataText}>No business email added</Text>
-                )}
-              </View>
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='call'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                {user?.businessNumber ? (
-                  <Text style={styles.contactText}>{user.businessNumber}</Text>
-                ) : (
-                  <Text style={styles.noDataText}>No business phone added</Text>
-                )}
-              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.company || "No company name"}
+              </Text>
             </View>
 
-            {/* Social Media Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Social Media</Text>
-              <View style={styles.socialMediaContainer}>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#1877F2" },
-                    ]}>
-                    <Ionicons
-                      name='logo-facebook'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Facebook</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#1DA1F2" },
-                    ]}>
-                    <Ionicons
-                      name='logo-twitter'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Twitter</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#0A66C2" },
-                    ]}>
-                    <Ionicons
-                      name='logo-linkedin'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>LinkedIn</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#E4405F" },
-                    ]}>
-                    <Ionicons
-                      name='logo-instagram'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Instagram</Text>
-                </TouchableOpacity>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <MaterialIcons
+                  name='email'
+                  size={18}
+                  color='#2196F3'
+                />
               </View>
+              <Text style={styles.contactText}>
+                {businessCard?.business_email || "No business email"}
+              </Text>
             </View>
-          </ScrollView>
+
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='call'
+                  size={18}
+                  color='#2196F3'
+                />
+              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.business_phone || "No business phone"}
+              </Text>
+            </View>
+
+            {businessCard?.website && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIconContainer}>
+                  <MaterialIcons
+                    name='language'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>{businessCard.website}</Text>
+              </View>
+            )}
+
+            {/* Social Media Section */}
+            <Text style={styles.sectionTitle}>Social Media</Text>
+            <View style={styles.socialMediaContainer}>
+              <TouchableOpacity
+                style={styles.socialIcon}
+                disabled={!businessCard?.facebook_url}>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#3b5998" }]}>
+                  <FontAwesome5
+                    name='facebook-f'
+                    size={18}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Facebook</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.socialIcon}
+                disabled={!businessCard?.twitter_url}>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#1da1f2" }]}>
+                  <FontAwesome5
+                    name='twitter'
+                    size={18}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Twitter</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.socialIcon}
+                disabled={!businessCard?.linkedin_url}>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#0077b5" }]}>
+                  <FontAwesome5
+                    name='linkedin-in'
+                    size={18}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>LinkedIn</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.socialIcon}
+                disabled={!businessCard?.instagram_url}>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#e4405f" }]}>
+                  <FontAwesome5
+                    name='instagram'
+                    size={18}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Instagram</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )
 
       case "Services":
         return (
-          <ScrollView
-            style={styles.tabContent}
-            showsVerticalScrollIndicator={false}>
+          <View style={styles.contactSection}>
             <Text style={styles.sectionTitle}>Our Services</Text>
-            {hardcodedServices.map((service, index) => (
-              <View
-                key={index}
-                style={styles.serviceCard}>
-                <View style={styles.serviceHeader}>
-                  <View style={styles.serviceIconContainer}>
-                    <MaterialIcons
-                      name='restaurant'
-                      size={24}
-                      color='#2196F3'
-                    />
-                  </View>
-                  <View style={styles.serviceDetails}>
-                    <Text style={styles.serviceName}>{service.name}</Text>
-                    <Text style={styles.serviceDescription}>
-                      Delicious food services
-                    </Text>
+            {businessCard?.services && businessCard.services.length > 0 ? (
+              businessCard.services.map((service, index) => (
+                <View
+                  key={index}
+                  style={styles.serviceCard}>
+                  <View style={styles.serviceHeader}>
+                    <View style={styles.serviceIconContainer}>
+                      <MaterialIcons
+                        name='room-service'
+                        size={24}
+                        color='#2196F3'
+                      />
+                    </View>
+                    <View style={styles.serviceDetails}>
+                      <Text style={styles.serviceName}>{service.name}</Text>
+                      <Text style={styles.serviceDescription}>
+                        {service.description || "Professional service"}
+                      </Text>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.priceLabel}>Starting from</Text>
+                      <Text style={styles.priceText}>₹{service.price}</Text>
+                    </View>
                   </View>
                 </View>
-                <View style={styles.priceContainer}>
-                  <Text style={styles.priceLabel}>Starting from</Text>
-                  <Text style={styles.priceText}>₹{service.price}</Text>
-                </View>
-              </View>
-            ))}
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No services added yet</Text>
+            )}
             <TouchableOpacity style={styles.inquireButton}>
-              <Ionicons
-                name='chatbubble-ellipses'
+              <MaterialIcons
+                name='message'
                 size={20}
                 color='#fff'
               />
               <Text style={styles.inquireButtonText}>Inquire Now</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         )
 
       case "Products":
         return (
-          <ScrollView
-            style={styles.tabContent}
-            showsVerticalScrollIndicator={false}>
+          <View style={styles.contactSection}>
             <Text style={styles.sectionTitle}>Our Products</Text>
-            {hardcodedProducts.map((product, index) => (
-              <View
-                key={index}
-                style={styles.productCard}>
-                <View style={styles.productImageContainer}>
-                  <View style={styles.productImagePlaceholder}>
-                    <MaterialIcons
-                      name='inventory'
-                      size={32}
-                      color='#2196F3'
-                    />
-                  </View>
-                </View>
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productDescription}>
-                    Premium quality chocolate
-                  </Text>
-                  <View style={styles.productPriceContainer}>
-                    <Text style={styles.productPrice}>₹{product.price}</Text>
-                    <TouchableOpacity style={styles.addToCartButton}>
-                      <Ionicons
-                        name='bag-add'
-                        size={16}
-                        color='#fff'
+            {businessCard?.products && businessCard.products.length > 0 ? (
+              businessCard.products.map((product, index) => (
+                <View
+                  key={index}
+                  style={styles.productCard}>
+                  <View style={styles.productImageContainer}>
+                    <View style={styles.productImagePlaceholder}>
+                      <MaterialIcons
+                        name='shopping-bag'
+                        size={32}
+                        color='#2196F3'
                       />
-                    </TouchableOpacity>
+                    </View>
+                  </View>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <Text style={styles.productDescription}>
+                      {product.description || "Quality product"}
+                    </Text>
+                    <View style={styles.productPriceContainer}>
+                      <Text style={styles.productPrice}>₹{product.price}</Text>
+                      <TouchableOpacity style={styles.addToCartButton}>
+                        <MaterialIcons
+                          name='add'
+                          size={20}
+                          color='#fff'
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
-              </View>
-            ))}
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No products added yet</Text>
+            )}
             <TouchableOpacity style={styles.viewAllButton}>
-              <Text style={styles.viewAllButtonText}>View All Products</Text>
-              <Ionicons
-                name='arrow-forward'
-                size={18}
+              <MaterialIcons
+                name='visibility'
+                size={20}
                 color='#2196F3'
               />
+              <Text style={styles.viewAllButtonText}>View All Products</Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         )
 
       case "Gallery":
         return (
-          <ScrollView
-            style={styles.tabContent}
-            showsVerticalScrollIndicator={false}>
+          <View style={styles.contactSection}>
             <Text style={styles.sectionTitle}>Gallery</Text>
-            <View style={styles.galleryGrid}>
-              {/* Since we can't use require() with dynamic paths in this context, 
-                  I'll show placeholder images. In a real app, you'd replace these 
-                  with actual image sources */}
-              {hardcodedGallery.map((item, index) => (
-                <Image
-                  key={index}
-                  style={styles.galleryItem}
-                  source={item}
-                />
-              ))}
-            </View>
-          </ScrollView>
+            {businessCard?.gallery && businessCard.gallery.length > 0 ? (
+              <View style={styles.galleryGrid}>
+                {businessCard.gallery.map((image, index) => (
+                  <View
+                    key={index}
+                    style={styles.galleryItem}>
+                    <Image
+                      source={{ uri: image.url || image }}
+                      style={styles.galleryImage}
+                    />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noDataText}>No gallery images added yet</Text>
+            )}
+          </View>
         )
 
       default:
@@ -327,14 +329,19 @@ export default function CardDisplay({ user, children }) {
       <View style={styles.mainContainer}>
         {/* Header with Cover Photo */}
         <View style={styles.header}>
-          {user?.coverImage?.url ? (
+          {businessCard?.business_cover_photo ? (
             <Image
-              source={{ uri: user.coverImage.url }}
+              source={{ uri: businessCard.business_cover_photo }}
               style={styles.coverImage}
             />
           ) : (
             <View style={styles.coverPhotoContainer}>
               {children}
+              <MaterialIcons
+                name='camera-alt'
+                size={32}
+                color='#fff'
+              />
               <Text style={styles.coverPhotoText}>Cover Photo</Text>
             </View>
           )}
@@ -343,30 +350,36 @@ export default function CardDisplay({ user, children }) {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            {user?.avatar?.url ? (
+            {businessCard?.profile_image ? (
               <Image
-                source={{ uri: user.avatar.url }}
+                source={{ uri: businessCard.profile_image }}
                 style={styles.avatarImage}
               />
             ) : (
-              <Ionicons
+              <MaterialIcons
                 name='person'
-                size={35}
+                size={40}
                 color='#ccc'
               />
             )}
           </View>
+
           <Text style={styles.username}>
-            {user?.username || user?.name || "VENKAT VIVEK BOYIDAPU"}
+            {businessCard?.name || "Name not provided"}
           </Text>
           <Text style={styles.profession}>
-            {user?.businessName || user?.profession || "React Native Developer"}
+            {businessCard?.role || businessCard?.company || "Professional"}
           </Text>
+
           <View style={styles.locationContainer}>
-            <Text style={styles.location}>{user?.location || "VIEK"}</Text>
-            <Text style={styles.locationSubtext}>
-              {user?.locationDetails || "test"}
+            <Text style={styles.location}>
+              {businessCard?.address || "Location not provided"}
             </Text>
+            {businessCard?.business_description && (
+              <Text style={styles.locationSubtext}>
+                {businessCard.business_description}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -375,17 +388,18 @@ export default function CardDisplay({ user, children }) {
           <TouchableOpacity
             style={styles.shareButton}
             onPress={handleShare}>
-            <Ionicons
-              name='share-social'
+            <MaterialIcons
+              name='share'
               size={16}
               color='#fff'
             />
             <Text style={styles.buttonText}>Share</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.qrButton}
             onPress={handleQRCode}>
-            <Ionicons
+            <MaterialIcons
               name='qr-code'
               size={16}
               color='#2196F3'
@@ -407,7 +421,7 @@ export default function CardDisplay({ user, children }) {
         </View>
 
         {/* Tab Content */}
-        {renderTabContent()}
+        <View style={styles.tabContent}>{renderTabContent()}</View>
       </View>
     </View>
   )
@@ -418,6 +432,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     gap: 20,
+  },
+  galleryImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 15,
+  },
+
+  noDataText: {
+    fontSize: 14,
+    color: "#999",
+    fontStyle: "italic",
+    textAlign: "center",
+    paddingVertical: 20,
   },
   mainContainer: {
     width: "100%",

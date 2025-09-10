@@ -2,7 +2,7 @@ import React from "react"
 import { createStackNavigator } from "@react-navigation/stack"
 import { useAuth } from "../context/AuthContext"
 import AuthNavigator from "./AuthNavigator"
-import DrawerNavigator from "./DrawerNavigator"
+import BottomTabNavigator from "./BottomTabNavigator"
 import { ActivityIndicator, View } from "react-native"
 
 const Stack = createStackNavigator()
@@ -26,7 +26,7 @@ export default function AppNavigator() {
       {user ? (
         <Stack.Screen
           name='Main'
-          component={DrawerNavigator}
+          component={BottomTabNavigator}
         />
       ) : (
         <Stack.Screen

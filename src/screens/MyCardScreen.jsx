@@ -17,36 +17,59 @@ import { COLORS } from "../utils/constants"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
-  const [data, setData] = useState([])
-  const [isEditing, setIsEditing] = useState(!user?.isProfileComplete)
-  const [loading, setLoading] = useState(false)
+  const [businessCard, setBusinessCard] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await cardAPI.getMyCard()
-  //       setData(response.data)
-  //     } catch (error) {
-  //       Alert.alert("Error", "Failed to fetch my card")
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   }
+  useEffect(() => {
+    fetchBusinessCard()
+  }, [])
 
-  //   fetchData()
-  // }, [data])
+  const fetchBusinessCard = async () => {
+    try {
+      setLoading(true)
+      // Using the new API endpoint
+      const response = await cardAPI.getUserBusinessCards()
+      if (
+        response.data.businessCards &&
+        response.data.businessCards.length > 0
+      ) {
+        setBusinessCard(response.data.businessCards[0]) // Get the first business card
+        setIsEditing(false)
+      } else {
+        setIsEditing(true) // No business card exists, show form
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch business card")
+      setIsEditing(true)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSave = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      const response = await userAPI.updateProfile(formData, imageFiles)
-      updateUser(response.data.user)
-      setIsEditing(false)
-      Alert.alert("Success", "Profile updated successfully!")
+      let response
+      if (businessCard) {
+        // Update existing business card
+        response = await cardAPI.updateBusinessCard(
+          businessCard._id,
+          formData,
+          imageFiles
+        )
+      } else {
+        // Create new business card
+        response = await cardAPI.createBusinessCard(formData, imageFiles)
+      }
+
+      // Refresh the business card data
+      await fetchBusinessCard()
+      Alert.alert("Success", "Business card saved successfully!")
     } catch (error) {
       Alert.alert(
         "Error",
-        error.response?.data?.message || "Failed to update profile"
+        error.response?.data?.message || "Failed to save business card"
       )
     } finally {
       setLoading(false)
@@ -68,81 +91,81 @@ export default function MyCardScreen() {
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
-              name='badge'
+              name='credit-card'
               size={28}
-              color='#2196F3'
+              color='#1a1a1a'
               style={styles.titleIcon}
             />
-            <Text style={styles.headerTitle}>My Digital Business Card</Text>
+            <Text style={styles.headerTitle}>My Card</Text>
           </View>
           <Text style={styles.subtitle}>
-            {user?.isProfileComplete
-              ? "Your personal business card"
-              : "Complete your profile to get started"}
+            {businessCard
+              ? "Your digital business card"
+              : "Create your business card to get started"}
           </Text>
         </View>
       </View>
 
       {/* Content Section */}
-      <View style={styles.contentWrapper}>
-        <ScrollView style={styles.scrollContent}>
-          <View style={styles.dataContainer}>
-            {isEditing ? (
-              <View style={styles.formContainer}>
-                <View style={styles.formHeader}>
-                  <MaterialIcons
-                    name='edit'
-                    size={24}
-                    color='#2196F3'
-                  />
-                  <Text style={styles.formTitle}>
-                    {user?.isProfileComplete
-                      ? "Edit Your Card"
-                      : "Create Your Card"}
-                  </Text>
-                </View>
-                <CardForm
-                  onSave={handleSave}
-                  onCancel={() => setIsEditing(false)}
-                  showCancel={user?.isProfileComplete}
-                  initialData={user}
+      <ScrollView
+        style={styles.contentWrapper}
+        contentContainerStyle={styles.scrollContent}>
+        <View style={styles.dataContainer}>
+          {isEditing ? (
+            <View style={styles.formContainer}>
+              <View style={styles.formHeader}>
+                <MaterialIcons
+                  name='edit'
+                  size={24}
+                  color='#2196F3'
                 />
+                <Text style={styles.formTitle}>
+                  {businessCard
+                    ? "Edit Your Business Card"
+                    : "Create Your Business Card"}
+                </Text>
               </View>
-            ) : (
-              <>
-                {/* Card Display Section */}
-                <View style={styles.cardContainer}>
-                  <CardDisplay user={data} />
-                </View>
+              <CardForm
+                onSave={handleSave}
+                onCancel={() => setIsEditing(false)}
+                showCancel={!!businessCard}
+                initialData={businessCard}
+              />
+            </View>
+          ) : (
+            <>
+              {/* Card Display Section */}
+              <View style={styles.cardContainer}>
+                <CardDisplay businessCard={businessCard} />
+              </View>
 
-                {/* Quick Actions Section */}
-                <View style={styles.actionsContainer}>
-                  <View style={styles.actionsHeader}>
-                    <MaterialIcons
-                      name='flash-on'
-                      size={20}
-                      color='#2196F3'
-                    />
-                    <Text style={styles.actionsTitle}>Quick Actions</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={handleEdit}>
-                    <View style={styles.editButtonContent}>
-                      <MaterialIcons
-                        name='edit'
-                        size={18}
-                        color='#fff'
-                      />
-                      <Text style={styles.editButtonText}>Edit Card</Text>
-                    </View>
-                  </TouchableOpacity>
+              {/* Quick Actions Section */}
+              <View style={styles.actionsContainer}>
+                <View style={styles.actionsHeader}>
+                  <MaterialIcons
+                    name='flash-on'
+                    size={20}
+                    color='#374151'
+                  />
+                  <Text style={styles.actionsTitle}>Quick Actions</Text>
                 </View>
-              </>
-            )}
-          </View>
-        </ScrollView>
-      </View>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={handleEdit}>
+                  <View style={styles.editButtonContent}>
+                    <MaterialIcons
+                      name='edit'
+                      size={20}
+                      color={COLORS.white}
+                    />
+                    <Text style={styles.editButtonText}>Edit Card</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
+      </ScrollView>
     </View>
   )
 }
@@ -151,7 +174,8 @@ export default function MyCardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: COLORS.white,
+    paddingTop: 40,
   },
   headerContainer: {
     backgroundColor: COLORS.white,
@@ -194,7 +218,7 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: COLORS.white,
   },
   scrollContent: {
     paddingBottom: 30,

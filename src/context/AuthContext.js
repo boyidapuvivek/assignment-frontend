@@ -102,16 +102,32 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const loginWithToken = async (token, userData) => {
+  const googleLogin = async (code, state) => {
     try {
-      await AsyncStorage.setItem("token", token)
-      await AsyncStorage.setItem("user", JSON.stringify(userData))
-      setToken(token)
-      setUser(userData)
-      return { success: true }
+      const response = await authAPI.googleCallback(code, state)
+      console.log("Google login response:", response)
+
+      if (response.data?.token && response.data?.user) {
+        const { token: newToken, user: userData } = response.data
+
+        await AsyncStorage.setItem("token", newToken)
+        await AsyncStorage.setItem("user", JSON.stringify(userData))
+        setToken(newToken)
+        setUser(userData)
+
+        return { success: true }
+      }
+
+      return {
+        success: false,
+        message: response.data?.message || "Google login failed",
+      }
     } catch (error) {
-      console.error("Token login error:", error)
-      return { success: false, message: "Failed to authenticate with token" }
+      console.error("Google login error:", error)
+      return {
+        success: false,
+        message: error.response?.data?.message || "Google login failed",
+      }
     }
   }
 
@@ -140,7 +156,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     verifyOTPAndLogin,
-    loginWithToken,
+    googleLogin,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -78,7 +78,6 @@ export const authAPI = {
   forgotPassword: (email, newPassword) => {
     return api.post("/auth/forgot-password", { email, newPassword })
   },
-
   // OTP APIs
   sendOTP: (name, email, password) => {
     return api.post("/auth/send-otp", { name, email, password })
@@ -91,6 +90,14 @@ export const authAPI = {
   },
   resendOTP: (email) => {
     return api.post("/auth/send-otp", { email })
+  },
+  // Updated Google Auth APIs
+  googleCallback: (code, state) => {
+    return api.post("/auth/google/callback", { code, state })
+  },
+  // New mobile Google auth endpoint
+  googleMobileAuth: (authCode) => {
+    return api.post("/auth/google/mobile", { code: authCode })
   },
 }
 
@@ -123,8 +130,8 @@ export const cardAPI = {
   getTeamCards: () => {
     return api.get("/cards/team")
   },
-  getBusinessCards: () => {
-    return api.get("/cards/business")
+  getUserBusinessCards: () => {
+    return api.get("/business-cards/user")
   },
   createTeamCard: (data, imageFiles = {}) => {
     const hasImages = Object.keys(imageFiles).some((key) => imageFiles[key])

@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "business-card-app",
-    "slug": "business-card-app",
+    "name": "connectree",
+    "slug": "connectree",
+    "scheme": "com.connectree.mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,6 +31,7 @@
       "eas": {
         "projectId": "a18b2cdf-fd7e-4efc-b450-606c5cca0820"
       }
-    }
+    },
+    "plugins": ["expo-web-browser"]
   }
 }

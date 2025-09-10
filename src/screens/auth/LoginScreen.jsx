@@ -9,14 +9,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { authAPI } from "../../utils/api"
+import { makeRedirectUri, useAuthRequest } from "expo-auth-session"
+import * as WebBrowser from "expo-web-browser"
 import Logo from "../../../assets/logo.svg"
 import Google from "../../../assets/icons/google_icon.svg"
 import { COLORS } from "../../utils/constants"
+
+// This is required for web browser to close properly
+WebBrowser.maybeCompleteAuthSession()
+
+// Google OAuth discovery endpoints
+const discovery = {
+  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+}
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true)
@@ -32,9 +45,85 @@ export default function LoginScreen() {
     newPassword: "",
   })
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
 
-  const { login, register } = useAuth()
+  const { login, register, googleLogin } = useAuth()
   const navigation = useNavigation()
+
+  // Google OAuth setup
+  const redirectUri = makeRedirectUri({
+    scheme: "businesscardapp", // Your existing scheme
+    path: "auth",
+  })
+
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId:
+        process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
+        "927800798267-osn2cmpqovt0rnmh6aspnrte5clf54o4.apps.googleusercontent.com",
+      scopes: ["openid", "profile", "email"],
+      redirectUri,
+      responseType: "code", // Use authorization code flow for better security
+    },
+    discovery
+  )
+
+  // Handle Google OAuth response
+  useEffect(() => {
+    if (response?.type === "success") {
+      handleGoogleAuthSuccess(response.params.code)
+    } else if (response?.type === "error") {
+      console.error("Google auth error:", response.error)
+      Alert.alert(
+        "Login Error",
+        response.error?.message || "Google authentication failed"
+      )
+      setGoogleLoading(false)
+    } else if (response?.type === "dismiss" || response?.type === "cancel") {
+      console.log("Google auth cancelled")
+      setGoogleLoading(false)
+    }
+  }, [response])
+
+  const handleGoogleAuthSuccess = async (authCode) => {
+    try {
+      console.log("Received auth code:", authCode)
+
+      // Send authorization code to backend
+      const result = await authAPI.googleMobileAuth(authCode)
+
+      if (result.data.success) {
+        // Use existing googleLogin function from AuthContext
+        const loginResult = await googleLogin(
+          result.data.token,
+          result.data.user
+        )
+
+        if (loginResult.success) {
+          console.log("Google login successful")
+          // Navigation will be handled by AuthContext
+        } else {
+          Alert.alert(
+            "Login Error",
+            loginResult.message || "Failed to complete Google login"
+          )
+        }
+      } else {
+        Alert.alert(
+          "Login Error",
+          result.data.message || "Google authentication failed"
+        )
+      }
+    } catch (error) {
+      console.error("Google auth backend error:", error)
+      Alert.alert(
+        "Login Error",
+        error.response?.data?.message || "Failed to authenticate with server"
+      )
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
 
   const handleSubmit = async () => {
     if (isForgotPassword) {
@@ -78,7 +167,7 @@ export default function LoginScreen() {
       if (!result.success) {
         Alert.alert("Error", result.message)
       }
-      // If login is successful, user state will be updated automatically
+      // If login is successful, user state will be updated automatically and navigation will happen
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.")
     } finally {
@@ -94,7 +183,6 @@ export default function LoginScreen() {
         formData.email,
         formData.password
       )
-
       if (result.success && result.requiresOTP) {
         // Navigate to OTP screen after successful OTP send
         navigation.navigate("OTPScreen", {
@@ -120,7 +208,6 @@ export default function LoginScreen() {
         formData.email,
         formData.newPassword
       )
-
       Alert.alert(
         "Success",
         "Password updated successfully! You can now login with your new password.",
@@ -150,13 +237,31 @@ export default function LoginScreen() {
     }
   }
 
-  const updateFormData = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleGoogleLogin = async () => {
+    if (!request) {
+      Alert.alert("Error", "Google sign-in is not ready yet. Please try again.")
+      return
+    }
+
+    setGoogleLoading(true)
+
+    try {
+      console.log("Starting Google OAuth flow with redirect URI:", redirectUri)
+      // This will trigger the Google sign-in flow
+      await promptAsync()
+      // Response will be handled in useEffect
+    } catch (error) {
+      console.error("Google sign-in error:", error)
+      Alert.alert(
+        "Login Error",
+        error.message || "Failed to start Google sign-in"
+      )
+      setGoogleLoading(false)
+    }
   }
 
-  const handleGoogleLogin = () => {
-    // Implement Google login logic here
-    Alert.alert("Info", "Google login functionality to be implemented")
+  const updateFormData = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const switchToLogin = () => {
@@ -187,17 +292,20 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps='handled'>
         {/* Header with Logo */}
         <View style={styles.header}>
           <Logo
-            width={120}
-            height={40}
+            width={150}
+            height={50}
           />
         </View>
 
         {/* Main Card */}
         <View style={styles.card}>
+          {/* Card Header */}
           <View style={styles.cardHeader}>
             <Text style={styles.welcomeTitle}>Welcome to Connectree</Text>
             <Text style={styles.subtitle}>
@@ -233,6 +341,7 @@ export default function LoginScreen() {
                 <Text style={styles.inputLabel}>Full Name</Text>
                 <TextInput
                   style={styles.input}
+                  placeholder='Enter your full name'
                   value={formData.username}
                   onChangeText={(value) => updateFormData("username", value)}
                   autoCapitalize='words'
@@ -244,6 +353,7 @@ export default function LoginScreen() {
               <Text style={styles.inputLabel}>Email</Text>
               <TextInput
                 style={styles.input}
+                placeholder='Enter your email'
                 value={formData.email}
                 onChangeText={(value) => updateFormData("email", value)}
                 keyboardType='email-address'
@@ -257,6 +367,7 @@ export default function LoginScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
+                    placeholder='Enter your password'
                     value={formData.password}
                     onChangeText={(value) => updateFormData("password", value)}
                     secureTextEntry={!showPassword}
@@ -280,6 +391,7 @@ export default function LoginScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
+                    placeholder='Confirm your password'
                     value={formData.confirmPassword}
                     onChangeText={(value) =>
                       updateFormData("confirmPassword", value)
@@ -304,6 +416,7 @@ export default function LoginScreen() {
                 <Text style={styles.inputLabel}>New Password</Text>
                 <TextInput
                   style={styles.input}
+                  placeholder='Enter your new password'
                   value={formData.newPassword}
                   onChangeText={(value) => updateFormData("newPassword", value)}
                   secureTextEntry
@@ -313,13 +426,14 @@ export default function LoginScreen() {
 
             {/* Terms of Service Checkbox for Registration */}
             {!isLogin && !isForgotPassword && (
-              <View style={styles.checkboxContainer}>
-                <TouchableOpacity
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setAgreeToTerms(!agreeToTerms)}>
+                <View
                   style={[
                     styles.checkbox,
                     agreeToTerms && styles.checkboxChecked,
-                  ]}
-                  onPress={() => setAgreeToTerms(!agreeToTerms)}>
+                  ]}>
                   {agreeToTerms && (
                     <Ionicons
                       name='checkmark'
@@ -327,19 +441,25 @@ export default function LoginScreen() {
                       color='#fff'
                     />
                   )}
-                </TouchableOpacity>
+                </View>
                 <Text style={styles.checkboxText}>
                   I agree to the{" "}
                   <Text style={styles.linkText}>Terms of Service</Text>
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
 
             {/* Main Action Button */}
             <TouchableOpacity
-              style={[styles.mainButton, loading && styles.buttonDisabled]}
+              style={[
+                styles.mainButton,
+                (loading || (!agreeToTerms && !isLogin && !isForgotPassword)) &&
+                  styles.buttonDisabled,
+              ]}
               onPress={handleSubmit}
-              disabled={loading}>
+              disabled={
+                loading || (!agreeToTerms && !isLogin && !isForgotPassword)
+              }>
               <Text style={styles.mainButtonText}>
                 {loading
                   ? "Please wait..."
@@ -356,13 +476,26 @@ export default function LoginScreen() {
               <>
                 <Text style={styles.continueWithText}>CONTINUE WITH</Text>
                 <TouchableOpacity
-                  style={styles.googleButton}
-                  onPress={handleGoogleLogin}>
-                  <Google
-                    width={20}
-                    height={20}
-                  />
-                  <Text style={styles.googleButtonText}>Google</Text>
+                  style={[
+                    styles.googleButton,
+                    googleLoading && styles.buttonDisabled,
+                  ]}
+                  onPress={handleGoogleLogin}
+                  disabled={!request || googleLoading}>
+                  {googleLoading ? (
+                    <ActivityIndicator
+                      size='small'
+                      color='#666'
+                    />
+                  ) : (
+                    <Google
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                  <Text style={styles.googleButtonText}>
+                    {googleLoading ? "Connecting..." : "Google"}
+                  </Text>
                 </TouchableOpacity>
               </>
             )}
@@ -371,8 +504,8 @@ export default function LoginScreen() {
             <View style={styles.footer}>
               {isLogin && !isForgotPassword && (
                 <TouchableOpacity onPress={() => setIsForgotPassword(true)}>
-                  <Text style={styles.footerText}>
-                    <Text style={styles.linkText}>Forgot Password?</Text>
+                  <Text style={[styles.footerText, styles.linkText]}>
+                    Forgot Password?
                   </Text>
                 </TouchableOpacity>
               )}
@@ -392,8 +525,8 @@ export default function LoginScreen() {
 
               {isForgotPassword && (
                 <TouchableOpacity onPress={switchToLogin}>
-                  <Text style={styles.footerText}>
-                    <Text style={styles.linkText}>Back to Login</Text>
+                  <Text style={[styles.footerText, styles.linkText]}>
+                    Back to Login
                   </Text>
                 </TouchableOpacity>
               )}

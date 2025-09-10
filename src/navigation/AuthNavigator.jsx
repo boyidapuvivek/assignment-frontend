@@ -3,27 +3,27 @@ import { createStackNavigator } from "@react-navigation/stack"
 import LoginScreen from "../screens/auth/LoginScreen"
 import OTPScreen from "../screens/auth/OTPScreen"
 
-const AuthStack = createStackNavigator()
+const Stack = createStackNavigator()
 
 export default function AuthNavigator() {
   return (
-    <AuthStack.Navigator
+    <Stack.Navigator
       initialRouteName='Login'
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
       }}>
-      <AuthStack.Screen
+      <Stack.Screen
         name='Login'
         component={LoginScreen}
       />
-      <AuthStack.Screen
+      <Stack.Screen
         name='OTPScreen'
         component={OTPScreen}
         options={{
           gestureEnabled: true,
         }}
       />
-    </AuthStack.Navigator>
+    </Stack.Navigator>
   )
 }
