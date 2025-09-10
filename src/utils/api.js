@@ -204,3 +204,28 @@ export const cardAPI = {
     return api.delete(`/cards/business/${id}`)
   },
 }
+
+// Add this to your existing API utility file
+export const teamAPI = {
+  // Get all team cards
+  getTeamCards: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/team-card`)
+      return response
+    } catch (error) {
+      console.error("Error fetching team cards:", error)
+      throw error
+    }
+  },
+
+  // Delete team card (if you implement this endpoint later)
+  deleteTeamCard: async (cardId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/team-card/${cardId}`)
+      return response
+    } catch (error) {
+      console.error("Error deleting team card:", error)
+      throw error
+    }
+  },
+}
