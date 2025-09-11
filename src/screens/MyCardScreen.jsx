@@ -30,16 +30,16 @@ export default function MyCardScreen() {
   const fetchBusinessCard = async () => {
     try {
       setLoading(true)
-      // Using the new API endpoint
+
       const response = await cardAPI.getUserBusinessCards()
       if (
         response.data.businessCards &&
         response.data.businessCards.length > 0
       ) {
-        setBusinessCard(response.data.businessCards[0]) // Get the first business card
+        setBusinessCard(response.data.businessCards[0])
         setIsEditing(false)
       } else {
-        setIsEditing(true) // No business card exists, show form
+        setIsEditing(true)
       }
     } catch (error) {
       Alert.alert("Error", "Failed to fetch business card")
@@ -82,14 +82,6 @@ export default function MyCardScreen() {
     setIsEditing(true)
   }
 
-  const handleLogout = () => {
-    updateUser("")
-  }
-
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <View style={styles.container}>
       {/* Header Section */}
@@ -108,75 +100,70 @@ export default function MyCardScreen() {
       </View>
 
       {/* Content Section */}
-      <ScrollView
-        style={styles.contentWrapper}
-        contentContainerStyle={styles.scrollContent}>
-        <View style={styles.dataContainer}>
-          {isEditing ? (
-            <View style={styles.formContainer}>
-              <View style={styles.formHeader}>
-                <MaterialIcons
-                  name='edit'
-                  size={24}
-                  color='#2196F3'
-                />
-                <Text style={styles.formTitle}>
-                  {businessCard
-                    ? "Edit Your Business Card"
-                    : "Create Your Business Card"}
-                </Text>
-              </View>
-              <CardForm
-                onSave={handleSave}
-                onCancel={() => setIsEditing(false)}
-                showCancel={!!businessCard}
-                initialData={businessCard}
-              />
-            </View>
-          ) : (
-            <>
-              {/* Card Display Section */}
-              <View style={styles.cardContainer}>
-                <CardDisplay businessCard={businessCard} />
-              </View>
-
-              {/* Quick Actions Section */}
-              <View style={styles.actionsContainer}>
-                <View style={styles.actionsHeader}>
+      {!loading ? (
+        <ScrollView
+          style={styles.contentWrapper}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.dataContainer}>
+            {businessCard.length === 0 || isEditing ? (
+              <View style={styles.formContainer}>
+                <View style={styles.formHeader}>
                   <MaterialIcons
-                    name='flash-on'
-                    size={20}
-                    color='#374151'
+                    name='edit'
+                    size={24}
+                    color='#2196F3'
                   />
-                  <Text style={styles.actionsTitle}>Quick Actions</Text>
+                  <Text style={styles.formTitle}>
+                    {businessCard
+                      ? "Edit Your Business Card"
+                      : "Create Your Business Card"}
+                  </Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.editButton}
-                  onPress={handleEdit}>
-                  <View style={styles.editButtonContent}>
-                    <MaterialIcons
-                      name='edit'
-                      size={20}
-                      color={COLORS.white}
-                    />
-                    <Text style={styles.editButtonText}>Edit Card</Text>
-                  </View>
-                </TouchableOpacity>
+                <CardForm
+                  onSave={handleSave}
+                  onCancel={() => setIsEditing(false)}
+                  showCancel={!!businessCard}
+                  initialData={businessCard}
+                />
               </View>
-            </>
-          )}
-        </View>
-      </ScrollView>
+            ) : (
+              <>
+                {/* Card Display Section */}
+                <View style={styles.cardContainer}>
+                  <CardDisplay businessCard={businessCard} />
+                </View>
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: COLORS.warning,
-
-          alignItems: "center",
-        }}
-        onPress={handleLogout}>
-        <Text style={{ color: COLORS.text }}>Logout</Text>
-      </TouchableOpacity>
+                {/* Quick Actions Section */}
+                <View style={styles.actionsContainer}>
+                  <View style={styles.actionsHeader}>
+                    <MaterialIcons
+                      name='flash-on'
+                      size={20}
+                      color='#374151'
+                    />
+                    <Text style={styles.actionsTitle}>Quick Actions</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={handleEdit}>
+                    <View style={styles.editButtonContent}>
+                      <MaterialIcons
+                        name='edit'
+                        size={20}
+                        color={COLORS.white}
+                      />
+                      <Text style={styles.editButtonText}>Edit Card</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </ScrollView>
+      ) : (
+        <LoadingSpinner />
+      )}
     </View>
   )
 }
@@ -191,14 +178,6 @@ const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: COLORS.white,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1,
   },
   header: {
     paddingHorizontal: 20,

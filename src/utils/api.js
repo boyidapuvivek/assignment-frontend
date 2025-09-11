@@ -99,6 +99,19 @@ export const authAPI = {
   googleMobileAuth: (authCode) => {
     return api.post("/auth/google/mobile", { code: authCode })
   },
+  getProfile: async (token) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response
+    } catch (error) {
+      console.error("Error fetching profile:", error)
+      throw error
+    }
+  },
 }
 
 // User API

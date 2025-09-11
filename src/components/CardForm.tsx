@@ -54,12 +54,12 @@ const CardForm: React.FC<CardFormProps> = ({
   title = "Edit Card",
 }) => {
   const [formData, setFormData] = useState<FormData>({
-    phoneNumber: initialData.phoneNumber || "",
-    businessEmail: initialData.businessEmail || "",
-    businessNumber: initialData.businessNumber || "",
-    businessDescription: initialData.businessDescription || "",
-    location: initialData.location || "",
-    businessName: initialData.businessName || "",
+    phoneNumber: initialData?.phoneNumber || "",
+    businessEmail: initialData?.businessEmail || "",
+    businessNumber: initialData?.businessNumber || "",
+    businessDescription: initialData?.businessDescription || "",
+    location: initialData?.location || "",
+    businessName: initialData?.businessName || "",
   })
 
   const [createData, setCreateData] = useState<CreateData>({
@@ -68,8 +68,8 @@ const CardForm: React.FC<CardFormProps> = ({
   })
 
   const [images, setImages] = useState<Images>({
-    avatar: initialData.avatar?.url || null,
-    coverImage: initialData.coverImage?.url || null,
+    avatar: initialData?.avatar?.url || "",
+    coverImage: initialData?.coverImage?.url || "",
   })
 
   const [imageFiles, setImageFiles] = useState<ImageFiles>({

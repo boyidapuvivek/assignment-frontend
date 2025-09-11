@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native"
 import { FormData, AuthFormProps } from "../../types/auth"
+import { COLORS } from "../../utils/constants"
 
 interface ForgotPasswordFormProps extends AuthFormProps {
   onBackToLogin: () => void
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     backgroundColor: "#fff",
+    color: COLORS.text,
   },
   mainButton: {
     backgroundColor: "#4A90E2",

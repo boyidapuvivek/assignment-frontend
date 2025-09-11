@@ -9,6 +9,7 @@ import {
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { FormData, AuthFormProps } from "../../types/auth"
+import { COLORS } from "../../utils/constants"
 
 const RegisterForm: React.FC<AuthFormProps> = ({
   onSubmit,
@@ -198,6 +199,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+    color: COLORS.text,
   },
   eyeIcon: {
     paddingHorizontal: 16,

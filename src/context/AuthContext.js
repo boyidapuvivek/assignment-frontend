@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState(null)
 
   useEffect(() => {
     checkAuthState()
@@ -25,14 +26,34 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedToken = await AsyncStorage.getItem("token")
       const storedUser = await AsyncStorage.getItem("user")
+
       if (storedToken && storedUser) {
         setToken(storedToken)
         setUser(JSON.parse(storedUser))
+        // Fetch fresh profile data
+        await fetchProfile(storedToken)
       }
     } catch (error) {
       console.error("Auth state check error:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchProfile = async (authToken = null) => {
+    try {
+      const tokenToUse = authToken || token
+      if (!tokenToUse) return
+
+      const response = await authAPI.getProfile(tokenToUse)
+      if (response.data?.user) {
+        setProfile(response.data)
+        // Update user data as well
+        setUser(response.data.user)
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user))
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error)
     }
   }
 
@@ -44,8 +65,13 @@ export const AuthProvider = ({ children }) => {
 
       await AsyncStorage.setItem("token", newToken)
       await AsyncStorage.setItem("user", JSON.stringify(userData))
+
       setToken(newToken)
       setUser(userData)
+
+      // Fetch profile data after login
+      await fetchProfile(newToken)
+
       return { success: true }
     } catch (error) {
       return {
@@ -84,8 +110,12 @@ export const AuthProvider = ({ children }) => {
 
         await AsyncStorage.setItem("token", newToken)
         await AsyncStorage.setItem("user", JSON.stringify(userData))
+
         setToken(newToken)
         setUser(userData)
+
+        // Fetch profile data after verification
+        await fetchProfile(newToken)
 
         return { success: true }
       }
@@ -112,8 +142,12 @@ export const AuthProvider = ({ children }) => {
 
         await AsyncStorage.setItem("token", newToken)
         await AsyncStorage.setItem("user", JSON.stringify(userData))
+
         setToken(newToken)
         setUser(userData)
+
+        // Fetch profile data after Google login
+        await fetchProfile(newToken)
 
         return { success: true }
       }
@@ -137,6 +171,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.removeItem("user")
       setToken(null)
       setUser(null)
+      setProfile(null)
     } catch (error) {
       console.error("Logout error:", error)
     }
@@ -151,12 +186,14 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     loading,
+    profile,
     login,
     register,
     logout,
     updateUser,
     verifyOTPAndLogin,
     googleLogin,
+    fetchProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

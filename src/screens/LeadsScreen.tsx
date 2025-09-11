@@ -15,6 +15,7 @@ import { useAuth } from "../context/AuthContext"
 import LeadCard from "../components/LeadCard"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
+import Header from "../components/Header"
 
 interface Lead {
   _id: string
@@ -186,13 +187,10 @@ export default function LeadsScreen() {
     </TouchableOpacity>
   )
 
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <View style={styles.container}>
       {/* Header Section */}
+      <Header />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
@@ -213,179 +211,183 @@ export default function LeadsScreen() {
       </View>
 
       {/* Content Section */}
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[COLORS.primary]}
-            tintColor={COLORS.primary}
-          />
-        }
-        showsVerticalScrollIndicator={false}>
-        <View style={styles.contentContainer}>
-          {/* Stats Cards */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statsRow}>
-              <StatCard
-                title='Total Leads'
-                count={stats.total}
-                icon='people'
-                color='#3B82F6'
-                onPress={() => {
-                  setSelectedFilter("all")
-                  setSearchQuery("")
-                }}
-              />
-              <StatCard
-                title='Contacted'
-                count={stats.contacted}
-                icon='phone'
-                color='#10B981'
-                onPress={() => {
-                  setSelectedFilter("contacted")
-                  setSearchQuery("")
-                }}
-              />
+      {!loading ? (
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[COLORS.primary]}
+              tintColor={COLORS.primary}
+            />
+          }
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.contentContainer}>
+            {/* Stats Cards */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statsRow}>
+                <StatCard
+                  title='Total Leads'
+                  count={stats.total}
+                  icon='people'
+                  color='#3B82F6'
+                  onPress={() => {
+                    setSelectedFilter("all")
+                    setSearchQuery("")
+                  }}
+                />
+                <StatCard
+                  title='Contacted'
+                  count={stats.contacted}
+                  icon='phone'
+                  color='#10B981'
+                  onPress={() => {
+                    setSelectedFilter("contacted")
+                    setSearchQuery("")
+                  }}
+                />
+              </View>
+              <View style={styles.statsRow}>
+                <StatCard
+                  title='Pending'
+                  count={stats.pending}
+                  icon='schedule'
+                  color='#F59E0B'
+                  onPress={() => {
+                    setSelectedFilter("pending")
+                    setSearchQuery("")
+                  }}
+                />
+                <StatCard
+                  title='Completed'
+                  count={stats.completed}
+                  icon='check-circle'
+                  color='#EF4444'
+                  onPress={() => {
+                    setSelectedFilter("completed")
+                    setSearchQuery("")
+                  }}
+                />
+              </View>
             </View>
-            <View style={styles.statsRow}>
-              <StatCard
-                title='Pending'
-                count={stats.pending}
-                icon='schedule'
-                color='#F59E0B'
-                onPress={() => {
-                  setSelectedFilter("pending")
-                  setSearchQuery("")
-                }}
-              />
-              <StatCard
-                title='Completed'
-                count={stats.completed}
-                icon='check-circle'
-                color='#EF4444'
-                onPress={() => {
-                  setSelectedFilter("completed")
-                  setSearchQuery("")
-                }}
-              />
-            </View>
-          </View>
 
-          {/* Search and Filter Section */}
-          <View style={styles.searchFilterContainer}>
-            <View style={styles.searchContainer}>
-              <Ionicons
-                name='search'
-                size={20}
-                color='#666'
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder='Search leads by name, email, or company...'
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor='#999'
-              />
-              {searchQuery.length > 0 && (
+            {/* Search and Filter Section */}
+            <View style={styles.searchFilterContainer}>
+              <View style={styles.searchContainer}>
+                <Ionicons
+                  name='search'
+                  size={20}
+                  color='#666'
+                  style={styles.searchIcon}
+                />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder='Search leads by name, email, or company...'
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor='#999'
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setSearchQuery("")}
+                    style={styles.clearButton}>
+                    <Ionicons
+                      name='close-circle'
+                      size={20}
+                      color='#666'
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View style={styles.filterContainer}>
                 <TouchableOpacity
-                  onPress={() => setSearchQuery("")}
-                  style={styles.clearButton}>
-                  <Ionicons
-                    name='close-circle'
+                  style={styles.filterButton}
+                  onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+                  activeOpacity={0.7}>
+                  <MaterialIcons
+                    name='filter-list'
                     size={20}
-                    color='#666'
+                    color={COLORS.primary}
+                  />
+                  <Text style={styles.filterButtonText}>
+                    {
+                      filterOptions.find((opt) => opt.value === selectedFilter)
+                        ?.label
+                    }
+                  </Text>
+                  <MaterialIcons
+                    name={
+                      showFilterDropdown
+                        ? "keyboard-arrow-up"
+                        : "keyboard-arrow-down"
+                    }
+                    size={20}
+                    color={COLORS.primary}
                   />
                 </TouchableOpacity>
-              )}
-            </View>
 
-            <View style={styles.filterContainer}>
-              <TouchableOpacity
-                style={styles.filterButton}
-                onPress={() => setShowFilterDropdown(!showFilterDropdown)}
-                activeOpacity={0.7}>
-                <MaterialIcons
-                  name='filter-list'
-                  size={20}
-                  color={COLORS.primary}
-                />
-                <Text style={styles.filterButtonText}>
-                  {
-                    filterOptions.find((opt) => opt.value === selectedFilter)
-                      ?.label
-                  }
-                </Text>
-                <MaterialIcons
-                  name={
-                    showFilterDropdown
-                      ? "keyboard-arrow-up"
-                      : "keyboard-arrow-down"
-                  }
-                  size={20}
-                  color={COLORS.primary}
-                />
-              </TouchableOpacity>
-
-              {showFilterDropdown && (
-                <View style={styles.filterDropdown}>
-                  {filterOptions.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[
-                        styles.filterOption,
-                        selectedFilter === option.value &&
-                          styles.selectedFilterOption,
-                      ]}
-                      onPress={() => {
-                        setSelectedFilter(option.value)
-                        setShowFilterDropdown(false)
-                      }}>
-                      <Text
+                {showFilterDropdown && (
+                  <View style={styles.filterDropdown}>
+                    {filterOptions.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
                         style={[
-                          styles.filterOptionText,
+                          styles.filterOption,
                           selectedFilter === option.value &&
-                            styles.selectedFilterOptionText,
-                        ]}>
-                        {option.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                            styles.selectedFilterOption,
+                        ]}
+                        onPress={() => {
+                          setSelectedFilter(option.value)
+                          setShowFilterDropdown(false)
+                        }}>
+                        <Text
+                          style={[
+                            styles.filterOptionText,
+                            selectedFilter === option.value &&
+                              styles.selectedFilterOptionText,
+                          ]}>
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Leads List */}
+            <View style={styles.leadsContainer}>
+              {filteredLeads.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <MaterialIcons
+                    name='inbox'
+                    size={64}
+                    color='#ccc'
+                  />
+                  <Text style={styles.emptyText}>
+                    {searchQuery || selectedFilter !== "all"
+                      ? "No leads match your search criteria"
+                      : "No leads found. Start promoting your business card to generate leads!"}
+                  </Text>
                 </View>
+              ) : (
+                filteredLeads.map((lead) => (
+                  <LeadCard
+                    key={lead._id}
+                    lead={lead}
+                    onStatusUpdate={handleStatusUpdate}
+                  />
+                ))
               )}
             </View>
           </View>
-
-          {/* Leads List */}
-          <View style={styles.leadsContainer}>
-            {filteredLeads.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <MaterialIcons
-                  name='inbox'
-                  size={64}
-                  color='#ccc'
-                />
-                <Text style={styles.emptyText}>
-                  {searchQuery || selectedFilter !== "all"
-                    ? "No leads match your search criteria"
-                    : "No leads found. Start promoting your business card to generate leads!"}
-                </Text>
-              </View>
-            ) : (
-              filteredLeads.map((lead) => (
-                <LeadCard
-                  key={lead._id}
-                  lead={lead}
-                  onStatusUpdate={handleStatusUpdate}
-                />
-              ))
-            )}
-          </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <LoadingSpinner />
+      )}
     </View>
   )
 }
@@ -398,19 +400,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: COLORS.white,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 25,
+    paddingTop: 10,
     paddingBottom: 20,
     alignItems: "center",
   },

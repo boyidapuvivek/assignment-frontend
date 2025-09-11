@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
+import Header from "../components/Header"
 
 interface TeamCard {
   _id: string
@@ -139,13 +140,10 @@ export default function TeamCardsScreen() {
     )
   }
 
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <View style={styles.container}>
       {/* Header Section */}
+      <Header />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
@@ -168,31 +166,35 @@ export default function TeamCardsScreen() {
       </View>
 
       {/* Content Section */}
-      <View style={styles.contentWrapper}>
-        <ScrollView
-          style={styles.scrollContainer}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
-            />
-          }
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.dataContainer}>
-            <CardList
-              cards={teamCards.map((card) => ({
-                id: card._id,
-                ...card,
-              }))}
-              onDelete={handleDeleteCard}
-              emptyMessage="No team cards found. Team members haven't created their cards yet."
-            />
-          </View>
-        </ScrollView>
-      </View>
+      {!loading ? (
+        <View style={styles.contentWrapper}>
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={[COLORS.primary]}
+                tintColor={COLORS.primary}
+              />
+            }
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.dataContainer}>
+              <CardList
+                cards={teamCards.map((card) => ({
+                  id: card._id,
+                  ...card,
+                }))}
+                onDelete={handleDeleteCard}
+                emptyMessage="No team cards found. Team members haven't created their cards yet."
+              />
+            </View>
+          </ScrollView>
+        </View>
+      ) : (
+        <LoadingSpinner />
+      )}
     </View>
   )
 }
@@ -205,19 +207,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: COLORS.white,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 25,
+    paddingTop: 10,
     paddingBottom: 20,
     alignItems: "center",
   },

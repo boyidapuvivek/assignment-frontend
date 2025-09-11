@@ -3,7 +3,9 @@ import { createStackNavigator } from "@react-navigation/stack"
 import { useAuth } from "../context/AuthContext"
 import AuthNavigator from "./AuthNavigator"
 import BottomTabNavigator from "./BottomTabNavigator"
+import ProfileScreen from "../screens/ProfileScreen"
 import { ActivityIndicator, View } from "react-native"
+import MyCardScreen from "../screens/MyCardScreen"
 
 const Stack = createStackNavigator()
 
@@ -13,10 +15,7 @@ export default function AppNavigator() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator
-          size='large'
-          color='#4A90E2'
-        />
+        <ActivityIndicator size='large' />
       </View>
     )
   }
@@ -24,10 +23,16 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen
-          name='Main'
-          component={BottomTabNavigator}
-        />
+        <>
+          <Stack.Screen
+            name='Main'
+            component={BottomTabNavigator}
+          />
+          <Stack.Screen
+            name='Profile'
+            component={ProfileScreen}
+          />
+        </>
       ) : (
         <Stack.Screen
           name='Auth'

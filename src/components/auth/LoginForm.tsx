@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+    color: COLORS.text,
   },
   eyeIcon: {
     paddingHorizontal: 16,

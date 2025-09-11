@@ -1,5 +1,6 @@
 import React from "react"
 import { View, ActivityIndicator, StyleSheet } from "react-native"
+import { COLORS } from "../utils/constants"
 
 const LoadingSpinner: React.FC = () => {
   return (
@@ -19,6 +20,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: COLORS.white,
   },
 })

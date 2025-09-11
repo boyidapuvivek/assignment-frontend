@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
+import Header from "../components/Header"
 
 interface SavedCard {
   _id: string
@@ -159,13 +160,10 @@ export default function SavedCardsScreen() {
     }))
   }
 
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
   return (
     <View style={styles.container}>
       {/* Header Section */}
+      <Header />
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
@@ -188,52 +186,56 @@ export default function SavedCardsScreen() {
       </View>
 
       {/* Content Section */}
-      <View style={styles.contentWrapper}>
-        <ScrollView
-          style={styles.scrollContainer}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
-            />
-          }
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.dataContainer}>
-            <CardList
-              cards={savedCards.map((card) => ({
-                id: card._id,
-                name: card.name,
-                email: card.email,
-                phone: card.phone,
-                role: card.role,
-                company: card.company,
-                business_description: card.business_description,
-                business_phone: card.business_phone,
-                business_email: card.business_email,
-                website: card.website,
-                address: card.address,
-                services: formatServicesForDisplay(card.services),
-                products: formatProductsForDisplay(card.products),
-                gallery: card.gallery,
-                business_cover_photo: card.business_cover_photo,
-                profile_image: card.profile_image,
-                theme: card.theme,
-                linkedin_url: card.linkedin_url,
-                twitter_url: card.twitter_url,
-                facebook_url: card.facebook_url,
-                instagram_url: card.instagram_url,
-                youtube_url: card.youtube_url,
-              }))}
-              onDelete={handleRemoveCard}
-              emptyMessage='No saved cards yet. Start saving interesting business cards you discover!'
-              showDeleteButton={true}
-            />
-          </View>
-        </ScrollView>
-      </View>
+      {!loading ? (
+        <View style={styles.contentWrapper}>
+          <ScrollView
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={[COLORS.primary]}
+                tintColor={COLORS.primary}
+              />
+            }
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.dataContainer}>
+              <CardList
+                cards={savedCards.map((card) => ({
+                  id: card._id,
+                  name: card.name,
+                  email: card.email,
+                  phone: card.phone,
+                  role: card.role,
+                  company: card.company,
+                  business_description: card.business_description,
+                  business_phone: card.business_phone,
+                  business_email: card.business_email,
+                  website: card.website,
+                  address: card.address,
+                  services: formatServicesForDisplay(card.services),
+                  products: formatProductsForDisplay(card.products),
+                  gallery: card.gallery,
+                  business_cover_photo: card.business_cover_photo,
+                  profile_image: card.profile_image,
+                  theme: card.theme,
+                  linkedin_url: card.linkedin_url,
+                  twitter_url: card.twitter_url,
+                  facebook_url: card.facebook_url,
+                  instagram_url: card.instagram_url,
+                  youtube_url: card.youtube_url,
+                }))}
+                onDelete={handleRemoveCard}
+                emptyMessage='No saved cards yet. Start saving interesting business cards you discover!'
+                showDeleteButton={true}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      ) : (
+        <LoadingSpinner />
+      )}
     </View>
   )
 }
@@ -246,19 +248,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: COLORS.white,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 25,
+    paddingTop: 10,
     paddingBottom: 20,
     alignItems: "center",
   },

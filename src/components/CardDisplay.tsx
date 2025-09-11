@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Linking,
+  Alert,
 } from "react-native"
 import {
   Ionicons,
@@ -23,6 +25,11 @@ interface BusinessCard {
   business_email?: string
   business_phone?: string
   website?: string
+  linkedin_url?: string
+  twitter_url?: string
+  facebook_url?: string
+  instagram_url?: string
+  youtube_url?: string
   services?: Array<{
     name: string
     description?: string
@@ -58,7 +65,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   businessCard,
   children,
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("Contact")
+  const [activeTab, setActiveTab] = useState("Contact")
 
   const TabButton: React.FC<TabButtonProps> = ({
     title,
@@ -73,6 +80,34 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       </Text>
     </TouchableOpacity>
   )
+
+  const handleSocialMediaPress = async (
+    url: string | undefined,
+    platform: string
+  ) => {
+    if (!url || url.trim() === "") {
+      Alert.alert("No Link", `No ${platform} profile linked`)
+      return
+    }
+
+    try {
+      // Check if URL starts with http/https, if not add https://
+      let formattedUrl = url
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        formattedUrl = `https://${url}`
+      }
+
+      const canOpen = await Linking.canOpenURL(formattedUrl)
+      if (canOpen) {
+        await Linking.openURL(formattedUrl)
+      } else {
+        Alert.alert("Error", `Cannot open ${platform} link`)
+      }
+    } catch (error) {
+      console.error("Error opening URL:", error)
+      Alert.alert("Error", `Failed to open ${platform} link`)
+    }
+  }
 
   const renderTabContent = (): JSX.Element | null => {
     switch (activeTab) {
@@ -167,7 +202,11 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               </View>
 
               {businessCard?.website && (
-                <View style={styles.contactItem}>
+                <TouchableOpacity
+                  style={styles.contactItem}
+                  onPress={() =>
+                    handleSocialMediaPress(businessCard.website, "Website")
+                  }>
                   <View style={styles.contactIconContainer}>
                     <Ionicons
                       name='globe'
@@ -176,74 +215,118 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                     />
                   </View>
                   <Text style={styles.contactText}>{businessCard.website}</Text>
-                </View>
+                </TouchableOpacity>
               )}
             </View>
 
             {/* Social Media Section */}
             <View style={styles.contactSection}>
               <Text style={styles.sectionTitle}>Social Media</Text>
+
               <View style={styles.socialMediaContainer}>
-                <TouchableOpacity style={styles.socialIcon}>
+                <TouchableOpacity
+                  style={styles.socialIcon}
+                  onPress={() =>
+                    handleSocialMediaPress(
+                      businessCard?.youtube_url,
+                      "Facebook"
+                    )
+                  }>
                   <View
                     style={[
                       styles.socialIconBg,
-                      { backgroundColor: "#1877f2" },
+                      { backgroundColor: "#f21818ff" },
                     ]}>
-                    <FontAwesome5
-                      name='facebook-f'
-                      size={18}
+                    <Ionicons
+                      name='logo-youtube'
+                      size={20}
                       color='#fff'
                     />
                   </View>
-                  <Text style={styles.socialLabel}>Facebook</Text>
+                  <Text style={styles.socialLabel}>Youtube</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.socialIcon}>
+                <TouchableOpacity
+                  style={styles.socialIcon}
+                  onPress={() =>
+                    handleSocialMediaPress(businessCard?.twitter_url, "Twitter")
+                  }>
                   <View
                     style={[
                       styles.socialIconBg,
-                      { backgroundColor: "#1da1f2" },
+                      { backgroundColor: "#1DA1F2" },
                     ]}>
-                    <FontAwesome5
-                      name='twitter'
-                      size={18}
+                    <Ionicons
+                      name='logo-twitter'
+                      size={20}
                       color='#fff'
                     />
                   </View>
                   <Text style={styles.socialLabel}>Twitter</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.socialIcon}>
+                <TouchableOpacity
+                  style={styles.socialIcon}
+                  onPress={() =>
+                    handleSocialMediaPress(
+                      businessCard?.linkedin_url,
+                      "LinkedIn"
+                    )
+                  }>
                   <View
                     style={[
                       styles.socialIconBg,
-                      { backgroundColor: "#0077b5" },
+                      { backgroundColor: "#0A66C2" },
                     ]}>
-                    <FontAwesome5
-                      name='linkedin-in'
-                      size={18}
+                    <Ionicons
+                      name='logo-linkedin'
+                      size={20}
                       color='#fff'
                     />
                   </View>
                   <Text style={styles.socialLabel}>LinkedIn</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.socialIcon}>
+                <TouchableOpacity
+                  style={styles.socialIcon}
+                  onPress={() =>
+                    handleSocialMediaPress(
+                      businessCard?.instagram_url,
+                      "Instagram"
+                    )
+                  }>
                   <View
                     style={[
                       styles.socialIconBg,
-                      { backgroundColor: "#e4405f" },
+                      { backgroundColor: "#E4405F" },
                     ]}>
-                    <FontAwesome5
-                      name='instagram'
-                      size={18}
+                    <Ionicons
+                      name='logo-instagram'
+                      size={20}
                       color='#fff'
                     />
                   </View>
                   <Text style={styles.socialLabel}>Instagram</Text>
                 </TouchableOpacity>
               </View>
+
+              {/* YouTube if available */}
+              {businessCard?.youtube_url && (
+                <TouchableOpacity
+                  style={styles.contactItem}
+                  onPress={() =>
+                    handleSocialMediaPress(businessCard.youtube_url, "YouTube")
+                  }>
+                  <View style={styles.contactIconContainer}>
+                    <Ionicons
+                      name='logo-youtube'
+                      size={18}
+                      color='#FF0000'
+                    />
+                  </View>
+                  <Text style={styles.contactText}>YouTube Channel</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         )
@@ -253,6 +336,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           <ScrollView style={styles.tabContent}>
             <View style={styles.contactSection}>
               <Text style={styles.sectionTitle}>Our Services</Text>
+
               {businessCard?.services && businessCard.services.length > 0 ? (
                 businessCard.services.map((service, index) => (
                   <View
@@ -261,7 +345,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                     <View style={styles.serviceHeader}>
                       <View style={styles.serviceIconContainer}>
                         <MaterialIcons
-                          name='build'
+                          name='work'
                           size={24}
                           color='#2196F3'
                         />
@@ -284,8 +368,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               )}
 
               <TouchableOpacity style={styles.inquireButton}>
-                <Ionicons
-                  name='chatbubbles'
+                <MaterialIcons
+                  name='contact-mail'
                   size={20}
                   color='#fff'
                 />
@@ -300,6 +384,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           <ScrollView style={styles.tabContent}>
             <View style={styles.contactSection}>
               <Text style={styles.sectionTitle}>Our Products</Text>
+
               {businessCard?.products && businessCard.products.length > 0 ? (
                 businessCard.products.map((product, index) => (
                   <View
@@ -324,9 +409,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                           ₹{product.price}
                         </Text>
                         <TouchableOpacity style={styles.addToCartButton}>
-                          <Ionicons
-                            name='add'
-                            size={20}
+                          <MaterialIcons
+                            name='add-shopping-cart'
+                            size={16}
                             color='#fff'
                           />
                         </TouchableOpacity>
@@ -339,8 +424,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               )}
 
               <TouchableOpacity style={styles.viewAllButton}>
-                <Feather
-                  name='package'
+                <MaterialIcons
+                  name='storefront'
                   size={20}
                   color='#2196F3'
                 />
@@ -355,6 +440,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           <ScrollView style={styles.tabContent}>
             <View style={styles.contactSection}>
               <Text style={styles.sectionTitle}>Gallery</Text>
+
               {businessCard?.gallery && businessCard.gallery.length > 0 ? (
                 <View style={styles.galleryGrid}>
                   {businessCard.gallery.map((image, index) => (
@@ -406,8 +492,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           ) : (
             <View style={styles.coverPhotoContainer}>
               {children}
-              <Ionicons
-                name='image-outline'
+              <MaterialIcons
+                name='image'
                 size={40}
                 color='#fff'
               />
@@ -423,13 +509,12 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               <Image
                 source={{ uri: businessCard.profile_image }}
                 style={styles.avatarImage}
-                resizeMode='cover'
               />
             ) : (
-              <Ionicons
+              <MaterialIcons
                 name='person'
                 size={40}
-                color='#2196F3'
+                color='#ccc'
               />
             )}
           </View>
@@ -470,7 +555,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           <TouchableOpacity
             style={styles.qrButton}
             onPress={handleQRCode}>
-            <Ionicons
+            <MaterialIcons
               name='qr-code'
               size={16}
               color='#2196F3'
@@ -500,6 +585,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
 
 export default CardDisplay
 
+// All existing styles remain the same, just adding the new social media styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -511,7 +597,6 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 15,
   },
-
   noDataText: {
     fontSize: 14,
     color: "#999",
@@ -700,18 +785,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: "500",
   },
-  noDataText: {
-    fontSize: 14,
-    color: "#999",
-    fontStyle: "italic",
-    flex: 1,
-  },
   socialMediaContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 10,
     backgroundColor: "#f8f9fa",
     borderRadius: 15,
+    marginBottom: 10,
   },
   socialIcon: {
     alignItems: "center",
