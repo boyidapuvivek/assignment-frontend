@@ -113,38 +113,42 @@ export default function BusinessCardsScreen() {
     setRefreshing(false)
   }
 
-  const handleDeleteCard = async (cardId: string) => {
-    Alert.alert(
-      "Delete Business Card",
-      "Are you sure you want to remove this business card?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // You can implement delete API call here if needed
-              // await axios.delete(`${API_BASE_URL}/business-cards/${cardId}`, {
-              //   headers: { Authorization: `Bearer ${token}` }
-              // })
+  //in future if need to delete sent this as a prop to CardList
+  //onDelete={handleDeleteCard}
+  // showDeleteButton={true}
+  //
+  // const handleDeleteCard = async (cardId: string) => {
+  //   Alert.alert(
+  //     "Delete Business Card",
+  //     "Are you sure you want to remove this business card?",
+  //     [
+  //       {
+  //         text: "Cancel",
+  //         style: "cancel",
+  //       },
+  //       {
+  //         text: "Delete",
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           try {
+  //             // You can implement delete API call here if needed
+  //             // await axios.delete(`${API_BASE_URL}/business-cards/${cardId}`, {
+  //             //   headers: { Authorization: `Bearer ${token}` }
+  //             // })
 
-              // For now, just remove from local state
-              setBusinessCards((prev) =>
-                prev.filter((card) => card._id !== cardId)
-              )
-              Alert.alert("Success", "Business card removed successfully!")
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete business card")
-            }
-          },
-        },
-      ]
-    )
-  }
+  //             // For now, just remove from local state
+  //             setBusinessCards((prev) =>
+  //               prev.filter((card) => card._id !== cardId)
+  //             )
+  //             Alert.alert("Success", "Business card removed successfully!")
+  //           } catch (error) {
+  //             Alert.alert("Error", "Failed to delete business card")
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   )
+  // }
 
   const formatServicesForDisplay = (services: BusinessCard["services"]) => {
     return services.map((service) => ({
@@ -228,9 +232,7 @@ export default function BusinessCardsScreen() {
                   instagram_url: card.instagram_url,
                   youtube_url: card.youtube_url,
                 }))}
-                onDelete={handleDeleteCard}
                 emptyMessage='No business cards found. Start exploring business opportunities by creating connections!'
-                showDeleteButton={true}
               />
             </View>
           </ScrollView>

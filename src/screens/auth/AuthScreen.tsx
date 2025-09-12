@@ -45,7 +45,7 @@ const AuthScreen: React.FC = () => {
 
   // Google OAuth setup
   const redirectUri = makeRedirectUri({
-    scheme: "businesscardapp",
+    scheme: "com.connectree.mobile",
     path: "auth",
   })
 

@@ -200,14 +200,14 @@ export const cardAPI = {
     )
     if (hasImages) {
       const formData = createFormData(data, imageFiles)
-      return api.put(`/cards/business/${id}`, formData, {
+      return axios.put(`http://192.168.3.172/cards/business/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
         transformRequest: () => formData,
       })
     } else {
-      return api.put(`/cards/business/${id}`, data)
+      return api.put(`/business-cards/${id}`, data)
     }
   },
   deleteTeamCard: (id) => {
@@ -223,7 +223,7 @@ export const teamAPI = {
   // Get all team cards
   getTeamCards: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/team-card`)
+      const response = await axios.get(`${BASE_URL}/team-card`)
       return response
     } catch (error) {
       console.error("Error fetching team cards:", error)

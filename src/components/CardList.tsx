@@ -51,35 +51,10 @@ interface Card {
 
 interface CardListProps {
   cards: Card[]
-  onDelete: (cardId: string) => void
   emptyMessage: string
-  showDeleteButton?: boolean
 }
 
-interface TrashButtonProps {
-  cardId: string
-  onDelete: (cardId: string) => void
-}
-
-const CardList: React.FC<CardListProps> = ({
-  cards,
-  onDelete,
-  emptyMessage,
-  showDeleteButton = true,
-}) => {
-  const TrashButton: React.FC<TrashButtonProps> = ({ cardId, onDelete }) => (
-    <TouchableOpacity
-      style={styles.deleteButton}
-      onPress={() => onDelete(cardId)}
-      activeOpacity={0.7}>
-      <Ionicons
-        name='trash-outline'
-        size={18}
-        color='#fff'
-      />
-    </TouchableOpacity>
-  )
-
+const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
   if (cards.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -118,12 +93,6 @@ const CardList: React.FC<CardListProps> = ({
               profile_image: card.profile_image,
             }}
           />
-          {showDeleteButton && (
-            <TrashButton
-              cardId={card.id}
-              onDelete={onDelete}
-            />
-          )}
         </View>
       ))}
     </ScrollView>

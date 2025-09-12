@@ -16,6 +16,7 @@ import CardDisplay from "../components/CardDisplay"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
+import EditBusinessCardForm from "../components/EditBusinessCardForm"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
@@ -52,8 +53,8 @@ export default function MyCardScreen() {
   const handleSave = async (formData, imageFiles) => {
     setLoading(true)
     try {
-      let response
-      if (businessCard) {
+      let response = []
+      if (businessCard.length !== 0) {
         // Update existing business card
         response = await cardAPI.updateBusinessCard(
           businessCard._id,
@@ -65,14 +66,12 @@ export default function MyCardScreen() {
         response = await cardAPI.createBusinessCard(formData, imageFiles)
       }
 
+      console.log("😊", response)
       // Refresh the business card data
       await fetchBusinessCard()
-      Alert.alert("Success", "Business card saved successfully!")
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to save business card"
-      )
+      Alert.alert("Error", error.message || "Failed to save business card")
+      console.log(error)
     } finally {
       setLoading(false)
     }
@@ -106,7 +105,7 @@ export default function MyCardScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}>
           <View style={styles.dataContainer}>
-            {businessCard.length === 0 || isEditing ? (
+            {isEditing ? (
               <View style={styles.formContainer}>
                 <View style={styles.formHeader}>
                   <MaterialIcons
@@ -120,11 +119,23 @@ export default function MyCardScreen() {
                       : "Create Your Business Card"}
                   </Text>
                 </View>
-                <CardForm
-                  onSave={handleSave}
-                  onCancel={() => setIsEditing(false)}
-                  showCancel={!!businessCard}
+                <EditBusinessCardForm
                   initialData={businessCard}
+                  onSave={async (data) => {
+                    try {
+                      // Make API call to update card
+                      await cardAPI.updateBusinessCard(businessCard._id, data)
+                      Alert.alert(
+                        "Success",
+                        "Business card updated successfully"
+                      )
+                      setIsEditing(false)
+                      fetchBusinessCard() // refresh data
+                    } catch (e) {
+                      Alert.alert("Error", "Failed to update business card")
+                    }
+                  }}
+                  onCancel={() => setIsEditing(false)}
                 />
               </View>
             ) : (

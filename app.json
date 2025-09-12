@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.captureride132.businesscardapp"
+      "package": "com.connectree.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"

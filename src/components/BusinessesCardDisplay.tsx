@@ -1,3 +1,5 @@
+//use this card for both the bussinesses and team cards
+
 import React, { useEffect, useState } from "react"
 import {
   View,
@@ -61,7 +63,7 @@ interface TabButtonProps {
   onPress: () => void
 }
 
-const CardDisplay: React.FC<CardDisplayProps> = ({
+const BusinessesCardDisplay: React.FC<CardDisplayProps> = ({
   businessCard,
   children,
 }) => {
@@ -580,7 +582,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   )
 }
 
-export default CardDisplay
+export default BusinessesCardDisplay
 
 // All existing styles remain the same, just adding the new social media styles
 const styles = StyleSheet.create({
