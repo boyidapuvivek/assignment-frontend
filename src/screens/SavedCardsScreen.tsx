@@ -14,6 +14,8 @@ import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
+import { getData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface SavedCard {
   _id: string
@@ -77,12 +79,13 @@ export default function SavedCardsScreen() {
   const fetchSavedCards = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/business-cards/saved`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      // const response = await axios.get(`${API_BASE_URL}/business-cards/saved`, {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // })
 
+      const response = await getData(endpoints.getSavedCards)
       if (response.data && Array.isArray(response.data)) {
         setSavedCards(response.data)
       } else if (
@@ -180,6 +183,8 @@ export default function SavedCardsScreen() {
               ? `You have ${savedCards.length} saved card${
                   savedCards.length !== 1 ? "s" : ""
                 }`
+              : loading
+              ? "Loading..."
               : "No saved cards yet"}
           </Text>
         </View>

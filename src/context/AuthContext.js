@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { authAPI } from "../utils/api"
+import { getData, postData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 const AuthContext = createContext()
 
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }) => {
       const tokenToUse = authToken || token
       if (!tokenToUse) return
 
-      const response = await authAPI.getProfile(tokenToUse)
+      const response = await getData(endpoints.getProfile)
       if (response.data?.user) {
         setProfile(response.data)
         // Update user data as well
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await authAPI.login(email, password)
+      const response = await postData(endpoints.login, { email, password })
       const { token: newToken, user: userData } = response.data
 
       await AsyncStorage.setItem("token", newToken)
@@ -80,10 +82,14 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const register = async (username, email, password) => {
+  const register = async (name, email, password) => {
     try {
       // Call send-otp API instead of direct registration
-      const response = await authAPI.sendOTP(username, email, password)
+      const response = await postData(endpoints.register, {
+        name,
+        email,
+        password,
+      })
       console.log("OTP sent:", response)
 
       return {

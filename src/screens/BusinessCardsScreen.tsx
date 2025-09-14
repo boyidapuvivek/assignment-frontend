@@ -14,6 +14,8 @@ import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
+import { getData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface BusinessCard {
   _id: string
@@ -76,12 +78,7 @@ export default function BusinessCardsScreen() {
   const fetchBusinessCards = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/business-cards/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
+      const response = await getData(endpoints.getBusinessCards)
       if (response.data && Array.isArray(response.data)) {
         const filterOwner = response.data.filter(
           (item) => item.isOwner !== true
@@ -186,7 +183,9 @@ export default function BusinessCardsScreen() {
               ? `Explore ${businessCards.length} business card${
                   businessCards.length !== 1 ? "s" : ""
                 }`
-              : "No business cards available"}
+              : loading
+              ? "Loading..."
+              : "No Business Cards Available"}
           </Text>
         </View>
       </View>

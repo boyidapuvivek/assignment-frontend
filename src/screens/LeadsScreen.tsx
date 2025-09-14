@@ -16,6 +16,8 @@ import LeadCard from "../components/LeadCard"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
+import { getData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface Lead {
   _id: string
@@ -77,12 +79,7 @@ export default function LeadsScreen() {
   const fetchLeads = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/leads/my-leads`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
+      const response = await getData(endpoints.getLeads)
       if (response.data?.success && response.data?.leads) {
         const leadsData = response.data.leads
         setLeads(leadsData)
@@ -205,6 +202,8 @@ export default function LeadsScreen() {
           <Text style={styles.subtitle}>
             {stats.total > 0
               ? `Managing ${stats.total} lead${stats.total !== 1 ? "s" : ""}`
+              : loading
+              ? "Loading..."
               : "No leads yet"}
           </Text>
         </View>

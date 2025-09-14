@@ -14,6 +14,8 @@ import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
+import { getData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface TeamCard {
   _id: string
@@ -82,11 +84,7 @@ export default function TeamCardsScreen() {
   const fetchTeamCards = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/team-card`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await getData(endpoints.getTeamCards)
 
       if (response.data && Array.isArray(response.data)) {
         setTeamCards(response.data)
@@ -160,7 +158,9 @@ export default function TeamCardsScreen() {
               ? `Discover ${teamCards.length} team member${
                   teamCards.length !== 1 ? "s" : ""
                 }`
-              : "No team cards available"}
+              : loading
+              ? "Loading..."
+              : "No Team Cards Available"}
           </Text>
         </View>
       </View>

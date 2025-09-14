@@ -17,6 +17,10 @@ import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import EditBusinessCardForm from "../components/EditBusinessCardForm"
+import useGetApi, { getApiData } from "../hooks/api/useGetApi"
+import api, { endpoints } from "../api/ClientApi"
+import { API, getData } from "../api/apiServices"
+import axios from "axios"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
@@ -32,7 +36,7 @@ export default function MyCardScreen() {
     try {
       setLoading(true)
 
-      const response = await cardAPI.getUserBusinessCards()
+      const response = await getData(endpoints.getUserBusinessCard)
       if (
         response.data.businessCards &&
         response.data.businessCards.length > 0
@@ -66,7 +70,6 @@ export default function MyCardScreen() {
         response = await cardAPI.createBusinessCard(formData, imageFiles)
       }
 
-      console.log("😊", response)
       // Refresh the business card data
       await fetchBusinessCard()
     } catch (error) {
@@ -92,7 +95,9 @@ export default function MyCardScreen() {
           </View>
           {!businessCard && (
             <Text style={styles.subtitle}>
-              "Create your business card to get started"
+              {loading
+                ? "Loading..."
+                : "Create your business card to get started"}
             </Text>
           )}
         </View>
