@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   View,
   Text,
@@ -10,8 +10,13 @@ import {
 } from "react-native"
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
+import { useAuth } from "../context/AuthContext"
+import { postData, deleteData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface BusinessCard {
+  id?: string
+  _id?: string
   phone?: string
   email?: string
   address?: string
@@ -42,19 +47,30 @@ interface BusinessCard {
   name?: string
   role?: string
   business_description?: string
+  isSaved?: boolean
 }
 
 interface CardDisplayProps {
   businessCard: BusinessCard
   onPress?: () => void
   children?: React.ReactNode
+  showSaveButton?: boolean
+  onSaveToggle?: (cardId: string, isSaved: boolean) => void
 }
 
 const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
   businessCard,
   onPress,
   children,
+  showSaveButton = false,
+  onSaveToggle,
 }) => {
+  const { token } = useAuth()
+  const [isSaved, setIsSaved] = useState(businessCard?.isSaved || false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const cardId = businessCard?.id || businessCard?._id
+
   const handleCall = () => {
     const phoneNumber = businessCard?.phone || businessCard?.business_phone
     if (phoneNumber) {
@@ -75,8 +91,42 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
 
   const handleShare = () => {
     console.log("Share button pressed")
-    // Add share functionality here
     Alert.alert("Share", "Share functionality to be implemented")
+  }
+
+  const handleSaveToggle = async () => {
+    if (!cardId) {
+      Alert.alert("Error", "Card ID not found")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      if (isSaved) {
+        // Unsave the card
+        await deleteData(endpoints.unsaveCard(cardId))
+        setIsSaved(false)
+        Alert.alert("Success", "Card removed from saved collection")
+      } else {
+        // Save the card
+        await postData(endpoints.saveCard(cardId), {})
+        setIsSaved(true)
+        Alert.alert("Success", "Card saved to your collection")
+      }
+
+      // Notify parent component
+      if (onSaveToggle) {
+        onSaveToggle(cardId, !isSaved)
+      }
+    } catch (error) {
+      console.error("Error toggling save status:", error)
+      Alert.alert(
+        "Error",
+        isSaved ? "Failed to unsave card" : "Failed to save card"
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -97,6 +147,21 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
         )}
         <View style={styles.overlay} />
       </View>
+
+      {/* Save/Unsave Button - Only show when showSaveButton is true */}
+      {showSaveButton && (
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveToggle}
+          disabled={isLoading}
+          activeOpacity={0.7}>
+          <Ionicons
+            name={isSaved ? "bookmark" : "bookmark-outline"}
+            size={24}
+            color={isSaved ? "#FFD700" : "#fff"}
+          />
+        </TouchableOpacity>
+      )}
 
       {/* Content Container */}
       <View style={styles.contentContainer}>
@@ -120,7 +185,6 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
         </View>
 
         {/* Right Side */}
-
         <View style={styles.infoContainer}>
           <View>
             <Text
@@ -135,7 +199,7 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
             </Text>
           </View>
 
-          {/* Right Side - Profile Image */}
+          {/* Right Side - Action Buttons */}
           <View style={styles.actionsContainer}>
             <TouchableOpacity
               style={styles.actionButton}
@@ -206,12 +270,26 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
+  saveButton: {
+    position: "absolute",
+    top: 15,
+    right: 15,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
   contentContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
     paddingHorizontal: 20,
     paddingVertical: 20,
-    gap: "20",
+    gap: 20,
   },
   actionsContainer: {
     flexDirection: "row",

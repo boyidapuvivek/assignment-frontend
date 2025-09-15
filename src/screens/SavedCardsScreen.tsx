@@ -8,14 +8,14 @@ import {
   ScrollView,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { useFocusEffect } from "@react-navigation/native" // Add this import
+import { useFocusEffect } from "@react-navigation/native"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import SearchBar from "../components/SearchBar"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
-import { getData } from "../api/apiServices"
+import { getData, deleteData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 
 interface SavedCard {
@@ -107,26 +107,18 @@ export default function SavedCardsScreen({
     } finally {
       setLoading(false)
     }
-  }, []) // Empty dependency array since we want the same function reference
+  }, [])
 
   // Fetch data every time the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchSavedCards()
 
-      // Optional: Return a cleanup function if needed
       return () => {
-        // Cleanup code here if needed (e.g., cancel pending requests)
         console.log("SavedCardsScreen unfocused")
       }
     }, [fetchSavedCards])
   )
-
-  // Keep the original useEffect for initial load (optional, since useFocusEffect handles it)
-  useEffect(() => {
-    // This is now handled by useFocusEffect, but you can keep it for redundancy
-    // fetchSavedCards()
-  }, [])
 
   // Filter cards whenever searchQuery or savedCards change
   useEffect(() => {
@@ -137,6 +129,19 @@ export default function SavedCardsScreen({
     setRefreshing(true)
     await fetchSavedCards()
     setRefreshing(false)
+  }
+
+  const handleSaveToggle = async (cardId: string, isSaved: boolean) => {
+    try {
+      if (!isSaved) {
+        // Card was unsaved, remove it from the list and refetch
+        await fetchSavedCards()
+      }
+    } catch (error) {
+      console.error("Error handling save toggle:", error)
+      // Refetch data in case of error to ensure consistency
+      await fetchSavedCards()
+    }
   }
 
   const filterCards = (text: string) => {
@@ -176,37 +181,6 @@ export default function SavedCardsScreen({
     setFilteredCards(savedCards)
   }
 
-  const handleRemoveCard = async (cardId: string) => {
-    Alert.alert(
-      "Remove Saved Card",
-      "Are you sure you want to remove this card from your saved collection?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // You can implement unsave API call here if needed
-              // await deleteData(endpoints.unsaveCard(cardId))
-
-              // For now, just remove from local state
-              setSavedCards((prev) =>
-                prev.filter((card) => card._id !== cardId)
-              )
-              Alert.alert("Success", "Card removed from saved collection!")
-            } catch (error) {
-              Alert.alert("Error", "Failed to remove saved card")
-            }
-          },
-        },
-      ]
-    )
-  }
-
   const formatServicesForDisplay = (services: SavedCard["services"]) => {
     return services.map((service) => ({
       name: service.name,
@@ -241,7 +215,6 @@ export default function SavedCardsScreen({
 
   return (
     <View style={styles.container}>
-      <Header />
       {/* Header Section */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
@@ -314,7 +287,8 @@ export default function SavedCardsScreen({
                     ? "No saved cards yet. Start saving interesting business cards you discover!"
                     : `No saved cards match "${searchQuery}". Try adjusting your search terms.`
                 }
-                navigation={navigation}
+                showSaveButton={true} // Enable save button only for SavedCardsScreen
+                onSaveToggle={handleSaveToggle} // Handle save toggle callback
               />
             </View>
           </ScrollView>

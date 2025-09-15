@@ -41,15 +41,23 @@ interface Card {
     primaryColor: string
     secondaryColor: string
   }
+  isSaved?: boolean
   [key: string]: any
 }
 
 interface CardListProps {
   cards: Card[]
   emptyMessage: string
+  showSaveButton?: boolean
+  onSaveToggle?: (cardId: string, isSaved: boolean) => void
 }
 
-const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
+const CardList: React.FC<CardListProps> = ({
+  cards,
+  emptyMessage,
+  showSaveButton = false,
+  onSaveToggle,
+}) => {
   const navigation = useNavigation<any>()
 
   const handleCardPress = (card: Card) => {
@@ -89,6 +97,8 @@ const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
               gallery: card.gallery?.map((img) => ({ url: img })) || [],
             }}
             onPress={() => handleCardPress(card)}
+            showSaveButton={showSaveButton}
+            onSaveToggle={onSaveToggle}
           />
         </View>
       ))}
