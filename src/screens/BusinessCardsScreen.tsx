@@ -1,4 +1,3 @@
-// screens/BusinessCardsScreen.tsx
 import React, { useState, useEffect } from "react"
 import {
   View,
@@ -7,15 +6,18 @@ import {
   Alert,
   RefreshControl,
   ScrollView,
+  TouchableOpacity,
+  Modal,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import SearchBar from "../components/SearchBar"
+import BusinessCardForm from "../components/BusinessCardForm"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
-import { getData } from "../api/apiServices"
+import { getData, postData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 
 interface BusinessCard {
@@ -77,6 +79,8 @@ export default function BusinessCardsScreen({
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     fetchBusinessCards()
@@ -154,6 +158,118 @@ export default function BusinessCardsScreen({
     setFilteredCards(businessCards)
   }
 
+  const handleCreateCard = async (formData: any, imageFiles: any) => {
+    try {
+      setCreating(true)
+
+      // Create FormData for multipart upload
+      const createData = new FormData()
+
+      // Add form fields
+      createData.append("name", formData.username || "")
+      createData.append("email", formData.email || "")
+      createData.append("phone", formData.phoneNumber || "")
+      createData.append("business_email", formData.businessEmail || "")
+      createData.append("business_phone", formData.businessNumber || "")
+      createData.append(
+        "business_description",
+        formData.businessDescription || ""
+      )
+      createData.append("address", formData.location || "")
+      createData.append("company", formData.businessName || "")
+
+      // Add social media links
+      if (formData.socialMediaLinks && formData.socialMediaLinks[0]) {
+        const social = formData.socialMediaLinks[0]
+        createData.append("facebook_url", social.facebook || "")
+        createData.append("twitter_url", social.twitter || "")
+        createData.append("linkedin_url", social.linkedIn || "")
+        createData.append("instagram_url", social.instagram || "")
+      }
+
+      // Add services and products as JSON strings
+      if (formData.services && formData.services.length > 0) {
+        createData.append("services", JSON.stringify(formData.services))
+      }
+
+      if (formData.products && formData.products.length > 0) {
+        createData.append("products", JSON.stringify(formData.products))
+      }
+
+      // Add image files
+      if (imageFiles.avatar) {
+        createData.append("profile_image", {
+          uri: imageFiles.avatar.uri,
+          type: imageFiles.avatar.type,
+          name: imageFiles.avatar.fileName,
+        } as any)
+      }
+
+      if (imageFiles.coverImage) {
+        createData.append("business_cover_photo", {
+          uri: imageFiles.coverImage.uri,
+          type: imageFiles.coverImage.type,
+          name: imageFiles.coverImage.fileName,
+        } as any)
+      }
+
+      if (imageFiles.gallery && imageFiles.gallery.length > 0) {
+        imageFiles.gallery.forEach((image: any, index: number) => {
+          createData.append(`gallery_${index}`, {
+            uri: image.uri,
+            type: image.type,
+            name: image.fileName,
+          } as any)
+        })
+      }
+
+      // Make API call
+      const response = await postData(
+        endpoints.createBusinessCard,
+        createData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      )
+      console.log("😊", response)
+
+      Alert.alert("Success", "Business card created successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            setShowCreateForm(false)
+            fetchBusinessCards() // Refresh the list
+          },
+        },
+      ])
+    } catch (error) {
+      console.error("Error creating business card:", error)
+      Alert.alert("Error", "Failed to create business card. Please try again.")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const handleCancelCreate = () => {
+    Alert.alert(
+      "Cancel Creation",
+      "Are you sure you want to cancel? All entered data will be lost.",
+      [
+        {
+          text: "Continue Editing",
+          style: "cancel",
+        },
+        {
+          text: "Cancel",
+          style: "destructive",
+          onPress: () => setShowCreateForm(false),
+        },
+      ]
+    )
+  }
+
   const formatServicesForDisplay = (services: BusinessCard["services"]) => {
     return services.map((service) => ({
       name: service.name,
@@ -186,6 +302,26 @@ export default function BusinessCardsScreen({
     }
   }
 
+  if (showCreateForm) {
+    return (
+      <View style={styles.container}>
+        <BusinessCardForm
+          onSave={handleCreateCard}
+          onCancel={handleCancelCreate}
+          showCancel={true}
+          isCreating={true}
+          title='Create Business Card'
+        />
+        {creating && (
+          <View style={styles.loadingOverlay}>
+            <LoadingSpinner />
+            <Text style={styles.loadingText}>Creating business card...</Text>
+          </View>
+        )}
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <Header />
@@ -207,9 +343,24 @@ export default function BusinessCardsScreen({
         </View>
       </View>
 
+      {/* Create Button */}
+      <View style={styles.createButtonContainer}>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => setShowCreateForm(true)}
+          activeOpacity={0.8}>
+          <MaterialIcons
+            name='add'
+            size={24}
+            color='#fff'
+          />
+          <Text style={styles.createButtonText}>Create Business Card</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Search Bar */}
       <SearchBar
-        placeholder='Search by name, company, role, services...'
+        placeholder='Search by name, company, role, email...'
         value={searchQuery}
         onChangeText={filterCards}
         onClear={handleClearSearch}
@@ -308,6 +459,30 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 20,
   },
+  createButtonContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2196F3",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    shadowColor: "#2196F3",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  createButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
   searchBarContainer: {
     paddingBottom: 8,
   },
@@ -323,5 +498,22 @@ const styles = StyleSheet.create({
   },
   dataContainer: {
     paddingTop: 12,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+    marginTop: 16,
   },
 })

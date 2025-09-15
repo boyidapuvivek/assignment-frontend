@@ -41,7 +41,7 @@ export const endpoints = {
   // My Card endpoints
   getUserBusinessCard: `${BASE_URL}/business-cards/user`,
   updateBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
-  createBusinessCard: `${BASE_URL}/business-cards`,
+  createBusinessCard: `${BASE_URL}/business-cards/`,
 
   // Saved Cards endpoints
   getSavedCards: `${BASE_URL}/business-cards/saved`,
@@ -51,10 +51,12 @@ export const endpoints = {
 
   // Team Cards endpoints
   getTeamCards: `${BASE_URL}/team-card`,
+  createTeamCard: `${BASE_URL}/cards/team`,
   deleteTeamCard: (id: string) => `${BASE_URL}/team-card/${id}`,
 
   // Business Cards endpoints
   getBusinessCards: `${BASE_URL}/business-cards`,
+  createBusinessCard: `${BASE_URL}/cards/business`,
   deleteBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
 
 

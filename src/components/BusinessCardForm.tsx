@@ -8,10 +8,12 @@ import {
   Alert,
   ScrollView,
   Image,
-  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
+import { COLORS } from "../utils/constants"
 
 interface BusinessCardFormProps {
   initialData?: any
@@ -23,27 +25,34 @@ interface BusinessCardFormProps {
 }
 
 interface FormData {
-  username: string
-  email: string
-  phoneNumber: string
-  businessEmail: string
-  businessNumber: string
-  businessDescription: string
-  location: string
-  businessName: string
-  socialMediaLinks: Array<{
-    facebook: string
-    twitter: string
-    linkedIn: string
-    instagram: string
-  }>
-  services: Array<{ name: string; price: number }>
-  products: Array<{ name: string; price: number }>
+  // Personal fields (mandatory marked with *)
+  name: string // *
+  email: string // *
+  phone: string // *
+  role: string // *
+
+  // Business fields
+  company: string // *
+  business_description: string
+  business_phone: string
+  business_email: string
+  website: string
+  address: string
+  linkedin_url: string
+  twitter_url: string
+  facebook_url: string
+  instagram_url: string
+  youtube_url: string
+
+  // Dynamic arrays
+  services: Array<{ name: string; price: number; description?: string }>
+  products: Array<{ name: string; price: number; description?: string }>
 }
 
 interface ImageFiles {
-  avatar: any
-  coverImage: any
+  profile_image: any
+  business_cover_photo: any
+  business_logo: any
   gallery: any[]
 }
 
@@ -55,71 +64,99 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   isCreating = false,
   title = "Create Business Card",
 }) => {
-  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [currentSection, setCurrentSection] = useState("Personal")
+
   const [formData, setFormData] = useState<FormData>({
-    username: "",
-    email: "",
-    phoneNumber: initialData.phoneNumber || "",
-    businessEmail: initialData.businessEmail || "",
-    businessNumber: initialData.businessNumber || "",
-    businessDescription: initialData.businessDescription || "",
-    location: initialData.location || "",
-    businessName: initialData.businessName || "",
-    socialMediaLinks: [
-      {
-        facebook: initialData.socialMediaLinks?.facebook || "",
-        twitter: initialData.socialMediaLinks?.twitter || "",
-        linkedIn: initialData.socialMediaLinks?.linkedIn || "",
-        instagram: initialData.socialMediaLinks?.instagram || "",
-      },
-    ],
+    // Personal
+    name: initialData.name || "",
+    email: initialData.email || "",
+    phone: initialData.phone || "",
+    role: initialData.role || "",
+
+    // Business
+    company: initialData.company || "",
+    business_description: initialData.business_description || "",
+    business_phone: initialData.business_phone || "",
+    business_email: initialData.business_email || "",
+    website: initialData.website || "",
+    address: initialData.address || "",
+    linkedin_url: initialData.linkedin_url || "",
+    twitter_url: initialData.twitter_url || "",
+    facebook_url: initialData.facebook_url || "",
+    instagram_url: initialData.instagram_url || "",
+    youtube_url: initialData.youtube_url || "",
+
+    // Arrays
     services: initialData.services || [],
     products: initialData.products || [],
   })
 
-  const [images, setImages] = useState<{
-    avatar: string | null
-    coverImage: string | null
-  }>({
-    avatar: initialData.avatar?.url || null,
-    coverImage: initialData.coverImage?.url || null,
+  const [images, setImages] = useState({
+    profile_image: initialData.profile_image || null,
+    business_cover_photo: initialData.business_cover_photo || null,
+    business_logo: initialData.business_logo || null,
   })
 
   const [imageFiles, setImageFiles] = useState<ImageFiles>({
-    avatar: null,
-    coverImage: null,
+    profile_image: null,
+    business_cover_photo: null,
+    business_logo: null,
     gallery: [],
   })
 
-  const [galleryImages, setGalleryImages] = useState<any[]>(
-    initialData.gallery || []
-  )
+  const [galleryImages, setGalleryImages] = useState(initialData.gallery || [])
 
-  const steps: string[] = [
-    "Contact Info",
-    "Services & Products",
-    "Gallery & Images",
-  ]
+  const sections = ["Personal", "Business", "Services", "Products", "Gallery"]
 
-  const updateFormData = (field: string, value: any): void => {
-    if (field.includes(".")) {
-      const [parent, child] = field.split(".")
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof FormData],
-          [child]: value,
-        },
-      }))
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }))
-    }
+  const updateFormData = (field: keyof FormData, value: any): void => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const validateMandatoryFields = (): boolean => {
+    const { name, email, phone, role, company } = formData
+
+    if (!name.trim()) {
+      Alert.alert("Validation Error", "Name is required")
+      setCurrentSection("Personal")
+      return false
+    }
+    if (!email.trim()) {
+      Alert.alert("Validation Error", "Email is required")
+      setCurrentSection("Personal")
+      return false
+    }
+    if (!phone.trim()) {
+      Alert.alert("Validation Error", "Phone is required")
+      setCurrentSection("Personal")
+      return false
+    }
+    if (!role.trim()) {
+      Alert.alert("Validation Error", "Role is required")
+      setCurrentSection("Personal")
+      return false
+    }
+    if (!company.trim()) {
+      Alert.alert("Validation Error", "Company is required")
+      setCurrentSection("Business")
+      return false
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      Alert.alert("Validation Error", "Please enter a valid email address")
+      setCurrentSection("Personal")
+      return false
+    }
+
+    return true
+  }
+
+  // Service functions
   const addService = (): void => {
     setFormData((prev) => ({
       ...prev,
-      services: [...prev.services, { name: "", price: 0 }],
+      services: [...prev.services, { name: "", price: 0, description: "" }],
     }))
   }
 
@@ -139,10 +176,11 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
     }))
   }
 
+  // Product functions
   const addProduct = (): void => {
     setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, { name: "", price: 0 }],
+      products: [...prev.products, { name: "", price: 0, description: "" }],
     }))
   }
 
@@ -162,7 +200,10 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
     }))
   }
 
-  const pickImage = async (type: "avatar" | "coverImage"): Promise<void> => {
+  // Image picker functions
+  const pickImage = async (
+    type: "profile_image" | "business_cover_photo" | "business_logo"
+  ): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
       Alert.alert(
@@ -175,7 +216,7 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: type === "avatar" ? [1, 1] : [16, 9],
+      aspect: type === "profile_image" ? [1, 1] : [16, 9],
       quality: 0.7,
       allowsMultipleSelection: false,
     })
@@ -188,10 +229,8 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
         [type]: {
           uri: asset.uri,
           type: asset.type || "image/jpeg",
-          fileName: asset.fileName || `${type}_${Date.now()}.jpg`,
+          name: asset.fileName || `${type}_${Date.now()}.jpg`,
           fileSize: asset.fileSize,
-          width: asset.width,
-          height: asset.height,
         },
       }))
     }
@@ -218,22 +257,16 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
       const newGalleryFiles = result.assets.map((asset) => ({
         uri: asset.uri,
         type: asset.type || "image/jpeg",
-        fileName: asset.fileName || `gallery_${Date.now()}.jpg`,
+        name: asset.fileName || `gallery_${Date.now()}.jpg`,
         fileSize: asset.fileSize,
-        width: asset.width,
-        height: asset.height,
       }))
 
-      const newGalleryImages = result.assets.map((asset) => ({
-        url: asset.uri,
-        public_id: `temp_${Date.now()}_${Math.random()}`,
-      }))
+      const newGalleryImages = result.assets.map((asset) => asset.uri)
 
       setImageFiles((prev) => ({
         ...prev,
         gallery: [...prev.gallery, ...newGalleryFiles],
       }))
-
       setGalleryImages((prev) => [...prev, ...newGalleryImages])
     }
   }
@@ -246,502 +279,609 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
     }))
   }
 
-  const validateStep = (): boolean => {
-    switch (currentStep) {
-      case 0:
-        if (isCreating && (!formData.username || !formData.email)) {
-          Alert.alert("Error", "Username and email are required")
-          return false
-        }
-        return true
-      case 1:
-        return true
-      case 2:
-        return true
-      default:
-        return true
-    }
-  }
-
-  const nextStep = (): void => {
-    if (validateStep()) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
-    }
-  }
-
-  const prevStep = (): void => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0))
-  }
-
   const handleSubmit = (): void => {
-    if (!validateStep()) return
+    if (!validateMandatoryFields()) return
 
     const submitData = {
       ...formData,
-      gallery: galleryImages[0],
+      gallery: galleryImages,
     }
 
     const allImageFiles = {
       ...imageFiles,
-      gallery: imageFiles.gallery[0],
+      gallery: imageFiles.gallery,
     }
 
     onSave(submitData, allImageFiles)
   }
 
-  const renderStepIndicator = () => (
-    <View style={styles.stepIndicator}>
-      {steps.map((step, index) => (
-        <View
-          key={index}
-          style={styles.stepItem}>
-          <View
-            style={[
-              styles.stepCircle,
-              index <= currentStep && styles.stepCircleActive,
-            ]}>
-            <Text
-              style={[
-                styles.stepNumber,
-                index <= currentStep && styles.stepNumberActive,
-              ]}>
-              {index + 1}
-            </Text>
-          </View>
+  const renderSectionTabs = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.tabScrollView}
+      contentContainerStyle={styles.tabContainer}>
+      {sections.map((section) => (
+        <TouchableOpacity
+          key={section}
+          style={[
+            styles.tabButton,
+            currentSection === section && styles.activeTabButton,
+          ]}
+          onPress={() => setCurrentSection(section)}>
           <Text
             style={[
-              styles.stepLabel,
-              index <= currentStep && styles.stepLabelActive,
+              styles.tabText,
+              currentSection === section && styles.activeTabText,
             ]}>
-            {step}
+            {section}
           </Text>
-          {index < steps.length - 1 && (
-            <View
-              style={[
-                styles.stepLine,
-                index < currentStep && styles.stepLineActive,
-              ]}
-            />
-          )}
-        </View>
+        </TouchableOpacity>
       ))}
+    </ScrollView>
+  )
+
+  const renderPersonalSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Personal Information</Text>
+      <Text style={styles.sectionSubtitle}>
+        All fields marked with * are required
+      </Text>
+
+      <View style={styles.imagePickerRow}>
+        <TouchableOpacity
+          onPress={() => pickImage("profile_image")}
+          style={styles.imagePickerContainer}>
+          {images.profile_image ? (
+            <Image
+              source={{ uri: images.profile_image }}
+              style={styles.profileImagePreview}
+            />
+          ) : (
+            <View
+              style={[styles.imagePlaceholder, styles.profileImagePlaceholder]}>
+              <Ionicons
+                name='person'
+                size={32}
+                color='#999'
+              />
+              <Text style={styles.imagePlaceholderText}>Profile Photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='person'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Full Name *'
+          value={formData.name}
+          onChangeText={(value) => updateFormData("name", value)}
+          autoCapitalize='words'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='mail'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Email Address *'
+          value={formData.email}
+          onChangeText={(value) => updateFormData("email", value)}
+          keyboardType='email-address'
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='call'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Phone Number *'
+          value={formData.phone}
+          onChangeText={(value) => updateFormData("phone", value)}
+          keyboardType='phone-pad'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='briefcase'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Job Role/Position *'
+          value={formData.role}
+          onChangeText={(value) => updateFormData("role", value)}
+          autoCapitalize='words'
+        />
+      </View>
     </View>
   )
 
-  const renderContactForm = () => (
-    <ScrollView style={styles.stepContent}>
-      {isCreating && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account Details</Text>
+  const renderBusinessSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Business Information</Text>
+
+      <View style={styles.imagePickerRow}>
+        <TouchableOpacity
+          onPress={() => pickImage("business_cover_photo")}
+          style={styles.imagePickerContainer}>
+          {images.business_cover_photo ? (
+            <Image
+              source={{ uri: images.business_cover_photo }}
+              style={styles.coverImagePreview}
+            />
+          ) : (
+            <View
+              style={[styles.imagePlaceholder, styles.coverImagePlaceholder]}>
+              <Ionicons
+                name='image'
+                size={32}
+                color='#999'
+              />
+              <Text style={styles.imagePlaceholderText}>Cover Photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => pickImage("business_logo")}
+          style={styles.imagePickerContainer}>
+          {images.business_logo ? (
+            <Image
+              source={{ uri: images.business_logo }}
+              style={styles.logoImagePreview}
+            />
+          ) : (
+            <View
+              style={[styles.imagePlaceholder, styles.logoImagePlaceholder]}>
+              <Ionicons
+                name='business'
+                size={32}
+                color='#999'
+              />
+              <Text style={styles.imagePlaceholderText}>Business Logo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='business'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Company Name *'
+          value={formData.company}
+          onChangeText={(value) => updateFormData("company", value)}
+          autoCapitalize='words'
+        />
+      </View>
+
+      <View style={styles.textAreaContainer}>
+        <Ionicons
+          name='document-text'
+          size={20}
+          color='#666'
+          style={styles.textAreaIcon}
+        />
+        <TextInput
+          style={styles.textArea}
+          placeholder='Business Description'
+          value={formData.business_description}
+          onChangeText={(value) =>
+            updateFormData("business_description", value)
+          }
+          multiline
+          numberOfLines={4}
+          textAlignVertical='top'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='call'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Business Phone'
+          value={formData.business_phone}
+          onChangeText={(value) => updateFormData("business_phone", value)}
+          keyboardType='phone-pad'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='mail'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Business Email'
+          value={formData.business_email}
+          onChangeText={(value) => updateFormData("business_email", value)}
+          keyboardType='email-address'
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='globe'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Website URL'
+          value={formData.website}
+          onChangeText={(value) => updateFormData("website", value)}
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='location'
+          size={20}
+          color='#666'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Business Address'
+          value={formData.address}
+          onChangeText={(value) => updateFormData("address", value)}
+        />
+      </View>
+
+      <Text style={styles.subSectionTitle}>Social Media Links</Text>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='logo-linkedin'
+          size={20}
+          color='#0077B5'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='LinkedIn URL'
+          value={formData.linkedin_url}
+          onChangeText={(value) => updateFormData("linkedin_url", value)}
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='logo-facebook'
+          size={20}
+          color='#1877F2'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Facebook URL'
+          value={formData.facebook_url}
+          onChangeText={(value) => updateFormData("facebook_url", value)}
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='logo-twitter'
+          size={20}
+          color='#1DA1F2'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Twitter URL'
+          value={formData.twitter_url}
+          onChangeText={(value) => updateFormData("twitter_url", value)}
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='logo-instagram'
+          size={20}
+          color='#E4405F'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='Instagram URL'
+          value={formData.instagram_url}
+          onChangeText={(value) => updateFormData("instagram_url", value)}
+          autoCapitalize='none'
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name='logo-youtube'
+          size={20}
+          color='#FF0000'
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder='YouTube URL'
+          value={formData.youtube_url}
+          onChangeText={(value) => updateFormData("youtube_url", value)}
+          autoCapitalize='none'
+        />
+      </View>
+    </View>
+  )
+
+  const renderServicesSection = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Services</Text>
+        <TouchableOpacity
+          onPress={addService}
+          style={styles.addButton}>
+          <Ionicons
+            name='add'
+            size={16}
+            color='#007BFF'
+          />
+          <Text style={styles.addButtonText}>Add Service</Text>
+        </TouchableOpacity>
+      </View>
+
+      {formData.services.map((service, index) => (
+        <View
+          key={index}
+          style={styles.itemContainer}>
+          <View style={styles.itemHeader}>
+            <Text style={styles.itemTitle}>Service {index + 1}</Text>
+            <TouchableOpacity
+              onPress={() => removeService(index)}
+              style={styles.removeButton}>
+              <Ionicons
+                name='trash'
+                size={18}
+                color='#ff4444'
+              />
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.inputContainer}>
             <Ionicons
-              name='person-outline'
+              name='construct'
               size={20}
               color='#666'
               style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
-              placeholder='Username'
-              value={formData.username}
-              onChangeText={(value) => updateFormData("username", value)}
-              autoCapitalize='none'
+              placeholder='Service Name'
+              value={service.name}
+              onChangeText={(value) => updateService(index, "name", value)}
             />
           </View>
+
           <View style={styles.inputContainer}>
             <Ionicons
-              name='mail-outline'
+              name='cash'
               size={20}
               color='#666'
               style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
-              placeholder='Email'
-              value={formData.email}
-              onChangeText={(value) => updateFormData("email", value)}
-              keyboardType='email-address'
-              autoCapitalize='none'
+              placeholder='Price'
+              value={service.price.toString()}
+              onChangeText={(value) =>
+                updateService(index, "price", parseFloat(value) || 0)
+              }
+              keyboardType='numeric'
             />
           </View>
+
+          <View style={styles.textAreaContainer}>
+            <Ionicons
+              name='document-text'
+              size={20}
+              color='#666'
+              style={styles.textAreaIcon}
+            />
+            <TextInput
+              style={styles.textArea}
+              placeholder='Service Description (Optional)'
+              value={service.description || ""}
+              onChangeText={(value) =>
+                updateService(index, "description", value)
+              }
+              multiline
+              numberOfLines={3}
+              textAlignVertical='top'
+            />
+          </View>
+        </View>
+      ))}
+
+      {formData.services.length === 0 && (
+        <View style={styles.emptyState}>
+          <Ionicons
+            name='construct'
+            size={48}
+            color='#ccc'
+          />
+          <Text style={styles.emptyStateText}>No services added yet</Text>
+          <Text style={styles.emptyStateSubtext}>
+            Tap "Add Service" to get started
+          </Text>
         </View>
       )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profile Images</Text>
-        <View style={styles.imageRow}>
-          <TouchableOpacity
-            onPress={() => pickImage("avatar")}
-            style={styles.imagePickerContainer}>
-            {images.avatar ? (
-              <Image
-                source={{ uri: images.avatar }}
-                style={styles.avatarPreview}
-              />
-            ) : (
-              <View style={[styles.imagePlaceholder, styles.avatarPlaceholder]}>
-                <Ionicons
-                  name='person-add'
-                  size={30}
-                  color='#999'
-                />
-                <Text style={styles.imagePlaceholderText}>Profile Photo</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => pickImage("coverImage")}
-            style={styles.imagePickerContainer}>
-            {images.coverImage ? (
-              <Image
-                source={{ uri: images.coverImage }}
-                style={styles.coverPreview}
-              />
-            ) : (
-              <View style={[styles.imagePlaceholder, styles.coverPlaceholder]}>
-                <Ionicons
-                  name='image'
-                  size={30}
-                  color='#999'
-                />
-                <Text style={styles.imagePlaceholderText}>Cover Image</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Business Information</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='business-outline'
-            size={20}
-            color='#666'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Business Name'
-            value={formData.businessName}
-            onChangeText={(value) => updateFormData("businessName", value)}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='call-outline'
-            size={20}
-            color='#666'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Phone Number'
-            value={formData.phoneNumber}
-            onChangeText={(value) => updateFormData("phoneNumber", value)}
-            keyboardType='phone-pad'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='mail-outline'
-            size={20}
-            color='#666'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Business Email'
-            value={formData.businessEmail}
-            onChangeText={(value) => updateFormData("businessEmail", value)}
-            keyboardType='email-address'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='call-outline'
-            size={20}
-            color='#666'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Business Number'
-            value={formData.businessNumber}
-            onChangeText={(value) => updateFormData("businessNumber", value)}
-            keyboardType='phone-pad'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='location-outline'
-            size={20}
-            color='#666'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Location'
-            value={formData.location}
-            onChangeText={(value) => updateFormData("location", value)}
-          />
-        </View>
-        <View style={styles.textAreaContainer}>
-          <Ionicons
-            name='document-text-outline'
-            size={20}
-            color='#666'
-            style={styles.textAreaIcon}
-          />
-          <TextInput
-            style={styles.textArea}
-            placeholder='Business Description'
-            value={formData.businessDescription}
-            onChangeText={(value) =>
-              updateFormData("businessDescription", value)
-            }
-            multiline
-            numberOfLines={4}
-            textAlignVertical='top'
-          />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Social Media Links</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='logo-facebook'
-            size={20}
-            color='#1877F2'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Facebook URL'
-            value={formData.socialMediaLinks[0].facebook}
-            onChangeText={(value) =>
-              updateFormData("socialMediaLinks.facebook", value)
-            }
-            autoCapitalize='none'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='logo-twitter'
-            size={20}
-            color='#1DA1F2'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Twitter URL'
-            value={formData.socialMediaLinks[0].twitter}
-            onChangeText={(value) =>
-              updateFormData("socialMediaLinks.twitter", value)
-            }
-            autoCapitalize='none'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='logo-linkedin'
-            size={20}
-            color='#0A66C2'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='LinkedIn URL'
-            value={formData.socialMediaLinks[0].linkedIn}
-            onChangeText={(value) =>
-              updateFormData("socialMediaLinks.linkedIn", value)
-            }
-            autoCapitalize='none'
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name='logo-instagram'
-            size={20}
-            color='#E4405F'
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder='Instagram URL'
-            value={formData.socialMediaLinks[0].instagram}
-            onChangeText={(value) =>
-              updateFormData("socialMediaLinks.instagram", value)
-            }
-            autoCapitalize='none'
-          />
-        </View>
-      </View>
-    </ScrollView>
+    </View>
   )
 
-  const renderServicesProducts = () => (
-    <ScrollView style={styles.stepContent}>
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <TouchableOpacity
-            onPress={addService}
-            style={styles.addButton}>
-            <Ionicons
-              name='add'
-              size={20}
-              color='#007BFF'
-            />
-            <Text style={styles.addButtonText}>Add Service</Text>
-          </TouchableOpacity>
-        </View>
-
-        {formData.services.map((service, index) => (
-          <View
-            key={index}
-            style={styles.itemContainer}>
-            <View style={styles.itemHeader}>
-              <Text style={styles.itemTitle}>Service {index + 1}</Text>
-              <TouchableOpacity
-                onPress={() => removeService(index)}
-                style={styles.removeButton}>
-                <Ionicons
-                  name='trash'
-                  size={16}
-                  color='#ff4444'
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name='construct-outline'
-                size={20}
-                color='#666'
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder='Service Name'
-                value={service.name}
-                onChangeText={(value) => updateService(index, "name", value)}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name='pricetag-outline'
-                size={20}
-                color='#666'
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder='Price'
-                value={service.price.toString()}
-                onChangeText={(value) =>
-                  updateService(index, "price", parseFloat(value) || 0)
-                }
-                keyboardType='numeric'
-              />
-            </View>
-          </View>
-        ))}
+  const renderProductsSection = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Products</Text>
+        <TouchableOpacity
+          onPress={addProduct}
+          style={styles.addButton}>
+          <Ionicons
+            name='add'
+            size={16}
+            color='#007BFF'
+          />
+          <Text style={styles.addButtonText}>Add Product</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Products</Text>
-          <TouchableOpacity
-            onPress={addProduct}
-            style={styles.addButton}>
-            <Ionicons
-              name='add'
-              size={20}
-              color='#007BFF'
-            />
-            <Text style={styles.addButtonText}>Add Product</Text>
-          </TouchableOpacity>
-        </View>
-
-        {formData.products.map((product, index) => (
-          <View
-            key={index}
-            style={styles.itemContainer}>
-            <View style={styles.itemHeader}>
-              <Text style={styles.itemTitle}>Product {index + 1}</Text>
-              <TouchableOpacity
-                onPress={() => removeProduct(index)}
-                style={styles.removeButton}>
-                <Ionicons
-                  name='trash'
-                  size={16}
-                  color='#ff4444'
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.inputContainer}>
+      {formData.products.map((product, index) => (
+        <View
+          key={index}
+          style={styles.itemContainer}>
+          <View style={styles.itemHeader}>
+            <Text style={styles.itemTitle}>Product {index + 1}</Text>
+            <TouchableOpacity
+              onPress={() => removeProduct(index)}
+              style={styles.removeButton}>
               <Ionicons
-                name='cube-outline'
-                size={20}
-                color='#666'
-                style={styles.inputIcon}
+                name='trash'
+                size={18}
+                color='#ff4444'
               />
-              <TextInput
-                style={styles.input}
-                placeholder='Product Name'
-                value={product.name}
-                onChangeText={(value) => updateProduct(index, "name", value)}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name='pricetag-outline'
-                size={20}
-                color='#666'
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder='Price'
-                value={product.price.toString()}
-                onChangeText={(value) =>
-                  updateProduct(index, "price", parseFloat(value) || 0)
-                }
-                keyboardType='numeric'
-              />
-            </View>
+            </TouchableOpacity>
           </View>
-        ))}
-      </View>
-    </ScrollView>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name='cube'
+              size={20}
+              color='#666'
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder='Product Name'
+              value={product.name}
+              onChangeText={(value) => updateProduct(index, "name", value)}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name='cash'
+              size={20}
+              color='#666'
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder='Price'
+              value={product.price.toString()}
+              onChangeText={(value) =>
+                updateProduct(index, "price", parseFloat(value) || 0)
+              }
+              keyboardType='numeric'
+            />
+          </View>
+
+          <View style={styles.textAreaContainer}>
+            <Ionicons
+              name='document-text'
+              size={20}
+              color='#666'
+              style={styles.textAreaIcon}
+            />
+            <TextInput
+              style={styles.textArea}
+              placeholder='Product Description (Optional)'
+              value={product.description || ""}
+              onChangeText={(value) =>
+                updateProduct(index, "description", value)
+              }
+              multiline
+              numberOfLines={3}
+              textAlignVertical='top'
+            />
+          </View>
+        </View>
+      ))}
+
+      {formData.products.length === 0 && (
+        <View style={styles.emptyState}>
+          <Ionicons
+            name='cube'
+            size={48}
+            color='#ccc'
+          />
+          <Text style={styles.emptyStateText}>No products added yet</Text>
+          <Text style={styles.emptyStateSubtext}>
+            Tap "Add Product" to get started
+          </Text>
+        </View>
+      )}
+    </View>
   )
 
-  const renderGallery = () => (
-    <ScrollView style={styles.stepContent}>
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Gallery Images</Text>
-          <TouchableOpacity
-            onPress={pickGalleryImages}
-            style={styles.addButton}>
-            <Ionicons
-              name='images'
-              size={20}
-              color='#007BFF'
-            />
-            <Text style={styles.addButtonText}>Add Images</Text>
-          </TouchableOpacity>
-        </View>
+  const renderGallerySection = () => (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Gallery</Text>
+        <TouchableOpacity
+          onPress={pickGalleryImages}
+          style={styles.addButton}>
+          <Ionicons
+            name='add'
+            size={16}
+            color='#007BFF'
+          />
+          <Text style={styles.addButtonText}>Add Images</Text>
+        </TouchableOpacity>
+      </View>
 
+      {galleryImages.length > 0 ? (
         <View style={styles.galleryGrid}>
-          {galleryImages.map((image, index) => (
+          {galleryImages.map((imageUri, index) => (
             <View
               key={index}
               style={styles.galleryItem}>
               <Image
-                source={{ uri: image.url }}
+                source={{ uri: imageUri }}
                 style={styles.galleryImage}
               />
               <TouchableOpacity
@@ -749,109 +889,94 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
                 style={styles.removeImageButton}>
                 <Ionicons
                   name='close'
-                  size={16}
+                  size={12}
                   color='#fff'
                 />
               </TouchableOpacity>
             </View>
           ))}
         </View>
-
-        {galleryImages.length === 0 && (
-          <TouchableOpacity
-            onPress={pickGalleryImages}
-            style={styles.emptyGallery}>
-            <Ionicons
-              name='images'
-              size={40}
-              color='#999'
-            />
-            <Text style={styles.emptyGalleryText}>
-              Add gallery images to showcase your work
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </ScrollView>
+      ) : (
+        <View style={styles.emptyGallery}>
+          <Ionicons
+            name='images'
+            size={48}
+            color='#ccc'
+          />
+          <Text style={styles.emptyGalleryText}>
+            No images added to gallery
+          </Text>
+          <Text style={styles.emptyStateSubtext}>
+            Add images to showcase your work
+          </Text>
+        </View>
+      )}
+    </View>
   )
 
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 0:
-        return renderContactForm()
-      case 1:
-        return renderServicesProducts()
-      case 2:
-        return renderGallery()
+  const renderCurrentSection = () => {
+    switch (currentSection) {
+      case "Personal":
+        return renderPersonalSection()
+      case "Business":
+        return renderBusinessSection()
+      case "Services":
+        return renderServicesSection()
+      case "Products":
+        return renderProductsSection()
+      case "Gallery":
+        return renderGallerySection()
       default:
-        return renderContactForm()
+        return renderPersonalSection()
     }
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <Text style={styles.title}>{title}</Text>
-
-      {renderStepIndicator()}
-
-      {renderCurrentStep()}
-
-      <View style={styles.buttonContainer}>
-        <View style={styles.navigationButtons}>
-          {currentStep > 0 && (
-            <TouchableOpacity
-              onPress={prevStep}
-              style={styles.prevButton}>
-              <Ionicons
-                name='chevron-back'
-                size={20}
-                color='#007BFF'
-              />
-              <Text style={styles.prevButtonText}>Previous</Text>
-            </TouchableOpacity>
-          )}
-
-          {currentStep < steps.length - 1 ? (
-            <TouchableOpacity
-              onPress={nextStep}
-              style={styles.nextButton}>
-              <Text style={styles.nextButtonText}>Next</Text>
-              <Ionicons
-                name='chevron-forward'
-                size={20}
-                color='#fff'
-              />
-            </TouchableOpacity>
-          ) : (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.container}>
+        {renderSectionTabs()}
+        {/* Main Container */}
+        <View style={styles.mainContainer}>
+          <ScrollView
+            style={styles.formContent}
+            showsVerticalScrollIndicator={false}>
+            {renderCurrentSection()}
+          </ScrollView>
+          <View style={styles.buttonContainer}>
+            {showCancel && (
+              <TouchableOpacity
+                onPress={onCancel}
+                style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={handleSubmit}
               style={styles.saveButton}>
-              <Ionicons
-                name='checkmark'
-                size={20}
-                color='#fff'
-              />
-              <Text style={styles.saveButtonText}>Save Business Card</Text>
+              <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-
-        {showCancel && (
-          <TouchableOpacity
-            onPress={onCancel}
-            style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
+
+export default BusinessCardForm
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
+  },
+  mainContainer: {
+    flex: 1,
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 24,
@@ -859,111 +984,96 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     color: "#1a1a1a",
-  },
-  stepIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 20,
-    marginBottom: 30,
+    paddingTop: 20,
   },
-  stepItem: {
+
+  // Tab Styles
+  tabScrollView: {
+    maxHeight: 50,
+    marginBottom: 20,
+  },
+  tabContainer: {
+    paddingHorizontal: 20,
+    flexDirection: "row",
+  },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginRight: 12,
+    borderRadius: 25,
+    backgroundColor: "#f8f9fa",
+    minWidth: 80,
     alignItems: "center",
-    flex: 1,
   },
-  stepCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#e1e5e9",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  stepCircleActive: {
+  activeTabButton: {
     backgroundColor: "#007BFF",
   },
-  stepNumber: {
-    fontSize: 12,
+  tabText: {
+    fontSize: 14,
     fontWeight: "600",
     color: "#666",
   },
-  stepNumberActive: {
+  activeTabText: {
     color: "#fff",
   },
-  stepLabel: {
-    fontSize: 10,
-    color: "#666",
-    textAlign: "center",
-    // maxWidth: 80,
-    overflow: "hidden",
-    // height: 20,
-  },
-  stepLabelActive: {
-    color: "#007BFF",
-    fontWeight: "600",
-  },
-  stepLine: {
-    position: "absolute",
-    top: 15,
-    left: "60%",
-    right: "-40%",
-    height: 2,
-    backgroundColor: "#e1e5e9",
-  },
-  stepLineActive: {
-    backgroundColor: "#007BFF",
-  },
-  stepContent: {
+
+  // Form Content
+  formContent: {
     flex: 1,
-  },
-  section: {
-    marginBottom: 25,
     paddingHorizontal: 20,
+  },
+
+  // Section Styles
+  section: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 20,
+    fontStyle: "italic",
+  },
+  subSectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 20,
+    marginBottom: 15,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#f0f8ff",
-    borderRadius: 16,
-  },
-  addButtonText: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: "#007BFF",
-    fontWeight: "500",
-  },
+
+  // Input Styles
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#e1e5e9",
     borderRadius: 12,
-    marginBottom: 15,
+    marginBottom: 16,
     paddingHorizontal: 15,
     backgroundColor: "#f8f9fa",
+    minHeight: 50,
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    height: 50,
     fontSize: 16,
     color: "#333",
+    paddingVertical: 0,
   },
   textAreaContainer: {
     flexDirection: "row",
@@ -973,6 +1083,7 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: "#f8f9fa",
     alignItems: "flex-start",
+    marginBottom: 16,
   },
   textAreaIcon: {
     marginRight: 12,
@@ -980,17 +1091,22 @@ const styles = StyleSheet.create({
   },
   textArea: {
     flex: 1,
-    minHeight: 100,
+    minHeight: 80,
     fontSize: 16,
     color: "#333",
+    textAlignVertical: "top",
   },
-  imageRow: {
+
+  // Image Picker Styles
+  imagePickerRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 20,
+    marginBottom: 25,
+    flexWrap: "wrap",
   },
   imagePickerContainer: {
     alignItems: "center",
+    marginBottom: 15,
   },
   imagePlaceholder: {
     borderWidth: 2,
@@ -1000,29 +1116,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f8f9fa",
   },
-  avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
-  coverPlaceholder: {
-    width: 160,
-    height: 90,
+  coverImagePlaceholder: {
+    width: 140,
+    height: 80,
     borderRadius: 12,
   },
-  avatarPreview: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
+  logoImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
   },
-  coverPreview: {
-    width: 160,
-    height: 90,
+  profileImagePreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: "#007BFF",
+  },
+  coverImagePreview: {
+    width: 140,
+    height: 80,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#e1e5e9",
+    borderColor: "#007BFF",
+  },
+  logoImagePreview: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#007BFF",
   },
   imagePlaceholderText: {
     marginTop: 8,
@@ -1030,26 +1158,52 @@ const styles = StyleSheet.create({
     color: "#999",
     textAlign: "center",
   },
+
+  // Item Container (Services/Products)
   itemContainer: {
     backgroundColor: "#f8f9fa",
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 15,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#007BFF",
   },
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   itemTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
   },
-  removeButton: {
-    padding: 5,
+
+  // Button Styles
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "#e3f2fd",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#007BFF",
   },
+  addButtonText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#007BFF",
+    fontWeight: "600",
+  },
+  removeButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#ffebee",
+  },
+
+  // Gallery Styles
   galleryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1058,26 +1212,29 @@ const styles = StyleSheet.create({
   galleryItem: {
     width: "48%",
     aspectRatio: 1,
-    marginBottom: 10,
+    marginBottom: 15,
     position: "relative",
+    borderRadius: 12,
+    overflow: "hidden",
   },
   galleryImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 12,
   },
   removeImageButton: {
     position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
     justifyContent: "center",
     alignItems: "center",
   },
-  emptyGallery: {
+
+  // Empty States
+  emptyState: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 40,
@@ -1087,57 +1244,49 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#f8f9fa",
   },
-  emptyGalleryText: {
-    marginTop: 10,
+  emptyStateText: {
+    marginTop: 15,
     fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
+  },
+  emptyStateSubtext: {
+    marginTop: 5,
+    fontSize: 14,
     color: "#999",
     textAlign: "center",
   },
-  buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-  },
-  navigationButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  prevButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: "#f0f8ff",
-    borderRadius: 12,
-  },
-  prevButtonText: {
-    marginLeft: 5,
-    fontSize: 16,
-    color: "#007BFF",
-    fontWeight: "500",
-  },
-  nextButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: "#007BFF",
-    borderRadius: 12,
-  },
-  nextButtonText: {
-    marginRight: 5,
-    fontSize: 16,
-    color: "#fff",
-    fontWeight: "600",
-  },
-  saveButton: {
-    flexDirection: "row",
+  emptyGallery: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 15,
-    backgroundColor: "#28a745",
+    paddingVertical: 50,
+    borderWidth: 2,
+    borderColor: "#e1e5e9",
+    borderStyle: "dashed",
     borderRadius: 12,
+    backgroundColor: "#f8f9fa",
+  },
+  emptyGalleryText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
+  },
+
+  // Bottom Button Container
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingBottom: 30,
+    backgroundColor: "#fff",
+  },
+  saveButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+    width: 100,
+    backgroundColor: "#3abf59ff",
+    borderRadius: 18,
     shadowColor: "#28a745",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -1145,14 +1294,17 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   saveButtonText: {
-    marginLeft: 8,
     fontSize: 16,
     color: "#fff",
     fontWeight: "600",
   },
   cancelButton: {
     alignItems: "center",
-    paddingVertical: 12,
+    justifyContent: "center",
+    width: 100,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 18,
   },
   cancelButtonText: {
     color: "#ff4444",
