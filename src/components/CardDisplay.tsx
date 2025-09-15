@@ -8,6 +8,9 @@ import {
   ScrollView,
   Linking,
   Alert,
+  Modal,
+  TouchableWithoutFeedback,
+  Dimensions,
 } from "react-native"
 import {
   Ionicons,
@@ -19,6 +22,8 @@ import { COLORS } from "../utils/constants"
 import { useAuth } from "../context/AuthContext"
 import { postData, deleteData, getData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 
 interface BusinessCard {
   id?: string
@@ -54,6 +59,7 @@ interface BusinessCard {
   role?: string
   business_description?: string
   isSaved?: boolean
+  qr_code?: string // QR code field
 }
 
 interface CardDisplayProps {
@@ -77,6 +83,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   const [activeTab, setActiveTab] = useState("Contact")
   const [isSaved, setIsSaved] = useState(businessCard?.isSaved || false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
 
   const cardId = businessCard?.id || businessCard?._id
 
@@ -86,7 +93,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     onPress,
   }) => (
     <TouchableOpacity
-      style={[styles.tabButton, isActive && styles.activeTabButton]}
+      style={[activeTab === title && styles.activeTabButton]}
       onPress={onPress}>
       <Text style={[styles.tabText, isActive && styles.activeTabText]}>
         {title}
@@ -130,18 +137,15 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     setIsLoading(true)
     try {
       if (isSaved) {
-        // Unsave the card
         await deleteData(endpoints.unsaveCard(cardId))
         setIsSaved(false)
         Alert.alert("Success", "Card removed from saved collection")
       } else {
-        // Save the card
         await postData(endpoints.saveCard(cardId), {})
         setIsSaved(true)
         Alert.alert("Success", "Card saved to your collection")
       }
 
-      // Notify parent component if callback is provided
       if (onSaveToggle) {
         onSaveToggle(cardId, !isSaved)
       }
@@ -156,12 +160,107 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     }
   }
 
+  const handleQRCode = (): void => {
+    if (!businessCard?.qr_code) {
+      Alert.alert("QR Code", "QR code not available for this card")
+      return
+    }
+    setShowQRModal(true)
+  }
+
+  const closeQRModal = () => {
+    setShowQRModal(false)
+  }
+
+  // QR Code Modal Component
+  const QRCodeModal = () => (
+    <Modal
+      animationType='fade'
+      transparent={true}
+      visible={showQRModal}
+      onRequestClose={closeQRModal}>
+      <TouchableWithoutFeedback onPress={closeQRModal}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.modalContainer}>
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={closeQRModal}
+                activeOpacity={0.7}>
+                <Ionicons
+                  name='close'
+                  size={24}
+                  color='#333'
+                />
+              </TouchableOpacity>
+
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <MaterialIcons
+                  name='qr-code'
+                  size={32}
+                  color='#2196F3'
+                />
+                <Text style={styles.modalTitle}>QR Code</Text>
+                <Text style={styles.modalSubtitle}>
+                  Scan to view {businessCard?.name || "this"} business card
+                </Text>
+              </View>
+
+              {/* QR Code Container */}
+              <View style={styles.qrContainer}>
+                {businessCard?.qr_code ? (
+                  <Image
+                    source={{ uri: businessCard.qr_code }}
+                    style={styles.qrCodeImage}
+                    resizeMode='contain'
+                  />
+                ) : (
+                  <View style={styles.qrPlaceholder}>
+                    <MaterialIcons
+                      name='qr-code'
+                      size={100}
+                      color='#ccc'
+                    />
+                    <Text style={styles.qrPlaceholderText}>
+                      QR Code Not Available
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Card Info */}
+              <View style={styles.modalCardInfo}>
+                <Text style={styles.modalCardName}>
+                  {businessCard?.name || "Business Card"}
+                </Text>
+                <Text style={styles.modalCardRole}>
+                  {businessCard?.role ||
+                    businessCard?.company ||
+                    "Professional"}
+                </Text>
+              </View>
+
+              {/* Instructions */}
+              <View style={styles.instructionsContainer}>
+                <Text style={styles.instructionsText}>
+                  Point your camera at the QR code to instantly access this
+                  business card
+                </Text>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  )
+
   const renderTabContent = (): JSX.Element | null => {
     switch (activeTab) {
       case "Contact":
         return (
           <View style={styles.contactSection}>
-            {/* Personal Contact Section */}
             <Text style={styles.sectionTitle}>Personal Contact</Text>
             <View style={styles.contactItem}>
               <View style={styles.contactIconContainer}>
@@ -200,7 +299,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               </View>
             )}
 
-            {/* Business Contact Section */}
             <Text style={styles.sectionTitle}>Business Contact</Text>
             <View style={styles.contactItem}>
               <View style={styles.contactIconContainer}>
@@ -255,7 +353,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               </TouchableOpacity>
             )}
 
-            {/* Social Media Section */}
             <Text style={styles.sectionTitle}>Social Media</Text>
             <View style={styles.socialMediaContainer}>
               <TouchableOpacity
@@ -453,12 +550,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
 
   const handleShare = (): void => {
     console.log("Share button pressed")
-    // Add share functionality here
-  }
-
-  const handleQRCode = (): void => {
-    console.log("QR Code button pressed")
-    // Add QR code functionality here
   }
 
   useEffect(() => {
@@ -592,19 +683,125 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         {/* Tab Content */}
         <View style={styles.tabContent}>{renderTabContent()}</View>
       </View>
+
+      {/* QR Code Modal */}
+      <QRCodeModal />
     </ScrollView>
   )
 }
 
 export default CardDisplay
 
-// Keep all existing styles and add the new save button style
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // alignItems: "center",
     gap: 20,
   },
+
+  // QR Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 24,
+    width: screenWidth * 0.9,
+    maxWidth: 400,
+    maxHeight: screenHeight * 0.8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  modalHeader: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  qrContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    minHeight: 200,
+  },
+  qrCodeImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+  },
+  qrPlaceholder: {
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: 0.5,
+  },
+  qrPlaceholderText: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  modalCardInfo: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalCardName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  modalCardRole: {
+    fontSize: 14,
+    color: "#666",
+  },
+  instructionsContainer: {
+    backgroundColor: "#e3f2fd",
+    borderRadius: 12,
+    padding: 16,
+  },
+  instructionsText: {
+    fontSize: 13,
+    color: "#1976d2",
+    textAlign: "center",
+    lineHeight: 18,
+    fontWeight: "500",
+  },
+
+  // Existing styles (keep all your existing styles)
   saveButton: {
     position: "absolute",
     top: 15,
@@ -619,7 +816,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.3)",
   },
-  // ... keep all your existing styles from the original file
   galleryImage: {
     width: "100%",
     height: "100%",
@@ -759,6 +955,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    justifyContent: "space-around",
   },
   tabButton: {
     flex: 1,
@@ -838,7 +1035,6 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "500",
   },
-  // Services Styles
   serviceCard: {
     backgroundColor: "#f8f9fa",
     borderRadius: 15,
@@ -903,7 +1099,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  // Products Styles
   productCard: {
     flexDirection: "row",
     backgroundColor: "#f8f9fa",
@@ -971,7 +1166,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  // Gallery Styles
   galleryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",

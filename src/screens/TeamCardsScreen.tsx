@@ -6,15 +6,17 @@ import {
   Alert,
   RefreshControl,
   ScrollView,
+  TouchableOpacity,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
 import SearchBar from "../components/SearchBar"
+import TeamCardForm from "../components/TeamCardForm"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
-import { getData } from "../api/apiServices"
+import { getData, postData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 
 interface TeamCard {
@@ -80,6 +82,8 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     fetchTeamCards()
@@ -119,6 +123,110 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
     setRefreshing(true)
     await fetchTeamCards()
     setRefreshing(false)
+  }
+
+  const handleCreateCard = async (formData: any, imageFiles: any) => {
+    try {
+      setCreating(true)
+
+      // Create FormData for multipart upload
+      const createData = new FormData()
+
+      // Add form fields
+      createData.append("name", formData.name || "")
+      createData.append("email", formData.email || "")
+      createData.append("phone", formData.phone || "")
+      createData.append("role", formData.role || "")
+      createData.append("company", formData.company || "")
+      createData.append(
+        "business_description",
+        formData.business_description || ""
+      )
+      createData.append("business_phone", formData.business_phone || "")
+      createData.append("business_email", formData.business_email || "")
+      createData.append("website", formData.website || "")
+      createData.append("address", formData.address || "")
+      createData.append("linkedin_url", formData.linkedin_url || "")
+      createData.append("twitter_url", formData.twitter_url || "")
+      createData.append("facebook_url", formData.facebook_url || "")
+      createData.append("instagram_url", formData.instagram_url || "")
+      createData.append("youtube_url", formData.youtube_url || "")
+
+      // Add image files
+      if (imageFiles.profile_image) {
+        createData.append("profile_image", {
+          uri: imageFiles.profile_image.uri,
+          type: imageFiles.profile_image.type,
+          name: imageFiles.profile_image.name,
+        } as any)
+      }
+
+      if (imageFiles.business_cover_photo) {
+        createData.append("business_cover_photo", {
+          uri: imageFiles.business_cover_photo.uri,
+          type: imageFiles.business_cover_photo.type,
+          name: imageFiles.business_cover_photo.name,
+        } as any)
+      }
+
+      if (imageFiles.business_logo) {
+        createData.append("business_logo", {
+          uri: imageFiles.business_logo.uri,
+          type: imageFiles.business_logo.type,
+          name: imageFiles.business_logo.name,
+        } as any)
+      }
+
+      if (imageFiles.gallery && imageFiles.gallery.length > 0) {
+        imageFiles.gallery.forEach((image: any, index: number) => {
+          createData.append(`gallery_${index}`, {
+            uri: image.uri,
+            type: image.type,
+            name: image.name,
+          } as any)
+        })
+      }
+
+      // Make API call
+      const response = await postData(endpoints.createTeamCard, createData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      Alert.alert("Success", "Team card created successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            setShowCreateForm(false)
+            fetchTeamCards() // Refresh the list
+          },
+        },
+      ])
+    } catch (error) {
+      console.error("Error creating team card:", error)
+      Alert.alert("Error", "Failed to create team card. Please try again.")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const handleCancelCreate = () => {
+    Alert.alert(
+      "Cancel Creation",
+      "Are you sure you want to cancel? All entered data will be lost.",
+      [
+        {
+          text: "Continue Editing",
+          style: "cancel",
+        },
+        {
+          text: "Cancel",
+          style: "destructive",
+          onPress: () => setShowCreateForm(false),
+        },
+      ]
+    )
   }
 
   const filterCards = (text: string) => {
@@ -178,7 +286,8 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
           onPress: async () => {
             try {
               // You can implement delete API call here if needed
-              // await axios.delete(`${API_BASE_URL}/team-card/${cardId}`)
+              // await deleteData(endpoints.deleteTeamCard(cardId))
+
               // For now, just remove from local state
               setTeamCards((prev) => prev.filter((card) => card._id !== cardId))
               Alert.alert("Success", "Team card removed successfully!")
@@ -207,6 +316,26 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
     }
   }
 
+  if (showCreateForm) {
+    return (
+      <View style={styles.container}>
+        <TeamCardForm
+          onSave={handleCreateCard}
+          onCancel={handleCancelCreate}
+          showCancel={true}
+          isCreating={true}
+          title='Create Team Card'
+        />
+        {creating && (
+          <View>
+            <LoadingSpinner />
+            <Text style={styles.loadingText}>Creating team card...</Text>
+          </View>
+        )}
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <Header />
@@ -227,7 +356,20 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
           </Text>
         </View>
       </View>
-
+      {/* Create Button */}
+      <View style={styles.createButtonContainer}>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => setShowCreateForm(true)}
+          activeOpacity={0.8}>
+          <MaterialIcons
+            name='add'
+            size={24}
+            color='#fff'
+          />
+          <Text style={styles.createButtonText}>Create Team Card</Text>
+        </TouchableOpacity>
+      </View>
       {/* Search Bar */}
       <SearchBar
         placeholder='Search by name, role, department, company...'
@@ -236,7 +378,6 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
         onClear={handleClearSearch}
         style={styles.searchBarContainer}
       />
-
       {/* Content Section */}
       <View style={styles.contentWrapper}>
         {!loading ? (
@@ -331,6 +472,30 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 20,
   },
+  createButtonContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2196F3",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    shadowColor: "#2196F3",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  createButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
   searchBarContainer: {
     paddingBottom: 8,
   },
@@ -346,5 +511,11 @@ const styles = StyleSheet.create({
   },
   dataContainer: {
     paddingTop: 12,
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+    marginTop: 16,
   },
 })
