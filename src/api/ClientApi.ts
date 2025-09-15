@@ -45,6 +45,7 @@ export const endpoints = {
 
   // Saved Cards endpoints
   getSavedCards: `${BASE_URL}/business-cards/saved`,
+  saveCard:(id: string) => `${BASE_URL}/business-cards/save/${id}`,
   unsaveCard: (id: string) => `${BASE_URL}/business-cards/saved/${id}`,
 
   // Team Cards endpoints
@@ -54,7 +55,8 @@ export const endpoints = {
   // Business Cards endpoints
   getBusinessCards: `${BASE_URL}/business-cards`,
   deleteBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
-  
+
+
 };
 
 export default api

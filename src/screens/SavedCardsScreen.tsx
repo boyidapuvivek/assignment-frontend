@@ -8,10 +8,10 @@ import {
   ScrollView,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
+import SearchBar from "../components/SearchBar"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData } from "../api/apiServices"
@@ -64,38 +64,46 @@ interface SavedCard {
   saved_at?: string
 }
 
-const API_BASE_URL = "http://192.168.3.172:5000/api"
+interface SavedCardsScreenProps {
+  navigation: any
+}
 
-export default function SavedCardsScreen() {
+export default function SavedCardsScreen({
+  navigation,
+}: SavedCardsScreenProps) {
   const { user, token } = useAuth()
   const [savedCards, setSavedCards] = useState<SavedCard[]>([])
+  const [filteredCards, setFilteredCards] = useState<SavedCard[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     fetchSavedCards()
   }, [])
 
+  // Filter cards whenever searchQuery or savedCards change
+  useEffect(() => {
+    filterCards(searchQuery)
+  }, [searchQuery, savedCards])
+
   const fetchSavedCards = async () => {
     try {
       setLoading(true)
-      // const response = await axios.get(`${API_BASE_URL}/business-cards/saved`, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // })
-
       const response = await getData(endpoints.getSavedCards)
+      let cards: SavedCard[] = []
+
       if (response.data && Array.isArray(response.data)) {
-        setSavedCards(response.data)
+        cards = response.data
       } else if (
         response.data?.savedCards &&
         Array.isArray(response.data.savedCards)
       ) {
-        setSavedCards(response.data.savedCards)
-      } else {
-        setSavedCards([])
+        cards = response.data.savedCards
       }
+
+      setSavedCards(cards)
+      setFilteredCards(cards)
     } catch (error) {
       console.error("Error fetching saved cards:", error)
       Alert.alert(
@@ -103,6 +111,7 @@ export default function SavedCardsScreen() {
         "Failed to fetch saved cards. Please check your connection and try again."
       )
       setSavedCards([])
+      setFilteredCards([])
     } finally {
       setLoading(false)
     }
@@ -112,6 +121,43 @@ export default function SavedCardsScreen() {
     setRefreshing(true)
     await fetchSavedCards()
     setRefreshing(false)
+  }
+
+  const filterCards = (text: string) => {
+    setSearchQuery(text)
+
+    if (text === "") {
+      setFilteredCards(savedCards)
+      return
+    }
+
+    const filtered = savedCards.filter((card) => {
+      const searchableFields = [
+        card.name?.toLowerCase() || "",
+        card.company?.toLowerCase() || "",
+        card.role?.toLowerCase() || "",
+        card.business_description?.toLowerCase() || "",
+        card.email?.toLowerCase() || "",
+        card.business_email?.toLowerCase() || "",
+        card.phone || "",
+        card.business_phone || "",
+        card.address?.toLowerCase() || "",
+        card.website?.toLowerCase() || "",
+        card.custom_notes?.toLowerCase() || "",
+        ...card.services.map((s) => s.name?.toLowerCase() || ""),
+        ...card.products.map((p) => p.name?.toLowerCase() || ""),
+      ]
+
+      const searchText = text.toLowerCase()
+      return searchableFields.some((field) => field.includes(searchText))
+    })
+
+    setFilteredCards(filtered)
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery("")
+    setFilteredCards(savedCards)
   }
 
   const handleRemoveCard = async (cardId: string) => {
@@ -132,7 +178,6 @@ export default function SavedCardsScreen() {
               // await axios.delete(`${API_BASE_URL}/business-cards/saved/${cardId}`, {
               //   headers: { Authorization: `Bearer ${token}` }
               // })
-
               // For now, just remove from local state
               setSavedCards((prev) =>
                 prev.filter((card) => card._id !== cardId)
@@ -163,51 +208,68 @@ export default function SavedCardsScreen() {
     }))
   }
 
+  const getResultsText = () => {
+    if (searchQuery === "") {
+      return savedCards.length > 0
+        ? `You have ${savedCards.length} saved card${
+            savedCards.length !== 1 ? "s" : ""
+          }`
+        : "No saved cards yet"
+    } else {
+      return filteredCards.length > 0
+        ? `Found ${filteredCards.length} saved card${
+            filteredCards.length !== 1 ? "s" : ""
+          } for "${searchQuery}"`
+        : `No saved cards match "${searchQuery}"`
+    }
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <Header />
+      {/* Header Section */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
               name='bookmark'
               size={32}
-              color={COLORS.primary}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.headerTitle}>Saved Cards</Text>
           </View>
           <Text style={styles.subtitle}>
-            {savedCards.length > 0
-              ? `You have ${savedCards.length} saved card${
-                  savedCards.length !== 1 ? "s" : ""
-                }`
-              : loading
-              ? "Loading..."
-              : "No saved cards yet"}
+            {loading ? "Loading..." : getResultsText()}
           </Text>
         </View>
       </View>
 
+      {/* Search Bar */}
+      <SearchBar
+        placeholder='Search by name, company, role, services...'
+        value={searchQuery}
+        onChangeText={filterCards}
+        onClear={handleClearSearch}
+        style={styles.searchBarContainer}
+      />
+
       {/* Content Section */}
-      {!loading ? (
-        <View style={styles.contentWrapper}>
+      <View style={styles.contentWrapper}>
+        {!loading ? (
           <ScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={[COLORS.primary]}
-                tintColor={COLORS.primary}
               />
-            }
-            showsVerticalScrollIndicator={false}>
+            }>
             <View style={styles.dataContainer}>
               <CardList
-                cards={savedCards.map((card) => ({
+                cards={filteredCards.map((card) => ({
                   id: card._id,
                   name: card.name,
                   email: card.email,
@@ -231,16 +293,19 @@ export default function SavedCardsScreen() {
                   instagram_url: card.instagram_url,
                   youtube_url: card.youtube_url,
                 }))}
-                onDelete={handleRemoveCard}
-                emptyMessage='No saved cards yet. Start saving interesting business cards you discover!'
-                showDeleteButton={true}
+                emptyMessage={
+                  searchQuery === ""
+                    ? "No saved cards yet. Start saving interesting business cards you discover!"
+                    : `No saved cards match "${searchQuery}". Try adjusting your search terms.`
+                }
+                navigation={navigation}
               />
             </View>
           </ScrollView>
-        </View>
-      ) : (
-        <LoadingSpinner />
-      )}
+        ) : (
+          <LoadingSpinner />
+        )}
+      </View>
     </View>
   )
 }
@@ -281,6 +346,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 20,
   },
+  searchBarContainer: {
+    paddingBottom: 8,
+  },
   contentWrapper: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -292,8 +360,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   dataContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    gap: 20,
+    paddingTop: 12,
   },
 })

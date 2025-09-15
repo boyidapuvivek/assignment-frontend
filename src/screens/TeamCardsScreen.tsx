@@ -8,10 +8,10 @@ import {
   ScrollView,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
+import SearchBar from "../components/SearchBar"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData } from "../api/apiServices"
@@ -69,28 +69,39 @@ interface TeamCard {
   }
 }
 
-const API_BASE_URL = "http://192.168.3.172:5000/api"
+interface TeamCardsScreenProps {
+  navigation: any
+}
 
-export default function TeamCardsScreen() {
+export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
   const { user, token } = useAuth()
   const [teamCards, setTeamCards] = useState<TeamCard[]>([])
+  const [filteredCards, setFilteredCards] = useState<TeamCard[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     fetchTeamCards()
   }, [])
 
+  // Filter cards whenever searchQuery or teamCards change
+  useEffect(() => {
+    filterCards(searchQuery)
+  }, [searchQuery, teamCards])
+
   const fetchTeamCards = async () => {
     try {
       setLoading(true)
       const response = await getData(endpoints.getTeamCards)
+      let cards: TeamCard[] = []
 
       if (response.data && Array.isArray(response.data)) {
-        setTeamCards(response.data)
-      } else {
-        setTeamCards([])
+        cards = response.data
       }
+
+      setTeamCards(cards)
+      setFilteredCards(cards)
     } catch (error) {
       console.error("Error fetching team cards:", error)
       Alert.alert(
@@ -98,6 +109,7 @@ export default function TeamCardsScreen() {
         "Failed to fetch team cards. Please check your connection and try again."
       )
       setTeamCards([])
+      setFilteredCards([])
     } finally {
       setLoading(false)
     }
@@ -107,6 +119,48 @@ export default function TeamCardsScreen() {
     setRefreshing(true)
     await fetchTeamCards()
     setRefreshing(false)
+  }
+
+  const filterCards = (text: string) => {
+    setSearchQuery(text)
+
+    if (text === "") {
+      setFilteredCards(teamCards)
+      return
+    }
+
+    const filtered = teamCards.filter((card) => {
+      const searchableFields = [
+        card.name?.toLowerCase() || "",
+        card.email?.toLowerCase() || "",
+        card.phone || "",
+        card.role?.toLowerCase() || "",
+        card.department?.toLowerCase() || "",
+        card.company?.toLowerCase() || "",
+        card.business_description?.toLowerCase() || "",
+        card.business_email?.toLowerCase() || "",
+        card.business_phone || "",
+        card.address?.toLowerCase() || "",
+        card.website?.toLowerCase() || "",
+        card.custom_notes?.toLowerCase() || "",
+        card.createdBy?.name?.toLowerCase() || "",
+        card.createdBy?.email?.toLowerCase() || "",
+        ...card.services.map((s) => s.name?.toLowerCase() || ""),
+        ...card.services.map((s) => s.description?.toLowerCase() || ""),
+        ...card.products.map((p) => p.name?.toLowerCase() || ""),
+        ...card.products.map((p) => p.description?.toLowerCase() || ""),
+      ]
+
+      const searchText = text.toLowerCase()
+      return searchableFields.some((field) => field.includes(searchText))
+    })
+
+    setFilteredCards(filtered)
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery("")
+    setFilteredCards(teamCards)
   }
 
   const handleDeleteCard = async (cardId: string) => {
@@ -125,7 +179,6 @@ export default function TeamCardsScreen() {
             try {
               // You can implement delete API call here if needed
               // await axios.delete(`${API_BASE_URL}/team-card/${cardId}`)
-
               // For now, just remove from local state
               setTeamCards((prev) => prev.filter((card) => card._id !== cardId))
               Alert.alert("Success", "Team card removed successfully!")
@@ -138,63 +191,106 @@ export default function TeamCardsScreen() {
     )
   }
 
+  const getResultsText = () => {
+    if (searchQuery === "") {
+      return teamCards.length > 0
+        ? `Discover ${teamCards.length} team member${
+            teamCards.length !== 1 ? "s" : ""
+          }`
+        : "No Team Cards Available"
+    } else {
+      return filteredCards.length > 0
+        ? `Found ${filteredCards.length} team member${
+            filteredCards.length !== 1 ? "s" : ""
+          } for "${searchQuery}"`
+        : `No team members match "${searchQuery}"`
+    }
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <Header />
+      {/* Header Section */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
               name='groups'
               size={32}
-              color={COLORS.primary}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.headerTitle}>Team Cards</Text>
           </View>
           <Text style={styles.subtitle}>
-            {teamCards.length > 0
-              ? `Discover ${teamCards.length} team member${
-                  teamCards.length !== 1 ? "s" : ""
-                }`
-              : loading
-              ? "Loading..."
-              : "No Team Cards Available"}
+            {loading ? "Loading..." : getResultsText()}
           </Text>
         </View>
       </View>
 
+      {/* Search Bar */}
+      <SearchBar
+        placeholder='Search by name, role, department, company...'
+        value={searchQuery}
+        onChangeText={filterCards}
+        onClear={handleClearSearch}
+        style={styles.searchBarContainer}
+      />
+
       {/* Content Section */}
-      {!loading ? (
-        <View style={styles.contentWrapper}>
+      <View style={styles.contentWrapper}>
+        {!loading ? (
           <ScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={[COLORS.primary]}
-                tintColor={COLORS.primary}
               />
-            }
-            showsVerticalScrollIndicator={false}>
+            }>
             <View style={styles.dataContainer}>
               <CardList
-                cards={teamCards.map((card) => ({
+                cards={filteredCards.map((card) => ({
                   id: card._id,
-                  ...card,
+                  name: card.name,
+                  email: card.email,
+                  phone: card.phone,
+                  role: card.role,
+                  department: card.department,
+                  profile_image: card.profile_image,
+                  company: card.company,
+                  business_description: card.business_description,
+                  business_phone: card.business_phone,
+                  business_email: card.business_email,
+                  business_cover_photo: card.business_cover_photo,
+                  website: card.website,
+                  address: card.address,
+                  linkedin_url: card.linkedin_url,
+                  twitter_url: card.twitter_url,
+                  facebook_url: card.facebook_url,
+                  instagram_url: card.instagram_url,
+                  youtube_url: card.youtube_url,
+                  services: card.services,
+                  products: card.products,
+                  gallery: card.gallery,
+                  theme: card.theme,
+                  cardDesign: card.cardDesign,
                 }))}
-                onDelete={handleDeleteCard}
-                emptyMessage="No team cards found. Team members haven't created their cards yet."
+                emptyMessage={
+                  searchQuery === ""
+                    ? "No team cards found. Team members haven't created their cards yet."
+                    : `No team members match "${searchQuery}". Try adjusting your search terms.`
+                }
+                navigation={navigation}
               />
             </View>
           </ScrollView>
-        </View>
-      ) : (
-        <LoadingSpinner />
-      )}
+        ) : (
+          <LoadingSpinner />
+        )}
+      </View>
     </View>
   )
 }
@@ -235,6 +331,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 20,
   },
+  searchBarContainer: {
+    paddingBottom: 8,
+  },
   contentWrapper: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -246,8 +345,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   dataContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    gap: 20,
+    paddingTop: 12,
   },
 })

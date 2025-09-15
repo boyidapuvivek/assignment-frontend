@@ -1,3 +1,4 @@
+// screens/BusinessCardsScreen.tsx
 import React, { useState, useEffect } from "react"
 import {
   View,
@@ -8,10 +9,10 @@ import {
   ScrollView,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
+import SearchBar from "../components/SearchBar"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData } from "../api/apiServices"
@@ -63,35 +64,46 @@ interface BusinessCard {
   updated_at: string
 }
 
-const API_BASE_URL = "http://192.168.3.172:5000/api"
+interface BusinessCardsScreenProps {
+  navigation: any
+}
 
-export default function BusinessCardsScreen() {
+export default function BusinessCardsScreen({
+  navigation,
+}: BusinessCardsScreenProps) {
   const { user, token } = useAuth()
   const [businessCards, setBusinessCards] = useState<BusinessCard[]>([])
+  const [filteredCards, setFilteredCards] = useState<BusinessCard[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     fetchBusinessCards()
   }, [])
 
+  // Filter cards whenever searchQuery or businessCards change
+  useEffect(() => {
+    filterCards(searchQuery)
+  }, [searchQuery, businessCards])
+
   const fetchBusinessCards = async () => {
     try {
       setLoading(true)
       const response = await getData(endpoints.getBusinessCards)
+      let cards: BusinessCard[] = []
+
       if (response.data && Array.isArray(response.data)) {
-        const filterOwner = response.data.filter(
-          (item) => item.isOwner !== true
-        )
-        setBusinessCards(filterOwner)
+        cards = response.data.filter((item: any) => item.isOwner !== true)
       } else if (
         response.data?.businessCards &&
         Array.isArray(response.data.businessCards)
       ) {
-        setBusinessCards(response.data.businessCards)
-      } else {
-        setBusinessCards([])
+        cards = response.data.businessCards
       }
+
+      setBusinessCards(cards)
+      setFilteredCards(cards)
     } catch (error) {
       console.error("Error fetching business cards:", error)
       Alert.alert(
@@ -99,6 +111,7 @@ export default function BusinessCardsScreen() {
         "Failed to fetch business cards. Please check your connection and try again."
       )
       setBusinessCards([])
+      setFilteredCards([])
     } finally {
       setLoading(false)
     }
@@ -110,42 +123,36 @@ export default function BusinessCardsScreen() {
     setRefreshing(false)
   }
 
-  //in future if need to delete sent this as a prop to CardList
-  //onDelete={handleDeleteCard}
-  // showDeleteButton={true}
-  //
-  // const handleDeleteCard = async (cardId: string) => {
-  //   Alert.alert(
-  //     "Delete Business Card",
-  //     "Are you sure you want to remove this business card?",
-  //     [
-  //       {
-  //         text: "Cancel",
-  //         style: "cancel",
-  //       },
-  //       {
-  //         text: "Delete",
-  //         style: "destructive",
-  //         onPress: async () => {
-  //           try {
-  //             // You can implement delete API call here if needed
-  //             // await axios.delete(`${API_BASE_URL}/business-cards/${cardId}`, {
-  //             //   headers: { Authorization: `Bearer ${token}` }
-  //             // })
+  const filterCards = (text: string) => {
+    setSearchQuery(text)
 
-  //             // For now, just remove from local state
-  //             setBusinessCards((prev) =>
-  //               prev.filter((card) => card._id !== cardId)
-  //             )
-  //             Alert.alert("Success", "Business card removed successfully!")
-  //           } catch (error) {
-  //             Alert.alert("Error", "Failed to delete business card")
-  //           }
-  //         },
-  //       },
-  //     ]
-  //   )
-  // }
+    if (text === "") {
+      setFilteredCards(businessCards)
+      return
+    }
+
+    const filtered = businessCards.filter((card) => {
+      const searchableFields = [
+        card.name?.toLowerCase() || "",
+        card.company?.toLowerCase() || "",
+        card.role?.toLowerCase() || "",
+        card.email?.toLowerCase() || "",
+        card.business_email?.toLowerCase() || "",
+        card.phone || "",
+        card.business_phone || "",
+      ]
+
+      const searchText = text.toLowerCase()
+      return searchableFields.some((field) => field.includes(searchText))
+    })
+
+    setFilteredCards(filtered)
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery("")
+    setFilteredCards(businessCards)
+  }
 
   const formatServicesForDisplay = (services: BusinessCard["services"]) => {
     return services.map((service) => ({
@@ -163,51 +170,68 @@ export default function BusinessCardsScreen() {
     }))
   }
 
+  const getResultsText = () => {
+    if (searchQuery === "") {
+      return businessCards.length > 0
+        ? `Explore ${businessCards.length} business card${
+            businessCards.length !== 1 ? "s" : ""
+          }`
+        : "No Business Cards Available"
+    } else {
+      return filteredCards.length > 0
+        ? `Found ${filteredCards.length} result${
+            filteredCards.length !== 1 ? "s" : ""
+          } for "${searchQuery}"`
+        : `No results found for "${searchQuery}"`
+    }
+  }
+
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <Header />
+      {/* Header Section */}
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <MaterialIcons
-              name='business'
+              name='business-center'
               size={32}
-              color={COLORS.primary}
+              color='#2196F3'
               style={styles.titleIcon}
             />
             <Text style={styles.headerTitle}>Business Cards</Text>
           </View>
           <Text style={styles.subtitle}>
-            {businessCards.length > 0
-              ? `Explore ${businessCards.length} business card${
-                  businessCards.length !== 1 ? "s" : ""
-                }`
-              : loading
-              ? "Loading..."
-              : "No Business Cards Available"}
+            {loading ? "Loading..." : getResultsText()}
           </Text>
         </View>
       </View>
 
+      {/* Search Bar */}
+      <SearchBar
+        placeholder='Search by name, company, role, services...'
+        value={searchQuery}
+        onChangeText={filterCards}
+        onClear={handleClearSearch}
+        style={styles.searchBarContainer}
+      />
+
       {/* Content Section */}
-      {!loading ? (
-        <View style={styles.contentWrapper}>
+      <View style={styles.contentWrapper}>
+        {!loading ? (
           <ScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={[COLORS.primary]}
-                tintColor={COLORS.primary}
               />
-            }
-            showsVerticalScrollIndicator={false}>
+            }>
             <View style={styles.dataContainer}>
               <CardList
-                cards={businessCards.map((card) => ({
+                cards={filteredCards.map((card) => ({
                   id: card._id,
                   name: card.name,
                   email: card.email,
@@ -231,14 +255,19 @@ export default function BusinessCardsScreen() {
                   instagram_url: card.instagram_url,
                   youtube_url: card.youtube_url,
                 }))}
-                emptyMessage='No business cards found. Start exploring business opportunities by creating connections!'
+                emptyMessage={
+                  searchQuery === ""
+                    ? "No business cards found. Start exploring business opportunities by creating connections!"
+                    : `No business cards match "${searchQuery}". Try adjusting your search terms.`
+                }
+                navigation={navigation}
               />
             </View>
           </ScrollView>
-        </View>
-      ) : (
-        <LoadingSpinner />
-      )}
+        ) : (
+          <LoadingSpinner />
+        )}
+      </View>
     </View>
   )
 }
@@ -279,6 +308,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     lineHeight: 20,
   },
+  searchBarContainer: {
+    paddingBottom: 8,
+  },
   contentWrapper: {
     flex: 1,
     backgroundColor: COLORS.white,
@@ -290,8 +322,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   dataContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    gap: 20,
+    paddingTop: 12,
   },
 })

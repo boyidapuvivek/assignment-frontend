@@ -6,6 +6,7 @@ import BottomTabNavigator from "./BottomTabNavigator"
 import ProfileScreen from "../screens/ProfileScreen"
 import { ActivityIndicator, View } from "react-native"
 import MyCardScreen from "../screens/MyCardScreen"
+import DetailedCardScreen from "../screens/DetailedCardScreen"
 
 const Stack = createStackNavigator()
 
@@ -31,6 +32,10 @@ export default function AppNavigator() {
           <Stack.Screen
             name='Profile'
             component={ProfileScreen}
+          />
+          <Stack.Screen
+            name='DetailedCardScreen'
+            component={DetailedCardScreen}
           />
         </>
       ) : (

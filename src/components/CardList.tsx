@@ -1,13 +1,8 @@
 import React from "react"
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native"
+import { View, Text, ScrollView, StyleSheet } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import CardDisplay from "./CardDisplay"
+import BusinessCardsDisplay from "./BusinessesCardDisplay"
+import { useNavigation } from "@react-navigation/native"
 
 interface Card {
   id: string
@@ -55,13 +50,24 @@ interface CardListProps {
 }
 
 const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
+  const navigation = useNavigation<any>()
+
+  const handleCardPress = (card: Card) => {
+    navigation.navigate("DetailedCardScreen", {
+      businessCard: {
+        ...card,
+        gallery: card.gallery?.map((img) => ({ url: img })) || [],
+      },
+    })
+  }
+
   if (cards.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons
-          name='people-outline'
+          name='search'
           size={64}
-          color='#ccc'
+          color='#E5E7EB'
         />
         <Text style={styles.emptyText}>{emptyMessage}</Text>
       </View>
@@ -69,29 +75,20 @@ const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}>
       {cards.map((card) => (
         <View
           key={card.id}
           style={styles.cardContainer}>
-          <CardDisplay
+          <BusinessCardsDisplay
             businessCard={{
-              name: card.name,
-              email: card.email,
-              phone: card.phone,
-              role: card.role,
-              company: card.company,
-              business_description: card.business_description,
-              business_phone: card.business_phone,
-              business_email: card.business_email,
-              website: card.website,
-              address: card.address,
-              services: card.services || [],
-              products: card.products || [],
+              ...card,
               gallery: card.gallery?.map((img) => ({ url: img })) || [],
-              business_cover_photo: card.business_cover_photo,
-              profile_image: card.profile_image,
             }}
+            onPress={() => handleCardPress(card)}
           />
         </View>
       ))}
@@ -102,42 +99,30 @@ const CardList: React.FC<CardListProps> = ({ cards, emptyMessage }) => {
 export default CardList
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 60,
     paddingHorizontal: 40,
+    minHeight: 300,
   },
   emptyText: {
     fontSize: 16,
-    color: "#666",
+    color: "#6B7280",
     textAlign: "center",
     marginTop: 20,
     lineHeight: 24,
+    fontWeight: "500",
   },
   cardContainer: {
-    marginBottom: 24,
-    position: "relative",
-  },
-  deleteButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "#f44336",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    zIndex: 1,
+    marginBottom: 16,
   },
 })
