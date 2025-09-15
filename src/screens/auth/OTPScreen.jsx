@@ -16,14 +16,11 @@ import { Ionicons } from "@expo/vector-icons"
 import { authAPI } from "../../utils/api"
 import Logo from "../../../assets/logo.svg"
 import { COLORS } from "../../utils/constants"
+import { postData } from "../../api/apiServices"
+import { endpoints } from "../../api/ClientApi"
 
 export default function OTPScreen({ route }) {
-  const {
-    email,
-    username,
-    password,
-    isRegistration = false,
-  } = route.params || {}
+  const { email, name, password, isRegistration = false } = route.params || {}
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
@@ -120,10 +117,19 @@ export default function OTPScreen({ route }) {
       let response
       if (isRegistration && username && password) {
         // Resend registration OTP
-        response = await authAPI.sendOTP(username, email, password)
+        // response = await authAPI.sendOTP(username, email, password)
+        response = await postData(endpoints.sendOTP, {
+          name,
+          email,
+          password,
+        })
       } else {
         // Resend reset OTP
-        response = await authAPI.resendOTP(email)
+        response = await postData(endpoints.resendOTP, {
+          name,
+          email,
+          password,
+        })
       }
 
       if (response.data) {

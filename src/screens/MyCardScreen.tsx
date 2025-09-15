@@ -19,7 +19,7 @@ import Header from "../components/Header"
 import EditBusinessCardForm from "../components/EditBusinessCardForm"
 import useGetApi, { getApiData } from "../hooks/api/useGetApi"
 import api, { endpoints } from "../api/ClientApi"
-import { API, getData } from "../api/apiServices"
+import { API, getData, postData, putData } from "../api/apiServices"
 import axios from "axios"
 
 export default function MyCardScreen() {
@@ -54,23 +54,24 @@ export default function MyCardScreen() {
     }
   }
 
-  const handleSave = async (formData, imageFiles) => {
+  const handleSave = async (data) => {
     setLoading(true)
     try {
       let response = []
       if (businessCard.length !== 0) {
-        // Update existing business card
-        response = await cardAPI.updateBusinessCard(
-          businessCard._id,
-          formData,
-          imageFiles
+        response = await putData(
+          endpoints.updateBusinessCard(businessCard._id),
+          data
         )
       } else {
         // Create new business card
-        response = await cardAPI.createBusinessCard(formData, imageFiles)
+        // response = await cardAPI.createBusinessCard(formData, imageFiles)
+        response = await putData(
+          endpoints.createBusinessCard(businessCard._id),
+          data
+        )
       }
 
-      // Refresh the business card data
       await fetchBusinessCard()
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to save business card")
@@ -126,20 +127,25 @@ export default function MyCardScreen() {
                 </View>
                 <EditBusinessCardForm
                   initialData={businessCard}
-                  onSave={async (data) => {
-                    try {
-                      // Make API call to update card
-                      await cardAPI.updateBusinessCard(businessCard._id, data)
-                      Alert.alert(
-                        "Success",
-                        "Business card updated successfully"
-                      )
-                      setIsEditing(false)
-                      fetchBusinessCard() // refresh data
-                    } catch (e) {
-                      Alert.alert("Error", "Failed to update business card")
+                  onSave={
+                    (data) => {
+                      handleSave(data)
                     }
-                  }}
+
+                    // async (data) => {
+                    // try {
+                    //   await cardAPI.updateBusinessCard(businessCard._id, data)
+                    //   Alert.alert(
+                    //     "Success",
+                    //     "Business card updated successfully"
+                    //   )
+                    //   setIsEditing(false)
+                    //   fetchBusinessCard()
+                    //   } catch (e) {
+                    //     Alert.alert("Error", "Failed to update business card")
+                    //   }
+                    // }}
+                  }
                   onCancel={() => setIsEditing(false)}
                 />
               </View>

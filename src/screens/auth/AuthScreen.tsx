@@ -136,7 +136,7 @@ const AuthScreen: React.FC = () => {
       if (result.success && result.requiresOTP) {
         navigation.navigate("OTPScreen", {
           email: data.email,
-          username: data.username,
+          name: data.username,
           password: data.password,
           isRegistration: true,
         })
