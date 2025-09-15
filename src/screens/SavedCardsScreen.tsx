@@ -113,10 +113,6 @@ export default function SavedCardsScreen({
   useFocusEffect(
     useCallback(() => {
       fetchSavedCards()
-
-      return () => {
-        console.log("SavedCardsScreen unfocused")
-      }
     }, [fetchSavedCards])
   )
 
