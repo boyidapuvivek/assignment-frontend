@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
+import { useFocusEffect } from "@react-navigation/native" // Add this import
 import { useAuth } from "../context/AuthContext"
 import CardList from "../components/CardList"
 import LoadingSpinner from "../components/LoadingSpinner"
@@ -78,16 +79,7 @@ export default function SavedCardsScreen({
   const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
-  useEffect(() => {
-    fetchSavedCards()
-  }, [])
-
-  // Filter cards whenever searchQuery or savedCards change
-  useEffect(() => {
-    filterCards(searchQuery)
-  }, [searchQuery, savedCards])
-
-  const fetchSavedCards = async () => {
+  const fetchSavedCards = useCallback(async () => {
     try {
       setLoading(true)
       const response = await getData(endpoints.getSavedCards)
@@ -115,7 +107,31 @@ export default function SavedCardsScreen({
     } finally {
       setLoading(false)
     }
-  }
+  }, []) // Empty dependency array since we want the same function reference
+
+  // Fetch data every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchSavedCards()
+
+      // Optional: Return a cleanup function if needed
+      return () => {
+        // Cleanup code here if needed (e.g., cancel pending requests)
+        console.log("SavedCardsScreen unfocused")
+      }
+    }, [fetchSavedCards])
+  )
+
+  // Keep the original useEffect for initial load (optional, since useFocusEffect handles it)
+  useEffect(() => {
+    // This is now handled by useFocusEffect, but you can keep it for redundancy
+    // fetchSavedCards()
+  }, [])
+
+  // Filter cards whenever searchQuery or savedCards change
+  useEffect(() => {
+    filterCards(searchQuery)
+  }, [searchQuery, savedCards])
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -175,9 +191,8 @@ export default function SavedCardsScreen({
           onPress: async () => {
             try {
               // You can implement unsave API call here if needed
-              // await axios.delete(`${API_BASE_URL}/business-cards/saved/${cardId}`, {
-              //   headers: { Authorization: `Bearer ${token}` }
-              // })
+              // await deleteData(endpoints.unsaveCard(cardId))
+
               // For now, just remove from local state
               setSavedCards((prev) =>
                 prev.filter((card) => card._id !== cardId)
@@ -292,6 +307,7 @@ export default function SavedCardsScreen({
                   facebook_url: card.facebook_url,
                   instagram_url: card.instagram_url,
                   youtube_url: card.youtube_url,
+                  isSaved: true, // Mark all cards as saved since this is SavedCardsScreen
                 }))}
                 emptyMessage={
                   searchQuery === ""
@@ -310,6 +326,7 @@ export default function SavedCardsScreen({
   )
 }
 
+// Keep all existing styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

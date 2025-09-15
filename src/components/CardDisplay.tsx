@@ -16,8 +16,13 @@ import {
   Feather,
 } from "@expo/vector-icons"
 import { COLORS } from "../utils/constants"
+import { useAuth } from "../context/AuthContext"
+import { postData, deleteData, getData } from "../api/apiServices"
+import { endpoints } from "../api/ClientApi"
 
 interface BusinessCard {
+  id?: string
+  _id?: string
   phone?: string
   email?: string
   address?: string
@@ -48,11 +53,13 @@ interface BusinessCard {
   name?: string
   role?: string
   business_description?: string
+  isSaved?: boolean
 }
 
 interface CardDisplayProps {
   businessCard: BusinessCard
   children?: React.ReactNode
+  onSaveToggle?: (cardId: string, isSaved: boolean) => void
 }
 
 interface TabButtonProps {
@@ -64,8 +71,14 @@ interface TabButtonProps {
 const CardDisplay: React.FC<CardDisplayProps> = ({
   businessCard,
   children,
+  onSaveToggle,
 }) => {
+  const { token } = useAuth()
   const [activeTab, setActiveTab] = useState("Contact")
+  const [isSaved, setIsSaved] = useState(businessCard?.isSaved || false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const cardId = businessCard?.id || businessCard?._id
 
   const TabButton: React.FC<TabButtonProps> = ({
     title,
@@ -91,7 +104,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     }
 
     try {
-      // Check if URL starts with http/https, if not add https://
       let formattedUrl = url
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
         formattedUrl = `https://${url}`
@@ -109,355 +121,329 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     }
   }
 
+  const handleSaveToggle = async () => {
+    if (!cardId) {
+      Alert.alert("Error", "Card ID not found")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      if (isSaved) {
+        // Unsave the card
+        await deleteData(endpoints.unsaveCard(cardId))
+        setIsSaved(false)
+        Alert.alert("Success", "Card removed from saved collection")
+      } else {
+        // Save the card
+        await postData(endpoints.saveCard(cardId), {})
+        setIsSaved(true)
+        Alert.alert("Success", "Card saved to your collection")
+      }
+
+      // Notify parent component if callback is provided
+      if (onSaveToggle) {
+        onSaveToggle(cardId, !isSaved)
+      }
+    } catch (error) {
+      console.error("Error toggling save status:", error)
+      Alert.alert(
+        "Error",
+        isSaved ? "Failed to unsave card" : "Failed to save card"
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const renderTabContent = (): JSX.Element | null => {
     switch (activeTab) {
       case "Contact":
         return (
-          <ScrollView style={styles.tabContent}>
+          <View style={styles.contactSection}>
             {/* Personal Contact Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Personal Contact</Text>
-
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='call'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {businessCard?.phone || "No phone number"}
-                </Text>
+            <Text style={styles.sectionTitle}>Personal Contact</Text>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='call'
+                  size={18}
+                  color='#2196F3'
+                />
               </View>
-
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='mail'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {businessCard?.email || "No email"}
-                </Text>
-              </View>
-
-              {businessCard?.address && (
-                <View style={styles.contactItem}>
-                  <View style={styles.contactIconContainer}>
-                    <Ionicons
-                      name='location'
-                      size={18}
-                      color='#2196F3'
-                    />
-                  </View>
-                  <Text style={styles.contactText}>{businessCard.address}</Text>
-                </View>
-              )}
+              <Text style={styles.contactText}>
+                {businessCard?.phone || "No phone number"}
+              </Text>
             </View>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='mail'
+                  size={18}
+                  color='#2196F3'
+                />
+              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.email || "No email"}
+              </Text>
+            </View>
+            {businessCard?.address && (
+              <View style={styles.contactItem}>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='location'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>{businessCard.address}</Text>
+              </View>
+            )}
 
             {/* Business Contact Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Business Contact</Text>
-
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='business'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {businessCard?.company || "No company name"}
-                </Text>
+            <Text style={styles.sectionTitle}>Business Contact</Text>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='business'
+                  size={18}
+                  color='#2196F3'
+                />
               </View>
-
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='mail'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {businessCard?.business_email || "No business email"}
-                </Text>
-              </View>
-
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='call'
-                    size={18}
-                    color='#2196F3'
-                  />
-                </View>
-                <Text style={styles.contactText}>
-                  {businessCard?.business_phone || "No business phone"}
-                </Text>
-              </View>
-
-              {businessCard?.website && (
-                <TouchableOpacity
-                  style={styles.contactItem}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard.website, "Website")
-                  }>
-                  <View style={styles.contactIconContainer}>
-                    <Ionicons
-                      name='globe'
-                      size={18}
-                      color='#2196F3'
-                    />
-                  </View>
-                  <Text style={styles.contactText}>{businessCard.website}</Text>
-                </TouchableOpacity>
-              )}
+              <Text style={styles.contactText}>
+                {businessCard?.company || "No company name"}
+              </Text>
             </View>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='mail'
+                  size={18}
+                  color='#2196F3'
+                />
+              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.business_email || "No business email"}
+              </Text>
+            </View>
+            <View style={styles.contactItem}>
+              <View style={styles.contactIconContainer}>
+                <Ionicons
+                  name='call'
+                  size={18}
+                  color='#2196F3'
+                />
+              </View>
+              <Text style={styles.contactText}>
+                {businessCard?.business_phone || "No business phone"}
+              </Text>
+            </View>
+            {businessCard?.website && (
+              <TouchableOpacity
+                style={styles.contactItem}
+                onPress={() =>
+                  handleSocialMediaPress(businessCard.website, "Website")
+                }>
+                <View style={styles.contactIconContainer}>
+                  <Ionicons
+                    name='globe'
+                    size={18}
+                    color='#2196F3'
+                  />
+                </View>
+                <Text style={styles.contactText}>{businessCard.website}</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Social Media Section */}
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Social Media</Text>
+            <Text style={styles.sectionTitle}>Social Media</Text>
+            <View style={styles.socialMediaContainer}>
+              <TouchableOpacity
+                style={styles.socialIcon}
+                onPress={() =>
+                  handleSocialMediaPress(businessCard?.youtube_url, "Youtube")
+                }>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#FF0000" }]}>
+                  <Ionicons
+                    name='logo-youtube'
+                    size={20}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Youtube</Text>
+              </TouchableOpacity>
 
-              <View style={styles.socialMediaContainer}>
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard?.youtube_url, "Youtube")
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#f21818ff" },
-                    ]}>
-                    <Ionicons
-                      name='logo-youtube'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Youtube</Text>
-                </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.socialIcon}
+                onPress={() =>
+                  handleSocialMediaPress(businessCard?.twitter_url, "Twitter")
+                }>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#1DA1F2" }]}>
+                  <Ionicons
+                    name='logo-twitter'
+                    size={20}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Twitter</Text>
+              </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard?.twitter_url, "Twitter")
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#1DA1F2" },
-                    ]}>
-                    <Ionicons
-                      name='logo-twitter'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Twitter</Text>
-                </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.socialIcon}
+                onPress={() =>
+                  handleSocialMediaPress(businessCard?.linkedin_url, "LinkedIn")
+                }>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#0077B5" }]}>
+                  <Ionicons
+                    name='logo-linkedin'
+                    size={20}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>LinkedIn</Text>
+              </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(
-                      businessCard?.linkedin_url,
-                      "LinkedIn"
-                    )
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#0A66C2" },
-                    ]}>
-                    <Ionicons
-                      name='logo-linkedin'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>LinkedIn</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(
-                      businessCard?.instagram_url,
-                      "Instagram"
-                    )
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#E4405F" },
-                    ]}>
-                    <Ionicons
-                      name='logo-instagram'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Instagram</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* YouTube if available */}
-              {/* {businessCard?.youtube_url && (
-                <TouchableOpacity
-                  style={styles.contactItem}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard.youtube_url, "YouTube")
-                  }>
-                  <View style={styles.contactIconContainer}>
-                    <Ionicons
-                      name='logo-youtube'
-                      size={18}
-                      color='#FF0000'
-                    />
-                  </View>
-                  <Text style={styles.contactText}>YouTube Channel</Text>
-                </TouchableOpacity>
-              )} */}
+              <TouchableOpacity
+                style={styles.socialIcon}
+                onPress={() =>
+                  handleSocialMediaPress(
+                    businessCard?.instagram_url,
+                    "Instagram"
+                  )
+                }>
+                <View
+                  style={[styles.socialIconBg, { backgroundColor: "#E4405F" }]}>
+                  <Ionicons
+                    name='logo-instagram'
+                    size={20}
+                    color='#fff'
+                  />
+                </View>
+                <Text style={styles.socialLabel}>Instagram</Text>
+              </TouchableOpacity>
             </View>
-          </ScrollView>
+          </View>
         )
 
       case "Services":
         return (
-          <ScrollView style={styles.tabContent}>
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Our Services</Text>
-
-              {businessCard?.services && businessCard.services.length > 0 ? (
-                businessCard.services.map((service, index) => (
-                  <View
-                    key={index}
-                    style={styles.serviceCard}>
-                    <View style={styles.serviceHeader}>
-                      <View style={styles.serviceIconContainer}>
-                        <MaterialIcons
-                          name='work'
-                          size={24}
-                          color='#2196F3'
-                        />
-                      </View>
-                      <View style={styles.serviceDetails}>
-                        <Text style={styles.serviceName}>{service.name}</Text>
-                        <Text style={styles.serviceDescription}>
-                          {service.description || "Professional service"}
-                        </Text>
-                      </View>
-                      <View style={styles.priceContainer}>
-                        <Text style={styles.priceLabel}>Starting from</Text>
-                        <Text style={styles.priceText}>₹{service.price}</Text>
-                      </View>
+          <View style={styles.contactSection}>
+            <Text style={styles.sectionTitle}>Our Services</Text>
+            {businessCard?.services && businessCard.services.length > 0 ? (
+              businessCard.services.map((service, index) => (
+                <View
+                  key={index}
+                  style={styles.serviceCard}>
+                  <View style={styles.serviceHeader}>
+                    <View style={styles.serviceIconContainer}>
+                      <MaterialIcons
+                        name='work'
+                        size={24}
+                        color='#2196F3'
+                      />
+                    </View>
+                    <View style={styles.serviceDetails}>
+                      <Text style={styles.serviceName}>{service.name}</Text>
+                      <Text style={styles.serviceDescription}>
+                        {service.description || "Professional service"}
+                      </Text>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.priceLabel}>Starting from</Text>
+                      <Text style={styles.priceText}>₹{service.price}</Text>
                     </View>
                   </View>
-                ))
-              ) : (
-                <Text style={styles.noDataText}>No services added yet</Text>
-              )}
-
-              <TouchableOpacity style={styles.inquireButton}>
-                <MaterialIcons
-                  name='contact-mail'
-                  size={20}
-                  color='#fff'
-                />
-                <Text style={styles.inquireButtonText}>Inquire Now</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No services added yet</Text>
+            )}
+            <TouchableOpacity style={styles.inquireButton}>
+              <MaterialIcons
+                name='contact-support'
+                size={20}
+                color='#fff'
+              />
+              <Text style={styles.inquireButtonText}>Inquire Now</Text>
+            </TouchableOpacity>
+          </View>
         )
 
       case "Products":
         return (
-          <ScrollView style={styles.tabContent}>
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Our Products</Text>
-
-              {businessCard?.products && businessCard.products.length > 0 ? (
-                businessCard.products.map((product, index) => (
-                  <View
-                    key={index}
-                    style={styles.productCard}>
-                    <View style={styles.productImageContainer}>
-                      <View style={styles.productImagePlaceholder}>
-                        <MaterialIcons
-                          name='inventory'
-                          size={32}
-                          color='#2196F3'
-                        />
-                      </View>
-                    </View>
-                    <View style={styles.productInfo}>
-                      <Text style={styles.productName}>{product.name}</Text>
-                      <Text style={styles.productDescription}>
-                        {product.description || "Quality product"}
-                      </Text>
-                      <View style={styles.productPriceContainer}>
-                        <Text style={styles.productPrice}>
-                          ₹{product.price}
-                        </Text>
-                        <TouchableOpacity style={styles.addToCartButton}>
-                          <MaterialIcons
-                            name='add-shopping-cart'
-                            size={16}
-                            color='#fff'
-                          />
-                        </TouchableOpacity>
-                      </View>
+          <View style={styles.contactSection}>
+            <Text style={styles.sectionTitle}>Our Products</Text>
+            {businessCard?.products && businessCard.products.length > 0 ? (
+              businessCard.products.map((product, index) => (
+                <View
+                  key={index}
+                  style={styles.productCard}>
+                  <View style={styles.productImageContainer}>
+                    <View style={styles.productImagePlaceholder}>
+                      <MaterialIcons
+                        name='inventory'
+                        size={32}
+                        color='#2196F3'
+                      />
                     </View>
                   </View>
-                ))
-              ) : (
-                <Text style={styles.noDataText}>No products added yet</Text>
-              )}
-
-              <TouchableOpacity style={styles.viewAllButton}>
-                <MaterialIcons
-                  name='storefront'
-                  size={20}
-                  color='#2196F3'
-                />
-                <Text style={styles.viewAllButtonText}>View All Products</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <Text style={styles.productDescription}>
+                      {product.description || "Quality product"}
+                    </Text>
+                    <View style={styles.productPriceContainer}>
+                      <Text style={styles.productPrice}>₹{product.price}</Text>
+                      <TouchableOpacity style={styles.addToCartButton}>
+                        <Ionicons
+                          name='add'
+                          size={20}
+                          color='#fff'
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>No products added yet</Text>
+            )}
+            <TouchableOpacity style={styles.viewAllButton}>
+              <MaterialIcons
+                name='inventory'
+                size={20}
+                color='#2196F3'
+              />
+              <Text style={styles.viewAllButtonText}>View All Products</Text>
+            </TouchableOpacity>
+          </View>
         )
 
       case "Gallery":
         return (
-          <ScrollView style={styles.tabContent}>
-            <View style={styles.contactSection}>
-              <Text style={styles.sectionTitle}>Gallery</Text>
-
-              {businessCard?.gallery && businessCard.gallery.length > 0 ? (
-                <View style={styles.galleryGrid}>
-                  {businessCard.gallery.map((image, index) => (
-                    <View
-                      key={index}
-                      style={styles.galleryItem}>
-                      <Image
-                        source={{ uri: image.url }}
-                        style={styles.galleryImage}
-                      />
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <Text style={styles.noDataText}>
-                  No gallery images added yet
-                </Text>
-              )}
-            </View>
-          </ScrollView>
+          <View style={styles.contactSection}>
+            <Text style={styles.sectionTitle}>Gallery</Text>
+            {businessCard?.gallery && businessCard.gallery.length > 0 ? (
+              <View style={styles.galleryGrid}>
+                {businessCard.gallery.map((image, index) => (
+                  <View
+                    key={index}
+                    style={styles.galleryItem}>
+                    <Image
+                      source={{ uri: image.url }}
+                      style={styles.galleryImage}
+                      resizeMode='cover'
+                    />
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noDataText}>No gallery images added yet</Text>
+            )}
+          </View>
         )
 
       default:
@@ -475,8 +461,24 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     // Add QR code functionality here
   }
 
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      const cardId = businessCard?.id
+      if (!cardId) return
+
+      try {
+        const response = await getData(endpoints.saveStatus(cardId))
+        setIsSaved(response.data.isSaved)
+      } catch (error) {
+        console.error("Error checking saved status:", error)
+      }
+    }
+
+    checkSavedStatus()
+  }, [businessCard?.id])
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.mainContainer}>
         {/* Header with Cover Photo */}
         <View style={styles.header}>
@@ -490,13 +492,26 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             <View style={styles.coverPhotoContainer}>
               {children}
               <MaterialIcons
-                name='image'
-                size={40}
+                name='photo'
+                size={32}
                 color='#fff'
               />
               <Text style={styles.coverPhotoText}>Cover Photo</Text>
             </View>
           )}
+
+          {/* Save/Unsave Button */}
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveToggle}
+            disabled={isLoading}
+            activeOpacity={0.7}>
+            <Ionicons
+              name={isSaved ? "bookmark" : "bookmark-outline"}
+              size={24}
+              color={isSaved ? "#FFD700" : "#fff"}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Profile Section */}
@@ -506,12 +521,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               <Image
                 source={{ uri: businessCard.profile_image }}
                 style={styles.avatarImage}
+                resizeMode='cover'
               />
             ) : (
-              <MaterialIcons
+              <Ionicons
                 name='person'
                 size={40}
-                color='#ccc'
+                color='#2196F3'
               />
             )}
           </View>
@@ -574,21 +590,36 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         </View>
 
         {/* Tab Content */}
-        {renderTabContent()}
+        <View style={styles.tabContent}>{renderTabContent()}</View>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
 export default CardDisplay
 
-// All existing styles remain the same, just adding the new social media styles
+// Keep all existing styles and add the new save button style
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
+    // alignItems: "center",
     gap: 20,
   },
+  saveButton: {
+    position: "absolute",
+    top: 15,
+    right: 15,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  // ... keep all your existing styles from the original file
   galleryImage: {
     width: "100%",
     height: "100%",
