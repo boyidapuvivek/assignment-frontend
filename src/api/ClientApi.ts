@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react"
+import CardCustomizationScreen from "../screens/CardCustomizationScreen"
 // const BASE_URL = "http://192.168.3.172:5000/api"
 const BASE_URL = "https://connectree.co/api"
 
@@ -35,6 +36,8 @@ export const endpoints = {
   verifyResetOTP: `${BASE_URL}/auth/verify-reset-otp`,
   resendOTP: `${BASE_URL}/auth/send-otp`,
 
+//CardCustomizations
+  CardCustomization: (id:string) => `${BASE_URL}/card-customization/${id}`,
 
   // Leads endpoints
   getLeads: `${BASE_URL}/leads/my-leads`,

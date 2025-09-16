@@ -21,12 +21,15 @@ import useGetApi, { getApiData } from "../hooks/api/useGetApi"
 import api, { endpoints } from "../api/ClientApi"
 import { API, getData, postData, putData } from "../api/apiServices"
 import axios from "axios"
+import CustomButton from "../components/CustomButton"
+import { useNavigation } from "@react-navigation/native"
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
   const [businessCard, setBusinessCard] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const navigation = useNavigation()
 
   useEffect(() => {
     fetchBusinessCard()
@@ -64,8 +67,6 @@ export default function MyCardScreen() {
           data
         )
       } else {
-        // Create new business card
-        // response = await cardAPI.createBusinessCard(formData, imageFiles)
         response = await putData(
           endpoints.createBusinessCard(businessCard._id),
           data
@@ -127,25 +128,9 @@ export default function MyCardScreen() {
                 </View>
                 <EditBusinessCardForm
                   initialData={businessCard}
-                  onSave={
-                    (data) => {
-                      handleSave(data)
-                    }
-
-                    // async (data) => {
-                    // try {
-                    //   await cardAPI.updateBusinessCard(businessCard._id, data)
-                    //   Alert.alert(
-                    //     "Success",
-                    //     "Business card updated successfully"
-                    //   )
-                    //   setIsEditing(false)
-                    //   fetchBusinessCard()
-                    //   } catch (e) {
-                    //     Alert.alert("Error", "Failed to update business card")
-                    //   }
-                    // }}
-                  }
+                  onSave={(data) => {
+                    handleSave(data)
+                  }}
                   onCancel={() => setIsEditing(false)}
                 />
               </View>
@@ -161,23 +146,27 @@ export default function MyCardScreen() {
                   <View style={styles.actionsHeader}>
                     <MaterialIcons
                       name='flash-on'
-                      size={20}
-                      color='#374151'
+                      size={24}
+                      color={COLORS.primary}
                     />
                     <Text style={styles.actionsTitle}>Quick Actions</Text>
                   </View>
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={handleEdit}>
-                    <View style={styles.editButtonContent}>
-                      <MaterialIcons
-                        name='edit'
-                        size={20}
-                        color={COLORS.white}
-                      />
-                      <Text style={styles.editButtonText}>Edit Card</Text>
-                    </View>
-                  </TouchableOpacity>
+
+                  <CustomButton
+                    title='Edit Card'
+                    onPress={handleEdit}
+                    iconName='edit'
+                    backgroundColor={COLORS.primary}
+                  />
+
+                  <CustomButton
+                    title='Customize Card'
+                    onPress={() =>
+                      navigation.navigate("CardCustomizationScreen")
+                    }
+                    iconName='palette'
+                    backgroundColor='#10b981'
+                  />
                 </View>
               </>
             )}
