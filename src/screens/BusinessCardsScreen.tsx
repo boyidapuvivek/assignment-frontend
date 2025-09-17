@@ -106,6 +106,8 @@ export default function BusinessCardsScreen({
         cards = response.data.businessCards
       }
 
+      cards.reverse()
+
       setBusinessCards(cards)
       setFilteredCards(cards)
     } catch (error) {
@@ -222,17 +224,13 @@ export default function BusinessCardsScreen({
           } as any)
         })
       }
-
+      const payload = JSON.stringify(createData)
       // Make API call
-      const response = await postData(
-        endpoints.createBusinessCard,
-        createData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      )
+      const response = await postData(endpoints.createBusinessCard, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
       console.log("😊", response)
 
       Alert.alert("Success", "Business card created successfully!", [

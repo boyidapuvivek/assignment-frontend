@@ -162,7 +162,9 @@ export default function MyCardScreen() {
                   <CustomButton
                     title='Customize Card'
                     onPress={() =>
-                      navigation.navigate("CardCustomizationScreen")
+                      navigation.navigate("CardCustomizationScreen", {
+                        businessCard: businessCard,
+                      })
                     }
                     iconName='palette'
                     backgroundColor='#10b981'

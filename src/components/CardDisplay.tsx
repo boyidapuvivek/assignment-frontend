@@ -59,25 +59,58 @@ interface BusinessCard {
   role?: string
   business_description?: string
   isSaved?: boolean
-  qr_code?: string // QR code field
+  qr_code?: string
+}
+
+interface CustomizationSettings {
+  primaryColor?: string
+  secondaryColor?: string
+  backgroundColor?: string
+  textColor?: string
+  showPersonalContact?: boolean
+  showBusinessContact?: boolean
+  showSocialMedia?: boolean
+  showServices?: boolean
+  showProducts?: boolean
+  showGallery?: boolean
+  showQR?: boolean
+  enableAnimations?: boolean
+  enableInteractions?: boolean
 }
 
 interface CardDisplayProps {
   businessCard: BusinessCard
   children?: React.ReactNode
   onSaveToggle?: (cardId: string, isSaved: boolean) => void
+  customizationSettings?: CustomizationSettings
 }
 
 interface TabButtonProps {
   title: string
   isActive: boolean
   onPress: () => void
+  primaryColor: string
 }
 
 const CardDisplay: React.FC<CardDisplayProps> = ({
   businessCard,
   children,
   onSaveToggle,
+  customizationSettings = {
+    primaryColor: "#2196F3",
+    secondaryColor: "#3b82f6",
+    backgroundColor: "#ffffff",
+    textColor: "#1f2937",
+    showPersonalContact: true,
+    showBusinessContact: true,
+    showSocialMedia: true,
+    showServices: true,
+    showProducts: true,
+    showGallery: true,
+    showQR: true,
+    enableAnimations: false,
+    enableInteractions: true,
+  },
 }) => {
   const { token } = useAuth()
   const [activeTab, setActiveTab] = useState("Contact")
@@ -87,15 +120,32 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
 
   const cardId = businessCard?.id || businessCard?._id
 
+  // Dynamic colors from customization
+  const primaryColor = customizationSettings.primaryColor || "#2196F3"
+  const secondaryColor = customizationSettings.secondaryColor || "#3b82f6"
+  const backgroundColor = customizationSettings.backgroundColor || "#ffffff"
+  const textColor = customizationSettings.textColor || "#1f2937"
+
   const TabButton: React.FC<TabButtonProps> = ({
     title,
     isActive,
     onPress,
+    primaryColor,
   }) => (
     <TouchableOpacity
-      style={[activeTab === title && styles.activeTabButton]}
+      style={[
+        styles.tabButton,
+        isActive && {
+          ...styles.activeTabButton,
+          borderBottomColor: primaryColor,
+        },
+      ]}
       onPress={onPress}>
-      <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+      <Text
+        style={[
+          styles.tabText,
+          isActive && { ...styles.activeTabText, color: primaryColor },
+        ]}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -172,12 +222,16 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     setShowQRModal(false)
   }
 
+  const handleShare = (): void => {
+    console.log("Share button pressed")
+  }
+
   // QR Code Modal Component
   const QRCodeModal = () => (
     <Modal
-      animationType='fade'
-      transparent={true}
       visible={showQRModal}
+      transparent={true}
+      animationType='fade'
       onRequestClose={closeQRModal}>
       <TouchableWithoutFeedback onPress={closeQRModal}>
         <View style={styles.modalOverlay}>
@@ -186,12 +240,11 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               {/* Close Button */}
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={closeQRModal}
-                activeOpacity={0.7}>
-                <Ionicons
+                onPress={closeQRModal}>
+                <MaterialIcons
                   name='close'
-                  size={24}
-                  color='#333'
+                  size={20}
+                  color='#666'
                 />
               </TouchableOpacity>
 
@@ -200,7 +253,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                 <MaterialIcons
                   name='qr-code'
                   size={32}
-                  color='#2196F3'
+                  color={primaryColor}
                 />
                 <Text style={styles.modalTitle}>QR Code</Text>
                 <Text style={styles.modalSubtitle}>
@@ -220,7 +273,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                   <View style={styles.qrPlaceholder}>
                     <MaterialIcons
                       name='qr-code'
-                      size={100}
+                      size={48}
                       color='#ccc'
                     />
                     <Text style={styles.qrPlaceholderText}>
@@ -261,196 +314,281 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       case "Contact":
         return (
           <View style={styles.contactSection}>
-            <Text style={styles.sectionTitle}>Personal Contact</Text>
-            <View style={styles.contactItem}>
-              <View style={styles.contactIconContainer}>
-                <Ionicons
-                  name='call'
-                  size={18}
-                  color='#2196F3'
-                />
-              </View>
-              <Text style={styles.contactText}>
-                {businessCard?.phone || "No phone number"}
-              </Text>
-            </View>
-            <View style={styles.contactItem}>
-              <View style={styles.contactIconContainer}>
-                <Ionicons
-                  name='mail'
-                  size={18}
-                  color='#2196F3'
-                />
-              </View>
-              <Text style={styles.contactText}>
-                {businessCard?.email || "No email"}
-              </Text>
-            </View>
-            {businessCard?.address && (
-              <View style={styles.contactItem}>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='location'
-                    size={18}
-                    color='#2196F3'
-                  />
+            {customizationSettings.showPersonalContact && (
+              <>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>
+                  Personal Contact
+                </Text>
+                <View style={styles.contactItem}>
+                  <View
+                    style={[
+                      styles.contactIconContainer,
+                      { backgroundColor: `${primaryColor}20` },
+                    ]}>
+                    <MaterialIcons
+                      name='phone'
+                      size={18}
+                      color={primaryColor}
+                    />
+                  </View>
+                  <Text style={[styles.contactText, { color: textColor }]}>
+                    {businessCard?.phone || "No phone number"}
+                  </Text>
                 </View>
-                <Text style={styles.contactText}>{businessCard.address}</Text>
-              </View>
+                <View style={styles.contactItem}>
+                  <View
+                    style={[
+                      styles.contactIconContainer,
+                      { backgroundColor: `${primaryColor}20` },
+                    ]}>
+                    <MaterialIcons
+                      name='email'
+                      size={18}
+                      color={primaryColor}
+                    />
+                  </View>
+                  <Text style={[styles.contactText, { color: textColor }]}>
+                    {businessCard?.email || "No email"}
+                  </Text>
+                </View>
+                {businessCard?.address && (
+                  <View style={styles.contactItem}>
+                    <View
+                      style={[
+                        styles.contactIconContainer,
+                        { backgroundColor: `${primaryColor}20` },
+                      ]}>
+                      <MaterialIcons
+                        name='location-on'
+                        size={18}
+                        color={primaryColor}
+                      />
+                    </View>
+                    <Text style={[styles.contactText, { color: textColor }]}>
+                      {businessCard.address}
+                    </Text>
+                  </View>
+                )}
+              </>
             )}
 
-            <Text style={styles.sectionTitle}>Business Contact</Text>
-            <View style={styles.contactItem}>
-              <View style={styles.contactIconContainer}>
-                <Ionicons
-                  name='business'
-                  size={18}
-                  color='#2196F3'
-                />
-              </View>
-              <Text style={styles.contactText}>
-                {businessCard?.company || "No company name"}
-              </Text>
-            </View>
-            <View style={styles.contactItem}>
-              <View style={styles.contactIconContainer}>
-                <Ionicons
-                  name='mail'
-                  size={18}
-                  color='#2196F3'
-                />
-              </View>
-              <Text style={styles.contactText}>
-                {businessCard?.business_email || "No business email"}
-              </Text>
-            </View>
-            <View style={styles.contactItem}>
-              <View style={styles.contactIconContainer}>
-                <Ionicons
-                  name='call'
-                  size={18}
-                  color='#2196F3'
-                />
-              </View>
-              <Text style={styles.contactText}>
-                {businessCard?.business_phone || "No business phone"}
-              </Text>
-            </View>
-            {businessCard?.website && (
-              <TouchableOpacity
-                style={styles.contactItem}
-                onPress={() =>
-                  handleSocialMediaPress(businessCard.website, "Website")
-                }>
-                <View style={styles.contactIconContainer}>
-                  <Ionicons
-                    name='globe'
-                    size={18}
-                    color='#2196F3'
-                  />
+            {customizationSettings.showBusinessContact && (
+              <>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>
+                  Business Contact
+                </Text>
+                <View style={styles.contactItem}>
+                  <View
+                    style={[
+                      styles.contactIconContainer,
+                      { backgroundColor: `${primaryColor}20` },
+                    ]}>
+                    <MaterialIcons
+                      name='business'
+                      size={18}
+                      color={primaryColor}
+                    />
+                  </View>
+                  <Text style={[styles.contactText, { color: textColor }]}>
+                    {businessCard?.company || "No company name"}
+                  </Text>
                 </View>
-                <Text style={styles.contactText}>{businessCard.website}</Text>
-              </TouchableOpacity>
+                <View style={styles.contactItem}>
+                  <View
+                    style={[
+                      styles.contactIconContainer,
+                      { backgroundColor: `${primaryColor}20` },
+                    ]}>
+                    <MaterialIcons
+                      name='email'
+                      size={18}
+                      color={primaryColor}
+                    />
+                  </View>
+                  <Text style={[styles.contactText, { color: textColor }]}>
+                    {businessCard?.business_email || "No business email"}
+                  </Text>
+                </View>
+                <View style={styles.contactItem}>
+                  <View
+                    style={[
+                      styles.contactIconContainer,
+                      { backgroundColor: `${primaryColor}20` },
+                    ]}>
+                    <MaterialIcons
+                      name='phone'
+                      size={18}
+                      color={primaryColor}
+                    />
+                  </View>
+                  <Text style={[styles.contactText, { color: textColor }]}>
+                    {businessCard?.business_phone || "No business phone"}
+                  </Text>
+                </View>
+                {businessCard?.website && (
+                  <TouchableOpacity
+                    style={styles.contactItem}
+                    onPress={() =>
+                      handleSocialMediaPress(businessCard.website, "Website")
+                    }>
+                    <View
+                      style={[
+                        styles.contactIconContainer,
+                        { backgroundColor: `${primaryColor}20` },
+                      ]}>
+                      <MaterialIcons
+                        name='language'
+                        size={18}
+                        color={primaryColor}
+                      />
+                    </View>
+                    <Text style={[styles.contactText, { color: primaryColor }]}>
+                      {businessCard.website}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
 
-            <Text style={styles.sectionTitle}>Social Media</Text>
-            <View style={styles.socialMediaContainer}>
-              <TouchableOpacity
-                style={styles.socialIcon}
-                onPress={() =>
-                  handleSocialMediaPress(businessCard?.youtube_url, "Youtube")
-                }>
-                <View
-                  style={[styles.socialIconBg, { backgroundColor: "#FF0000" }]}>
-                  <Ionicons
-                    name='logo-youtube'
-                    size={20}
-                    color='#fff'
-                  />
-                </View>
-                <Text style={styles.socialLabel}>Youtube</Text>
-              </TouchableOpacity>
+            {customizationSettings.showSocialMedia && (
+              <>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>
+                  Social Media
+                </Text>
+                <View style={styles.socialMediaContainer}>
+                  <TouchableOpacity
+                    style={styles.socialIcon}
+                    onPress={() =>
+                      handleSocialMediaPress(
+                        businessCard?.youtube_url,
+                        "Youtube"
+                      )
+                    }>
+                    <View
+                      style={[
+                        styles.socialIconBg,
+                        { backgroundColor: "#FF0000" },
+                      ]}>
+                      <MaterialIcons
+                        name='video-library'
+                        size={20}
+                        color='#fff'
+                      />
+                    </View>
+                    <Text style={styles.socialLabel}>Youtube</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.socialIcon}
-                onPress={() =>
-                  handleSocialMediaPress(businessCard?.twitter_url, "Twitter")
-                }>
-                <View
-                  style={[styles.socialIconBg, { backgroundColor: "#1DA1F2" }]}>
-                  <Ionicons
-                    name='logo-twitter'
-                    size={20}
-                    color='#fff'
-                  />
-                </View>
-                <Text style={styles.socialLabel}>Twitter</Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.socialIcon}
+                    onPress={() =>
+                      handleSocialMediaPress(
+                        businessCard?.twitter_url,
+                        "Twitter"
+                      )
+                    }>
+                    <View
+                      style={[
+                        styles.socialIconBg,
+                        { backgroundColor: "#1DA1F2" },
+                      ]}>
+                      <MaterialIcons
+                        name='alternate-email'
+                        size={20}
+                        color='#fff'
+                      />
+                    </View>
+                    <Text style={styles.socialLabel}>Twitter</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.socialIcon}
-                onPress={() =>
-                  handleSocialMediaPress(businessCard?.linkedin_url, "LinkedIn")
-                }>
-                <View
-                  style={[styles.socialIconBg, { backgroundColor: "#0077B5" }]}>
-                  <Ionicons
-                    name='logo-linkedin'
-                    size={20}
-                    color='#fff'
-                  />
-                </View>
-                <Text style={styles.socialLabel}>LinkedIn</Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.socialIcon}
+                    onPress={() =>
+                      handleSocialMediaPress(
+                        businessCard?.linkedin_url,
+                        "LinkedIn"
+                      )
+                    }>
+                    <View
+                      style={[
+                        styles.socialIconBg,
+                        { backgroundColor: "#0077B5" },
+                      ]}>
+                      <MaterialIcons
+                        name='work'
+                        size={20}
+                        color='#fff'
+                      />
+                    </View>
+                    <Text style={styles.socialLabel}>LinkedIn</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.socialIcon}
-                onPress={() =>
-                  handleSocialMediaPress(
-                    businessCard?.instagram_url,
-                    "Instagram"
-                  )
-                }>
-                <View
-                  style={[styles.socialIconBg, { backgroundColor: "#E4405F" }]}>
-                  <Ionicons
-                    name='logo-instagram'
-                    size={20}
-                    color='#fff'
-                  />
+                  <TouchableOpacity
+                    style={styles.socialIcon}
+                    onPress={() =>
+                      handleSocialMediaPress(
+                        businessCard?.instagram_url,
+                        "Instagram"
+                      )
+                    }>
+                    <View
+                      style={[
+                        styles.socialIconBg,
+                        { backgroundColor: "#E4405F" },
+                      ]}>
+                      <MaterialIcons
+                        name='camera-alt'
+                        size={20}
+                        color='#fff'
+                      />
+                    </View>
+                    <Text style={styles.socialLabel}>Instagram</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.socialLabel}>Instagram</Text>
-              </TouchableOpacity>
-            </View>
+              </>
+            )}
           </View>
         )
 
       case "Services":
+        if (!customizationSettings.showServices) return null
         return (
           <View style={styles.contactSection}>
-            <Text style={styles.sectionTitle}>Our Services</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              Our Services
+            </Text>
             {businessCard?.services && businessCard.services.length > 0 ? (
               businessCard.services.map((service, index) => (
                 <View
                   key={index}
-                  style={styles.serviceCard}>
+                  style={[
+                    styles.serviceCard,
+                    { borderLeftColor: primaryColor },
+                  ]}>
                   <View style={styles.serviceHeader}>
-                    <View style={styles.serviceIconContainer}>
+                    <View
+                      style={[
+                        styles.serviceIconContainer,
+                        { backgroundColor: `${primaryColor}20` },
+                      ]}>
                       <MaterialIcons
                         name='work'
                         size={24}
-                        color='#2196F3'
+                        color={primaryColor}
                       />
                     </View>
                     <View style={styles.serviceDetails}>
-                      <Text style={styles.serviceName}>{service.name}</Text>
+                      <Text style={[styles.serviceName, { color: textColor }]}>
+                        {service.name}
+                      </Text>
                       <Text style={styles.serviceDescription}>
                         {service.description || "Professional service"}
                       </Text>
                     </View>
                     <View style={styles.priceContainer}>
                       <Text style={styles.priceLabel}>Starting from</Text>
-                      <Text style={styles.priceText}>₹{service.price}</Text>
+                      <Text style={[styles.priceText, { color: primaryColor }]}>
+                        ₹{service.price}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -458,9 +596,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             ) : (
               <Text style={styles.noDataText}>No services added yet</Text>
             )}
-            <TouchableOpacity style={styles.inquireButton}>
+            <TouchableOpacity
+              style={[styles.inquireButton, { backgroundColor: primaryColor }]}>
               <MaterialIcons
-                name='contact-support'
+                name='help'
                 size={20}
                 color='#fff'
               />
@@ -470,34 +609,50 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         )
 
       case "Products":
+        if (!customizationSettings.showProducts) return null
         return (
           <View style={styles.contactSection}>
-            <Text style={styles.sectionTitle}>Our Products</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              Our Products
+            </Text>
             {businessCard?.products && businessCard.products.length > 0 ? (
               businessCard.products.map((product, index) => (
                 <View
                   key={index}
                   style={styles.productCard}>
                   <View style={styles.productImageContainer}>
-                    <View style={styles.productImagePlaceholder}>
+                    <View
+                      style={[
+                        styles.productImagePlaceholder,
+                        { backgroundColor: `${primaryColor}20` },
+                      ]}>
                       <MaterialIcons
                         name='inventory'
                         size={32}
-                        color='#2196F3'
+                        color={primaryColor}
                       />
                     </View>
                   </View>
                   <View style={styles.productInfo}>
-                    <Text style={styles.productName}>{product.name}</Text>
+                    <Text style={[styles.productName, { color: textColor }]}>
+                      {product.name}
+                    </Text>
                     <Text style={styles.productDescription}>
                       {product.description || "Quality product"}
                     </Text>
                     <View style={styles.productPriceContainer}>
-                      <Text style={styles.productPrice}>₹{product.price}</Text>
-                      <TouchableOpacity style={styles.addToCartButton}>
-                        <Ionicons
-                          name='add'
-                          size={20}
+                      <Text
+                        style={[styles.productPrice, { color: primaryColor }]}>
+                        ₹{product.price}
+                      </Text>
+                      <TouchableOpacity
+                        style={[
+                          styles.addToCartButton,
+                          { backgroundColor: primaryColor },
+                        ]}>
+                        <MaterialIcons
+                          name='add-shopping-cart'
+                          size={18}
                           color='#fff'
                         />
                       </TouchableOpacity>
@@ -508,21 +663,27 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             ) : (
               <Text style={styles.noDataText}>No products added yet</Text>
             )}
-            <TouchableOpacity style={styles.viewAllButton}>
+            <TouchableOpacity
+              style={[styles.viewAllButton, { borderColor: primaryColor }]}>
               <MaterialIcons
-                name='inventory'
+                name='shopping-cart'
                 size={20}
-                color='#2196F3'
+                color={primaryColor}
               />
-              <Text style={styles.viewAllButtonText}>View All Products</Text>
+              <Text style={[styles.viewAllButtonText, { color: primaryColor }]}>
+                View All Products
+              </Text>
             </TouchableOpacity>
           </View>
         )
 
       case "Gallery":
+        if (!customizationSettings.showGallery) return null
         return (
           <View style={styles.contactSection}>
-            <Text style={styles.sectionTitle}>Gallery</Text>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              Gallery
+            </Text>
             {businessCard?.gallery && businessCard.gallery.length > 0 ? (
               <View style={styles.galleryGrid}>
                 {businessCard.gallery.map((image, index) => (
@@ -534,6 +695,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       style={styles.galleryImage}
                       resizeMode='cover'
                     />
+                    <View style={styles.galleryOverlay}>
+                      <MaterialIcons
+                        name='zoom-in'
+                        size={16}
+                        color='#fff'
+                      />
+                    </View>
                   </View>
                 ))}
               </View>
@@ -548,15 +716,34 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     }
   }
 
-  const handleShare = (): void => {
-    console.log("Share button pressed")
+  // Filter available tabs based on customization settings
+  const getAvailableTabs = () => {
+    const tabs = ["Contact"]
+    if (customizationSettings.showServices && businessCard?.services?.length) {
+      tabs.push("Services")
+    }
+    if (customizationSettings.showProducts && businessCard?.products?.length) {
+      tabs.push("Products")
+    }
+    if (customizationSettings.showGallery && businessCard?.gallery?.length) {
+      tabs.push("Gallery")
+    }
+    return tabs
   }
+
+  const availableTabs = getAvailableTabs()
+
+  // Reset active tab if it's no longer available
+  useEffect(() => {
+    if (!availableTabs.includes(activeTab)) {
+      setActiveTab(availableTabs[0] || "Contact")
+    }
+  }, [availableTabs, activeTab])
 
   useEffect(() => {
     const checkSavedStatus = async () => {
       const cardId = businessCard?.id
       if (!cardId) return
-
       try {
         const response = await getData(endpoints.saveStatus(cardId))
         setIsSaved(response.data.isSaved)
@@ -564,129 +751,135 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         console.error("Error checking saved status:", error)
       }
     }
-
     checkSavedStatus()
   }, [businessCard?.id])
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.mainContainer}>
-        {/* Header with Cover Photo */}
-        <View style={styles.header}>
-          {businessCard?.business_cover_photo ? (
+    <View style={[styles.container, { backgroundColor }]}>
+      {/* Header with Cover Photo */}
+      <View style={[styles.header, { backgroundColor: primaryColor }]}>
+        {businessCard?.business_cover_photo ? (
+          <Image
+            source={{ uri: businessCard.business_cover_photo }}
+            style={styles.coverImage}
+            resizeMode='cover'
+          />
+        ) : (
+          <View style={styles.coverPhotoContainer}>
+            {children}
+            <MaterialIcons
+              name='image'
+              size={40}
+              color='#fff'
+            />
+            <Text style={styles.coverPhotoText}>Cover Photo</Text>
+          </View>
+        )}
+
+        {/* Save/Unsave Button */}
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveToggle}
+          disabled={isLoading}>
+          <MaterialIcons
+            name={isSaved ? "favorite" : "favorite-border"}
+            size={24}
+            color={isSaved ? "#ff4757" : "#fff"}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Profile Section */}
+      <View style={styles.profileSection}>
+        <View style={styles.avatar}>
+          {businessCard?.profile_image ? (
             <Image
-              source={{ uri: businessCard.business_cover_photo }}
-              style={styles.coverImage}
+              source={{ uri: businessCard.profile_image }}
+              style={styles.avatarImage}
               resizeMode='cover'
             />
           ) : (
-            <View style={styles.coverPhotoContainer}>
-              {children}
-              <MaterialIcons
-                name='photo'
-                size={32}
-                color='#fff'
-              />
-              <Text style={styles.coverPhotoText}>Cover Photo</Text>
-            </View>
-          )}
-
-          {/* Save/Unsave Button */}
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSaveToggle}
-            disabled={isLoading}
-            activeOpacity={0.7}>
-            <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
-              size={24}
-              color={isSaved ? "#FFD700" : "#fff"}
+            <MaterialIcons
+              name='person'
+              size={40}
+              color='#ccc'
             />
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            {businessCard?.profile_image ? (
-              <Image
-                source={{ uri: businessCard.profile_image }}
-                style={styles.avatarImage}
-                resizeMode='cover'
-              />
-            ) : (
-              <Ionicons
-                name='person'
-                size={40}
-                color='#2196F3'
-              />
-            )}
-          </View>
-
-          <Text style={styles.username}>
-            {businessCard?.name || "Name not provided"}
-          </Text>
-          <Text style={styles.profession}>
-            {businessCard?.role || businessCard?.company || "Professional"}
-          </Text>
-
-          <View style={styles.locationContainer}>
-            <Text style={styles.location}>
-              {businessCard?.address || "Location not provided"}
-            </Text>
-          </View>
-
-          {businessCard?.business_description && (
-            <Text style={styles.locationSubtext}>
-              {businessCard.business_description}
-            </Text>
           )}
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.shareButton}
-            onPress={handleShare}>
-            <Ionicons
-              name='share-social'
-              size={16}
-              color='#fff'
-            />
-            <Text style={styles.buttonText}>Share</Text>
-          </TouchableOpacity>
+        <Text style={[styles.username, { color: textColor }]}>
+          {businessCard?.name || "Name not provided"}
+        </Text>
+        <Text style={styles.profession}>
+          {businessCard?.role || businessCard?.company || "Professional"}
+        </Text>
 
+        <View style={styles.locationContainer}>
+          <Text style={[styles.location, { color: textColor }]}>
+            {businessCard?.address || "Location not provided"}
+          </Text>
+        </View>
+
+        {businessCard?.business_description && (
+          <Text
+            style={[styles.profession, { color: textColor, marginTop: 10 }]}>
+            {businessCard.business_description}
+          </Text>
+        )}
+      </View>
+
+      {/* Action Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.shareButton, { backgroundColor: primaryColor }]}
+          onPress={handleShare}>
+          <MaterialIcons
+            name='share'
+            size={18}
+            color='#fff'
+          />
+          <Text style={styles.buttonText}>Share</Text>
+        </TouchableOpacity>
+
+        {customizationSettings.showQR && (
           <TouchableOpacity
-            style={styles.qrButton}
+            style={[styles.qrButton, { borderColor: primaryColor }]}
             onPress={handleQRCode}>
             <MaterialIcons
               name='qr-code'
-              size={16}
-              color='#2196F3'
+              size={18}
+              color={primaryColor}
             />
-            <Text style={styles.qrButtonText}>QR Code</Text>
+            <Text style={[styles.qrButtonText, { color: primaryColor }]}>
+              QR Code
+            </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
-          {["Contact", "Services", "Products", "Gallery"].map((tab) => (
-            <TabButton
-              key={tab}
-              title={tab}
-              isActive={activeTab === tab}
-              onPress={() => setActiveTab(tab)}
-            />
-          ))}
-        </View>
-
-        {/* Tab Content */}
-        <View style={styles.tabContent}>{renderTabContent()}</View>
+        )}
       </View>
+
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
+        {availableTabs.map((tab) => (
+          <TabButton
+            key={tab}
+            title={tab}
+            isActive={activeTab === tab}
+            onPress={() => setActiveTab(tab)}
+            primaryColor={primaryColor}
+          />
+        ))}
+      </View>
+
+      {/* Tab Content */}
+      <ScrollView
+        style={styles.tabContent}
+        showsVerticalScrollIndicator={false}>
+        {renderTabContent()}
+      </ScrollView>
 
       {/* QR Code Modal */}
       <QRCodeModal />
-    </ScrollView>
+    </View>
   )
 }
 
@@ -697,7 +890,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 20,
   },
-
   // QR Modal Styles
   modalOverlay: {
     flex: 1,
@@ -800,8 +992,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "500",
   },
-
-  // Existing styles (keep all your existing styles)
+  // Existing styles
   saveButton: {
     position: "absolute",
     top: 15,

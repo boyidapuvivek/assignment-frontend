@@ -21,6 +21,14 @@ api.interceptors.request.use(async (config) => {
   return config
 })
 
+// Add response interceptor for better error logging
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Axios error:', error);
+    return Promise.reject(error);
+  }
+);
 
 export const endpoints = {
 
@@ -36,8 +44,8 @@ export const endpoints = {
   verifyResetOTP: `${BASE_URL}/auth/verify-reset-otp`,
   resendOTP: `${BASE_URL}/auth/send-otp`,
 
-//CardCustomizations
-  CardCustomization: (id:string) => `${BASE_URL}/card-customization/${id}`,
+  //CardCustomizations
+  cardCustomization: (id: string) => `${BASE_URL}/card-customization/${id}`,
 
   // Leads endpoints
   getLeads: `${BASE_URL}/leads/my-leads`,
@@ -46,11 +54,11 @@ export const endpoints = {
   // My Card endpoints
   getUserBusinessCard: `${BASE_URL}/business-cards/user`,
   updateBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
-  createBusinessCard: `${BASE_URL}/business-cards/`,
+  createBusinessCard: `${BASE_URL}/business-cards`,
 
   // Saved Cards endpoints
   getSavedCards: `${BASE_URL}/business-cards/saved`,
-  saveCard:(id: string) => `${BASE_URL}/business-cards/save/${id}`,
+  saveCard: (id: string) => `${BASE_URL}/business-cards/save/${id}`,
   unsaveCard: (id: string) => `${BASE_URL}/business-cards/unsave/${id}`,
   saveStatus: (id: string) => `${BASE_URL}/business-cards/save-status/${id}`,
 
@@ -63,8 +71,6 @@ export const endpoints = {
   getBusinessCards: `${BASE_URL}/business-cards`,
   createBusinessCard: `${BASE_URL}/cards/business`,
   deleteBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
-
-
 };
 
 export default api
