@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Dimensions,
+  Platform,
 } from "react-native"
 import {
   Ionicons,
@@ -22,6 +23,13 @@ import { COLORS } from "../utils/constants"
 import { useAuth } from "../context/AuthContext"
 import { postData, deleteData, getData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
+import {
+  handleSocialMediaPress,
+  handlePhonePress,
+  handleEmailPress,
+  handleLocationPress,
+  handleShare,
+} from "../utils/cardDisplayFunctions"
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 
@@ -151,32 +159,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     </TouchableOpacity>
   )
 
-  const handleSocialMediaPress = async (
-    url: string | undefined,
-    platform: string
-  ) => {
-    if (!url || url.trim() === "") {
-      Alert.alert("No Link", `No ${platform} profile linked`)
-      return
-    }
-
-    try {
-      let formattedUrl = url
-      if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        formattedUrl = `https://${url}`
-      }
-
-      const canOpen = await Linking.canOpenURL(formattedUrl)
-      if (canOpen) {
-        await Linking.openURL(formattedUrl)
-      } else {
-        Alert.alert("Error", `Cannot open ${platform} link`)
-      }
-    } catch (error) {
-      console.error("Error opening URL:", error)
-      Alert.alert("Error", `Failed to open ${platform} link`)
-    }
-  }
 
   const handleSaveToggle = async () => {
     if (!cardId) {
@@ -222,9 +204,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     setShowQRModal(false)
   }
 
-  const handleShare = (): void => {
-    console.log("Share button pressed")
-  }
+
+
+
 
   // QR Code Modal Component
   const QRCodeModal = () => (
@@ -319,7 +301,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                 <Text style={[styles.sectionTitle, { color: textColor }]}>
                   Personal Contact
                 </Text>
-                <View style={styles.contactItem}>
+                <TouchableOpacity 
+                  style={styles.contactItem}
+                  onPress={() => handlePhonePress(businessCard?.phone)}>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -331,11 +315,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: textColor }]}>
+                  <Text style={[styles.contactText, { color: businessCard?.phone && businessCard.phone !== "No phone number" ? primaryColor : textColor }]}>
                     {businessCard?.phone || "No phone number"}
                   </Text>
-                </View>
-                <View style={styles.contactItem}>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.contactItem}
+                  onPress={() => handleEmailPress(businessCard?.email)}>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -347,12 +333,14 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: textColor }]}>
+                  <Text style={[styles.contactText, { color: businessCard?.email && businessCard.email !== "No email" ? primaryColor : textColor }]}>
                     {businessCard?.email || "No email"}
                   </Text>
-                </View>
+                </TouchableOpacity>
                 {businessCard?.address && (
-                  <View style={styles.contactItem}>
+                  <TouchableOpacity 
+                    style={styles.contactItem}
+                    onPress={() => handleLocationPress(businessCard?.address)}>
                     <View
                       style={[
                         styles.contactIconContainer,
@@ -364,10 +352,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                         color={primaryColor}
                       />
                     </View>
-                    <Text style={[styles.contactText, { color: textColor }]}>
+                    <Text style={[styles.contactText, { color: primaryColor }]}>
                       {businessCard.address}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 )}
               </>
             )}
@@ -393,7 +381,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                     {businessCard?.company || "No company name"}
                   </Text>
                 </View>
-                <View style={styles.contactItem}>
+                <TouchableOpacity 
+                  style={styles.contactItem}
+                  onPress={() => handleEmailPress(businessCard?.business_email)}>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -405,11 +395,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: textColor }]}>
+                  <Text style={[styles.contactText, { color: businessCard?.business_email && businessCard.business_email !== "No business email" ? primaryColor : textColor }]}>
                     {businessCard?.business_email || "No business email"}
                   </Text>
-                </View>
-                <View style={styles.contactItem}>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.contactItem}
+                  onPress={() => handlePhonePress(businessCard?.business_phone)}>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -421,10 +413,10 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: textColor }]}>
+                  <Text style={[styles.contactText, { color: businessCard?.business_phone && businessCard.business_phone !== "No business phone" ? primaryColor : textColor }]}>
                     {businessCard?.business_phone || "No business phone"}
                   </Text>
-                </View>
+                </TouchableOpacity>
                 {businessCard?.website && (
                   <TouchableOpacity
                     style={styles.contactItem}
