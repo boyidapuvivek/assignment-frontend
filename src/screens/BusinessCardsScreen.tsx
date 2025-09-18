@@ -231,7 +231,6 @@ export default function BusinessCardsScreen({
           "Content-Type": "multipart/form-data",
         },
       })
-      console.log("😊", response)
 
       Alert.alert("Success", "Business card created successfully!", [
         {

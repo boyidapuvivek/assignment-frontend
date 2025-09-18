@@ -14,7 +14,7 @@ import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import CustomButton from "../components/CustomButton"
 import CardDisplay from "../components/CardDisplay"
-import { getData, putData, postData } from "../api/apiServices"
+import { getData, putData, postData, deleteData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 import { useAuth } from "../context/AuthContext"
 
@@ -169,7 +169,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [businessCard, setBusinessCard] = useState(
     route.params?.businessCard || null
   )
@@ -271,6 +271,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
       backgroundColor: theme.backgroundColor,
       textColor: theme.textColor,
       accentColor: theme.accentColor,
+      layout: "minimalist", //need to work on this
     }))
   }
 
@@ -283,14 +284,22 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
     setIsLoading(true)
     try {
       const formData = new FormData()
-      console.log("😊", JSON.stringify(customizationSettings))
 
       formData.append("customization", JSON.stringify(customizationSettings))
-      let response
+      // let response
 
-      response = await postData(
-        endpoints.cardCustomization(businessCard._id),
-        formData
+      // const response = await postData(
+      //   endpoints.cardCustomization(businessCard._id),
+      //   formData
+      // )
+
+      const response = await fetch(
+        `http://192.168.1.100:5000/api/card-customization/${businessCard._id}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
       )
 
       console.log("Customization saved:", response)
@@ -393,7 +402,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
                     { backgroundColor: theme.primaryColor },
                   ]}
                 />
-                <View
+                {/* <View
                   style={[
                     styles.colorBox,
                     { backgroundColor: theme.secondaryColor },
@@ -410,7 +419,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
                     styles.colorBox,
                     { backgroundColor: theme.textColor },
                   ]}
-                />
+                /> */}
               </View>
               <Text style={styles.themeName}>{theme.name}</Text>
               {isSelected && (
@@ -835,8 +844,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   colorBox: {
-    width: 20,
-    height: 20,
+    width: "100%",
+    height: 30,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.1)",

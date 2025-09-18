@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
@@ -22,7 +22,41 @@ import api, { endpoints } from "../api/ClientApi"
 import { API, getData, postData, putData } from "../api/apiServices"
 import axios from "axios"
 import CustomButton from "../components/CustomButton"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
+
+// Add CustomizationSettings interface
+interface CustomizationSettings {
+  primaryColor: string
+  secondaryColor: string
+  backgroundColor: string
+  textColor: string
+  accentColor: string
+  fontFamily: string
+  fontSize: number
+  fontWeight: string
+  layout: string
+  cardShape: string
+  borderRadius: number
+  shadow: boolean
+  showQR: boolean
+  showPersonalContact: boolean
+  showBusinessContact: boolean
+  showSocialMedia: boolean
+  showProducts: boolean
+  showServices: boolean
+  showGallery: boolean
+  showLogo: boolean
+  logoPosition: string
+  backgroundType: string
+  animations: boolean
+  hoverEffects: boolean
+  gradient: {
+    enabled: boolean
+    direction: string
+    colors: string[]
+  }
+  logo?: string
+}
 
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
@@ -31,20 +65,87 @@ export default function MyCardScreen() {
   const [loading, setLoading] = useState(true)
   const navigation = useNavigation()
 
+  // Add customization settings state
+  const [customizationSettings, setCustomizationSettings] =
+    useState<CustomizationSettings>({
+      primaryColor: "#2563eb",
+      secondaryColor: "#3b82f6",
+      backgroundColor: "#ffffff",
+      textColor: "#1f2937",
+      accentColor: "#71cde6",
+      fontFamily: "Inter",
+      fontSize: 16,
+      fontWeight: "normal",
+      layout: "modern",
+      cardShape: "rounded",
+      borderRadius: 12,
+      shadow: true,
+      showQR: true,
+      showPersonalContact: true,
+      showBusinessContact: true,
+      showSocialMedia: true,
+      showProducts: true,
+      showServices: true,
+      showGallery: true,
+      showLogo: false,
+      logoPosition: "top-right",
+      backgroundType: "solid",
+      animations: false,
+      hoverEffects: true,
+      gradient: {
+        enabled: false,
+        direction: "to-right",
+        colors: [],
+      },
+    })
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBusinessCard()
+    }, [])
+  )
+
+  // Add effect to load customization when businessCard changes
   useEffect(() => {
-    fetchBusinessCard()
-  }, [])
+    if (businessCard?._id) {
+      loadCustomizationSettings()
+    }
+  }, [businessCard])
+
+  // Add customization loading function
+  const loadCustomizationSettings = async () => {
+    if (!businessCard?._id) return
+
+    try {
+      const response = await getData(
+        endpoints.cardCustomization(businessCard._id)
+      )
+
+      // Handle the nested structure from your API response
+      if (response.data && response.data.customization) {
+        const customization = response.data.customization
+        setCustomizationSettings((prev) => ({
+          ...prev,
+          ...customization,
+        }))
+      }
+    } catch (error) {
+      console.log("No existing customization found, using defaults")
+      // Keep default settings if no customization exists
+    }
+  }
 
   const fetchBusinessCard = async () => {
     try {
       setLoading(true)
-
       const response = await getData(endpoints.getUserBusinessCard)
+
       if (
         response.data.businessCards &&
         response.data.businessCards.length > 0
       ) {
-        setBusinessCard(response.data.businessCards[0])
+        const card = response.data.businessCards[0]
+        setBusinessCard(card)
         setIsEditing(false)
       } else {
         setIsEditing(true)
@@ -61,18 +162,14 @@ export default function MyCardScreen() {
     setLoading(true)
     try {
       let response = []
-      if (businessCard.length !== 0) {
+      if (businessCard && businessCard._id) {
         response = await putData(
           endpoints.updateBusinessCard(businessCard._id),
           data
         )
       } else {
-        response = await putData(
-          endpoints.createBusinessCard(businessCard._id),
-          data
-        )
+        response = await postData(endpoints.createBusinessCard, data)
       }
-
       await fetchBusinessCard()
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to save business card")
@@ -88,95 +185,105 @@ export default function MyCardScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.headerContainer}>
-        <Header />
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.headerTitle}>My Digital Bussiness Card</Text>
-          </View>
-          {!businessCard && (
-            <Text style={styles.subtitle}>
-              {loading
-                ? "Loading..."
-                : "Create your business card to get started"}
-            </Text>
-          )}
-        </View>
-      </View>
-
-      {/* Content Section */}
-      {!loading ? (
-        <ScrollView
-          style={styles.contentWrapper}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.dataContainer}>
-            {isEditing ? (
-              <View style={styles.formContainer}>
-                <View style={styles.formHeader}>
-                  <MaterialIcons
-                    name='edit'
-                    size={24}
-                    color='#2196F3'
-                  />
-                  <Text style={styles.formTitle}>
-                    {businessCard
-                      ? "Edit Your Business Card"
-                      : "Create Your Business Card"}
-                  </Text>
-                </View>
-                <EditBusinessCardForm
-                  initialData={businessCard}
-                  onSave={(data) => {
-                    handleSave(data)
-                  }}
-                  onCancel={() => setIsEditing(false)}
-                />
-              </View>
-            ) : (
-              <>
-                {/* Card Display Section */}
-                <View style={styles.cardContainer}>
-                  <CardDisplay businessCard={businessCard} />
-                </View>
-
-                {/* Quick Actions Section */}
-                <View style={styles.actionsContainer}>
-                  <View style={styles.actionsHeader}>
-                    <MaterialIcons
-                      name='flash-on'
-                      size={24}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.actionsTitle}>Quick Actions</Text>
-                  </View>
-
-                  <CustomButton
-                    title='Edit Card'
-                    onPress={handleEdit}
-                    iconName='edit'
-                    backgroundColor={COLORS.primary}
-                  />
-
-                  <CustomButton
-                    title='Customize Card'
-                    onPress={() =>
-                      navigation.navigate("CardCustomizationScreen", {
-                        businessCard: businessCard,
-                      })
-                    }
-                    iconName='palette'
-                    backgroundColor='#10b981'
-                  />
-                </View>
-              </>
+      <Header />
+      <ScrollView style={styles.mainContainer}>
+        {/* Header Section */}
+        <View style={styles.headerContainer}>
+          <View style={styles.header}>
+            <View style={styles.titleContainer}>
+              <MaterialIcons
+                name='badge'
+                size={32}
+                color={COLORS.primary}
+                style={styles.titleIcon}
+              />
+              <Text style={styles.headerTitle}>My Digital Business Card</Text>
+            </View>
+            {!businessCard && (
+              <Text style={styles.subtitle}>
+                {loading
+                  ? "Loading..."
+                  : "Create your business card to get started"}
+              </Text>
             )}
           </View>
-        </ScrollView>
-      ) : (
-        <LoadingSpinner />
-      )}
+        </View>
+
+        {/* Content Section */}
+        <View style={styles.contentWrapper}>
+          <ScrollView
+            style={styles.scrollContent}
+            showsVerticalScrollIndicator={false}>
+            {!loading ? (
+              <View style={styles.dataContainer}>
+                {isEditing ? (
+                  <View style={styles.formContainer}>
+                    <View style={styles.formHeader}>
+                      <MaterialIcons
+                        name='edit'
+                        size={24}
+                        color={COLORS.primary}
+                      />
+                      <Text style={styles.formTitle}>
+                        {businessCard
+                          ? "Edit Your Business Card"
+                          : "Create Your Business Card"}
+                      </Text>
+                    </View>
+                    <EditBusinessCardForm
+                      businessCard={businessCard}
+                      onSave={(data) => handleSave(data)}
+                      onCancel={() => setIsEditing(false)}
+                    />
+                  </View>
+                ) : (
+                  <>
+                    {/* Card Display Section - Updated with customizationSettings */}
+                    <View style={styles.cardContainer}>
+                      <CardDisplay
+                        businessCard={businessCard}
+                        customizationSettings={customizationSettings}
+                      />
+                    </View>
+
+                    {/* Quick Actions Section */}
+                    <View style={styles.actionsContainer}>
+                      <View style={styles.actionsHeader}>
+                        <MaterialIcons
+                          name='speed'
+                          size={20}
+                          color={COLORS.primary}
+                        />
+                        <Text style={styles.actionsTitle}>Quick Actions</Text>
+                      </View>
+
+                      <CustomButton
+                        title='Edit Card'
+                        onPress={handleEdit}
+                        iconName='edit'
+                        backgroundColor={COLORS.primary}
+                      />
+
+                      <CustomButton
+                        title='Customize Design'
+                        onPress={() =>
+                          navigation.navigate("CardCustomizationScreen", {
+                            businessCard: businessCard,
+                          })
+                        }
+                        iconName='palette'
+                        backgroundColor='#10b981'
+                      />
+                    </View>
+                  </>
+                )}
+              </View>
+            ) : (
+              <LoadingSpinner />
+            )}
+          </ScrollView>
+        </View>
+      </ScrollView>
     </View>
   )
 }
@@ -188,9 +295,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     paddingTop: 40,
   },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
   headerContainer: {
     backgroundColor: COLORS.white,
-    shadowColor: "#000",
   },
   header: {
     paddingHorizontal: 20,
@@ -261,7 +371,6 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    // padding: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

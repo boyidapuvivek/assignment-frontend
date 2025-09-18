@@ -17,7 +17,7 @@ import * as ImagePicker from "expo-image-picker"
 const windowWidth = Dimensions.get("window").width
 
 export default function EditBusinessCardForm({
-  initialData,
+  businessCard,
   onSave,
   onCancel,
 }) {
@@ -33,35 +33,35 @@ export default function EditBusinessCardForm({
 
   // State sections
   const [personal, setPersonal] = useState({
-    name: initialData?.name || "",
-    email: initialData?.email || "",
-    phone: initialData?.phone || "",
-    role: initialData?.role || "",
-    profile_image: initialData?.profile_image || "",
-    custom_notes: initialData?.custom_notes || "",
+    name: businessCard?.name || "",
+    email: businessCard?.email || "",
+    phone: businessCard?.phone || "",
+    role: businessCard?.role || "",
+    profile_image: businessCard?.profile_image || "",
+    custom_notes: businessCard?.custom_notes || "",
   })
 
   const [business, setBusiness] = useState({
-    company: initialData?.company || "",
-    business_email: initialData?.business_email || "",
-    business_phone: initialData?.business_phone || "",
-    business_description: initialData?.business_description || "",
-    business_cover_photo: initialData?.business_cover_photo || "",
-    address: initialData?.address || "",
+    company: businessCard?.company || "",
+    business_email: businessCard?.business_email || "",
+    business_phone: businessCard?.business_phone || "",
+    business_description: businessCard?.business_description || "",
+    business_cover_photo: businessCard?.business_cover_photo || "",
+    address: businessCard?.address || "",
   })
 
   const [social, setSocial] = useState({
-    facebook_url: initialData?.facebook_url || "",
-    instagram_url: initialData?.instagram_url || "",
-    linkedin_url: initialData?.linkedin_url || "",
-    twitter_url: initialData?.twitter_url || "",
-    website: initialData?.website || "",
-    youtube_url: initialData?.youtube_url || "",
+    facebook_url: businessCard?.facebook_url || "",
+    instagram_url: businessCard?.instagram_url || "",
+    linkedin_url: businessCard?.linkedin_url || "",
+    twitter_url: businessCard?.twitter_url || "",
+    website: businessCard?.website || "",
+    youtube_url: businessCard?.youtube_url || "",
   })
 
-  const [services, setServices] = useState(initialData?.services || [])
-  const [products, setProducts] = useState(initialData?.products || [])
-  const [gallery, setGallery] = useState(initialData?.gallery || [])
+  const [services, setServices] = useState(businessCard?.services || [])
+  const [products, setProducts] = useState(businessCard?.products || [])
+  const [gallery, setGallery] = useState(businessCard?.gallery || [])
 
   const updateField = (section, key, value) => {
     if (section === "personal")

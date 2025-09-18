@@ -3,14 +3,8 @@ import { Alert } from 'react-native';
 import axios from "axios"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { endpoints } from './ClientApi';
+import api from './ClientApi';
 
-const BASE_URL = "http://192.168.1.100:5000/api"
-
-// Create axios instance
-const api = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
-})
 
 // Add token to requests
 api.interceptors.request.use(async (config) => {
@@ -21,12 +15,12 @@ api.interceptors.request.use(async (config) => {
   return config
 })
 
-
-export const API = {
-    getData : (endpoint: string) => {
-        return api.get(endpoint)
-    }
-}
+//testing
+// export const API = {
+//     getData : (endpoint: string) => {
+//         return api.get(endpoint)
+//     }
+// }
 
 
 // GET requests
@@ -44,7 +38,7 @@ export async function getData(endpoint: string, params?: object) {
 // POST requests
 export async function postData(endpoint: string, payload: object, params?: object) {
   try {
-    const response = await api.post(endpoint, payload, params);
+    const response = await api.post(endpoint, {payload});
     return response;
     
   } catch (error: any) {
