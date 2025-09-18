@@ -14,7 +14,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.connectree.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +33,14 @@
         "projectId": "a18b2cdf-fd7e-4efc-b450-606c5cca0820"
       }
     },
-    "plugins": ["expo-web-browser"]
+    "plugins": [
+      "expo-web-browser",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.927800798267-7vk3l0b8pd0rp9qsohnruu9blndkin1r"
+        }
+      ]
+    ]
   }
 }

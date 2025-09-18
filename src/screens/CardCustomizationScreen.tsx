@@ -294,7 +294,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
       // )
 
       const response = await fetch(
-        `http://192.168.1.100:5000/api/card-customization/${businessCard._id}`,
+        `http://192.168.3.172:5000/api/card-customization/${businessCard._id}`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },

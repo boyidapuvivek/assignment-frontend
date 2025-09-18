@@ -3,9 +3,9 @@ import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react"
 import CardCustomizationScreen from "../screens/CardCustomizationScreen"
-// const BASE_URL = "http://192.168.3.172:5000/api"
+const BASE_URL = "http://192.168.3.172:5000/api"
 // const BASE_URL = "https://connectree.co/api"
-const BASE_URL = "http://192.168.1.100:5000/api"
+// const BASE_URL = "http://192.168.1.100:5000/api"
 
 
 const api = axios.create({

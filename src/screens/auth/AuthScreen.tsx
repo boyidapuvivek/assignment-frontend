@@ -23,15 +23,22 @@ import LoginForm from "../../components/auth/LoginForm"
 import RegisterForm from "../../components/auth/RegisterForm"
 import ForgotPasswordForm from "../../components/auth/ForgotPasswordForm"
 
+import {
+  GoogleSignin,
+  isSuccessResponse,
+  isCancelledResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin"
+
 // Required for web browser to close properly
-WebBrowser.maybeCompleteAuthSession()
+// WebBrowser.maybeCompleteAuthSession()
 
 // Google OAuth discovery endpoints
-const discovery = {
-  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
-  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
-}
+// const discovery = {
+//   authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+//   tokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+//   revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+// }
 
 type AuthMode = "login" | "register" | "forgot"
 
@@ -44,75 +51,75 @@ const AuthScreen: React.FC = () => {
   const navigation = useNavigation()
 
   // Google OAuth setup
-  const redirectUri = makeRedirectUri({
-    scheme: "com.connectree.mobile",
-    path: "auth",
-  })
+  // const redirectUri = makeRedirectUri({
+  //   scheme: "com.connectree.mobile",
+  //   path: "auth",
+  // })
 
-  const [request, response, promptAsync] = useAuthRequest(
-    {
-      clientId:
-        process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
-        "927800798267-osn2cmpqovt0rnmh6aspnrte5clf54o4.apps.googleusercontent.com",
-      scopes: ["openid", "profile", "email"],
-      redirectUri,
-      responseType: "code",
-    },
-    discovery
-  )
+  // const [request, response, promptAsync] = useAuthRequest(
+  //   {
+  //     clientId:
+  //       process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
+  //       "927800798267-osn2cmpqovt0rnmh6aspnrte5clf54o4.apps.googleusercontent.com",
+  //     scopes: ["openid", "profile", "email"],
+  //     redirectUri,
+  //     responseType: "code",
+  //   },
+  //   discovery
+  // )
 
   // Handle Google OAuth response
-  useEffect(() => {
-    if (response?.type === "success") {
-      handleGoogleAuthSuccess(response.params.code)
-    } else if (response?.type === "error") {
-      console.error("Google auth error:", response.error)
-      Alert.alert(
-        "Login Error",
-        response.error?.message || "Google authentication failed"
-      )
-      setGoogleLoading(false)
-    } else if (response?.type === "dismiss" || response?.type === "cancel") {
-      console.log("Google auth cancelled")
-      setGoogleLoading(false)
-    }
-  }, [response])
+  // useEffect(() => {
+  //   if (response?.type === "success") {
+  //     handleGoogleAuthSuccess(response.params.code)
+  //   } else if (response?.type === "error") {
+  //     console.error("Google auth error:", response.error)
+  //     Alert.alert(
+  //       "Login Error",
+  //       response.error?.message || "Google authentication failed"
+  //     )
+  //     setGoogleLoading(false)
+  //   } else if (response?.type === "dismiss" || response?.type === "cancel") {
+  //     console.log("Google auth cancelled")
+  //     setGoogleLoading(false)
+  //   }
+  // }, [response])
 
-  const handleGoogleAuthSuccess = async (authCode: string): Promise<void> => {
-    try {
-      console.log("Received auth code:", authCode)
-      const result = await authAPI.googleMobileAuth(authCode)
+  // const handleGoogleAuthSuccess = async (authCode: string): Promise<void> => {
+  //   try {
+  //     console.log("Received auth code:", authCode)
+  //     const result = await authAPI.googleMobileAuth(authCode)
 
-      if (result.data.success) {
-        const loginResult = await googleLogin(
-          result.data.token,
-          result.data.user
-        )
+  //     if (result.data.success) {
+  //       const loginResult = await googleLogin(
+  //         result.data.token,
+  //         result.data.user
+  //       )
 
-        if (loginResult.success) {
-          console.log("Google login successful")
-        } else {
-          Alert.alert(
-            "Login Error",
-            loginResult.message || "Failed to complete Google login"
-          )
-        }
-      } else {
-        Alert.alert(
-          "Login Error",
-          result.data.message || "Google authentication failed"
-        )
-      }
-    } catch (error: any) {
-      console.error("Google auth backend error:", error)
-      Alert.alert(
-        "Login Error",
-        error.response?.data?.message || "Failed to authenticate with server"
-      )
-    } finally {
-      setGoogleLoading(false)
-    }
-  }
+  //       if (loginResult.success) {
+  //         console.log("Google login successful")
+  //       } else {
+  //         Alert.alert(
+  //           "Login Error",
+  //           loginResult.message || "Failed to complete Google login"
+  //         )
+  //       }
+  //     } else {
+  //       Alert.alert(
+  //         "Login Error",
+  //         result.data.message || "Google authentication failed"
+  //       )
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Google auth backend error:", error)
+  //     Alert.alert(
+  //       "Login Error",
+  //       error.response?.data?.message || "Failed to authenticate with server"
+  //     )
+  //   } finally {
+  //     setGoogleLoading(false)
+  //   }
+  // }
 
   const handleLogin = async (data: Partial<FormData>): Promise<void> => {
     setLoading(true)
@@ -178,24 +185,36 @@ const AuthScreen: React.FC = () => {
     }
   }
 
-  const handleGoogleLogin = async (): Promise<void> => {
-    if (!request) {
-      Alert.alert("Error", "Google sign-in is not ready yet. Please try again.")
-      return
-    }
+  // const handleGoogleLogin = async (): Promise<void> => {
+  //   if (!request) {
+  //     Alert.alert("Error", "Google sign-in is not ready yet. Please try again.")
+  //     return
+  //   }
 
-    setGoogleLoading(true)
+  //   setGoogleLoading(true)
+  //   try {
+  //     console.log("Starting Google OAuth flow with redirect URI:", redirectUri)
+  //     await promptAsync()
+  //   } catch (error: any) {
+  //     console.error("Google sign-in error:", error)
+  //     Alert.alert(
+  //       "Login Error",
+  //       error.message || "Failed to start Google sign-in"
+  //     )
+  //     setGoogleLoading(false)
+  //   }
+  // }
+
+  const handleGoogleLogin = async () => {
     try {
-      console.log("Starting Google OAuth flow with redirect URI:", redirectUri)
-      await promptAsync()
-    } catch (error: any) {
-      console.error("Google sign-in error:", error)
-      Alert.alert(
-        "Login Error",
-        error.message || "Failed to start Google sign-in"
-      )
-      setGoogleLoading(false)
-    }
+      await GoogleSignin.hasPlayServices()
+      const response = GoogleSignin.signIn()
+
+      if (isSuccessResponse(response)) {
+        const { idToken, user } = response.data
+        const { name, email } = user
+      }
+    } catch (error) {}
   }
 
   const renderTabNavigation = (): JSX.Element | null => {
