@@ -17,7 +17,7 @@ const RegisterForm: React.FC<AuthFormProps> = ({
   onSwitchMode,
 }) => {
   const [formData, setFormData] = useState<Partial<FormData>>({
-    username: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -34,7 +34,7 @@ const RegisterForm: React.FC<AuthFormProps> = ({
     if (
       !formData.email ||
       !formData.password ||
-      !formData.username ||
+      !formData.name ||
       !formData.confirmPassword
     ) {
       Alert.alert("Error", "Please fill in all required fields")
@@ -61,8 +61,8 @@ const RegisterForm: React.FC<AuthFormProps> = ({
         <TextInput
           style={styles.input}
           placeholder='Enter your full name'
-          value={formData.username}
-          onChangeText={(value) => updateFormData("username", value)}
+          value={formData.name}
+          onChangeText={(value) => updateFormData("name", value)}
           autoCapitalize='words'
         />
       </View>

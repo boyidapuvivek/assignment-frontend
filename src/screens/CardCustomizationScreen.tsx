@@ -17,6 +17,7 @@ import CardDisplay from "../components/CardDisplay"
 import { getData, putData, postData, deleteData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 import { useAuth } from "../context/AuthContext"
+import { BASE_URL } from "../api/ClientApi"
 
 const { width: screenWidth } = Dimensions.get("window")
 
@@ -294,7 +295,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
       // )
 
       const response = await fetch(
-        `http://192.168.3.172:5000/api/card-customization/${businessCard._id}`,
+        `$http://192.168.1.100:5000/api/card-customization/${businessCard._id}`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },

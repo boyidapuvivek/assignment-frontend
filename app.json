@@ -22,16 +22,27 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "preeminent-kleicha-70bb07.netlify.app"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
       "edgeToEdgeEnabled": true,
       "package": "com.connectree.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "a18b2cdf-fd7e-4efc-b450-606c5cca0820"
-      }
     },
     "plugins": [
       "expo-web-browser",
@@ -41,6 +52,11 @@
           "iosUrlScheme": "com.googleusercontent.apps.927800798267-7vk3l0b8pd0rp9qsohnruu9blndkin1r"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "03129cd9-e5a1-4bb2-8bb1-30ec6f24521a"
+      }
+    }
   }
 }

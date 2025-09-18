@@ -3,9 +3,9 @@ import axios from "axios"
 import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react"
 import CardCustomizationScreen from "../screens/CardCustomizationScreen"
-const BASE_URL = "http://192.168.3.172:5000/api"
-// const BASE_URL = "https://connectree.co/api"
+// const BASE_URL = "http://192.168.3.172:5000/api"
 // const BASE_URL = "http://192.168.1.100:5000/api"
+const BASE_URL = "https://connectree.co/api"
 
 
 const api = axios.create({
@@ -35,7 +35,7 @@ export const endpoints = {
 
   //AUTH APIs
   login: `${BASE_URL}/auth/login`,
-  register: `${BASE_URL}/auth/register`,
+  register: `${BASE_URL}/auth/send-otp`,
   forgotPassword: `${BASE_URL}/auth/forgot-password`,
   getProfile: `${BASE_URL}/auth/me`,
 
@@ -55,6 +55,7 @@ export const endpoints = {
   // My Card endpoints
   getUserBusinessCard: `${BASE_URL}/business-cards/user`,
   updateBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
+  getBussinessCardById: `${BASE_URL}/business-cards`,
   createBusinessCard: `${BASE_URL}/business-cards`,
 
   // Saved Cards endpoints
@@ -75,3 +76,4 @@ export const endpoints = {
 };
 
 export default api
+export {BASE_URL}

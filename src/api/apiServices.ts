@@ -38,7 +38,7 @@ export async function getData(endpoint: string, params?: object) {
 // POST requests
 export async function postData(endpoint: string, payload: object, params?: object) {
   try {
-    const response = await api.post(endpoint, {payload});
+    const response = await api.post(endpoint, payload, params);
     return response;
     
   } catch (error: any) {

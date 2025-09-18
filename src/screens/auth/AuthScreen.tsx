@@ -137,13 +137,16 @@ const AuthScreen: React.FC = () => {
 
   const handleRegister = async (data: Partial<FormData>): Promise<void> => {
     setLoading(true)
+    const { name, email, password } = data
     try {
-      const result = await register(data.username!, data.email!, data.password!)
+      const result = await register(name, email, password)
+
+      console.log("😊", result)
 
       if (result.success && result.requiresOTP) {
         navigation.navigate("OTPScreen", {
           email: data.email,
-          name: data.username,
+          name: data.name,
           password: data.password,
           isRegistration: true,
         })

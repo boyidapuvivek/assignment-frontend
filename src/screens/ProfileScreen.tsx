@@ -16,7 +16,7 @@ import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 
-const API_BASE_URL = "http://192.168.3.172:5000"
+const API_BASE_URL = "https://connectree.co"
 
 export default function ProfileScreen() {
   const navigation = useNavigation()

@@ -197,7 +197,7 @@ export default function MyCardScreen() {
                 color={COLORS.primary}
                 style={styles.titleIcon}
               />
-              <Text style={styles.headerTitle}>My Digital Business Card</Text>
+              <Text style={styles.headerTitle}>Digital Business Card</Text>
             </View>
             {!businessCard && (
               <Text style={styles.subtitle}>
