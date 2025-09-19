@@ -15,8 +15,7 @@ import { useAuth } from "../context/AuthContext"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
-
-const API_BASE_URL = "https://connectree.co"
+import { IMAGE_BASE_URL } from "../api/ClientApi"
 
 export default function ProfileScreen() {
   const navigation = useNavigation()
@@ -54,7 +53,7 @@ export default function ProfileScreen() {
     if (imagePath.startsWith("http")) {
       return imagePath
     } else {
-      return `${API_BASE_URL}${imagePath}`
+      return `${IMAGE_BASE_URL}${imagePath}`
     }
   }
 

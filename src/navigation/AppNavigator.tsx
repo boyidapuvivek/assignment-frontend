@@ -8,6 +8,7 @@ import { ActivityIndicator, View } from "react-native"
 import MyCardScreen from "../screens/MyCardScreen"
 import DetailedCardScreen from "../screens/DetailedCardScreen"
 import CardCustomizationScreen from "../screens/CardCustomizationScreen"
+import ViewCardScreen from "../screens/ViewCardScreen"
 
 const Stack = createStackNavigator()
 
@@ -41,6 +42,11 @@ export default function AppNavigator() {
           <Stack.Screen
             name='CardCustomizationScreen'
             component={CardCustomizationScreen}
+          />
+          <Stack.Screen
+            name='ViewCard'
+            component={ViewCardScreen}
+            options={{ headerShown: false }}
           />
         </>
       ) : (

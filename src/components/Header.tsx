@@ -1,16 +1,15 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useNavigation, CommonActions } from "@react-navigation/native"
 import { useAuth } from "../context/AuthContext"
 import { COLORS } from "../utils/constants"
 import Logo from "../../assets/icon_logo.svg"
-
-const API_BASE_URL = "http://192.168.3.172:5000"
+import { BASE_URL, IMAGE_BASE_URL } from "../api/ClientApi"
 
 const Header = ({ outOfTabNavigation }: boolean) => {
   const navigation = useNavigation()
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
 
   const handleLogoPress = () => {
     navigation.dispatch(
@@ -41,7 +40,7 @@ const Header = ({ outOfTabNavigation }: boolean) => {
       if (profile.user.profile_image.startsWith("http")) {
         return profile.user.profile_image
       } else {
-        return `${API_BASE_URL}${profile.user.profile_image}`
+        return `${IMAGE_BASE_URL}/${user.profile_image}`
       }
     }
     return null
@@ -76,9 +75,10 @@ const Header = ({ outOfTabNavigation }: boolean) => {
         <TouchableOpacity
           onPress={handleProfilePress}
           style={styles.profileButton}>
-          {getProfileImageUri() ? (
+          {user.profile_image ? (
+            //⚠️
             <Image
-              source={{ uri: getProfileImageUri() }}
+              source={{ uri: `${IMAGE_BASE_URL}${user.profile_image}` }}
               style={styles.profileImage}
             />
           ) : (

@@ -7,6 +7,9 @@ import CardCustomizationScreen from "../screens/CardCustomizationScreen"
 // const BASE_URL = "http://192.168.1.100:5000/api"
 const BASE_URL = "https://connectree.co/api"
 
+const IMAGE_BASE_URL = "https://connectree.co"
+// const IMAGE_BASE_URL = "http://192.168.3.172:5000"
+// const IMAGE_BASE_URL = "http://192.168.1.100:5000"
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -55,7 +58,7 @@ export const endpoints = {
   // My Card endpoints
   getUserBusinessCard: `${BASE_URL}/business-cards/user`,
   updateBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
-  getBussinessCardById: `${BASE_URL}/business-cards`,
+  getBussinessCardById: (id: string) => `${BASE_URL}/business-cards/${id}`,
   createBusinessCard: `${BASE_URL}/business-cards`,
 
   // Saved Cards endpoints
@@ -76,4 +79,4 @@ export const endpoints = {
 };
 
 export default api
-export {BASE_URL}
+export {BASE_URL,IMAGE_BASE_URL}
