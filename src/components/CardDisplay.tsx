@@ -30,6 +30,7 @@ import {
   handleLocationPress,
   handleShare,
 } from "../utils/cardDisplayFunctions"
+import { Share } from "react-native"
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 
@@ -159,7 +160,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
     </TouchableOpacity>
   )
 
-
   const handleSaveToggle = async () => {
     if (!cardId) {
       Alert.alert("Error", "Card ID not found")
@@ -203,10 +203,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   const closeQRModal = () => {
     setShowQRModal(false)
   }
-
-
-
-
 
   // QR Code Modal Component
   const QRCodeModal = () => (
@@ -301,7 +297,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                 <Text style={[styles.sectionTitle, { color: textColor }]}>
                   Personal Contact
                 </Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.contactItem}
                   onPress={() => handlePhonePress(businessCard?.phone)}>
                   <View
@@ -315,11 +311,21 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: businessCard?.phone && businessCard.phone !== "No phone number" ? primaryColor : textColor }]}>
+                  <Text
+                    style={[
+                      styles.contactText,
+                      {
+                        color:
+                          businessCard?.phone &&
+                          businessCard.phone !== "No phone number"
+                            ? primaryColor
+                            : textColor,
+                      },
+                    ]}>
                     {businessCard?.phone || "No phone number"}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.contactItem}
                   onPress={() => handleEmailPress(businessCard?.email)}>
                   <View
@@ -333,12 +339,22 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: businessCard?.email && businessCard.email !== "No email" ? primaryColor : textColor }]}>
+                  <Text
+                    style={[
+                      styles.contactText,
+                      {
+                        color:
+                          businessCard?.email &&
+                          businessCard.email !== "No email"
+                            ? primaryColor
+                            : textColor,
+                      },
+                    ]}>
                     {businessCard?.email || "No email"}
                   </Text>
                 </TouchableOpacity>
                 {businessCard?.address && (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.contactItem}
                     onPress={() => handleLocationPress(businessCard?.address)}>
                     <View
@@ -381,9 +397,11 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                     {businessCard?.company || "No company name"}
                   </Text>
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.contactItem}
-                  onPress={() => handleEmailPress(businessCard?.business_email)}>
+                  onPress={() =>
+                    handleEmailPress(businessCard?.business_email)
+                  }>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -395,13 +413,25 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: businessCard?.business_email && businessCard.business_email !== "No business email" ? primaryColor : textColor }]}>
+                  <Text
+                    style={[
+                      styles.contactText,
+                      {
+                        color:
+                          businessCard?.business_email &&
+                          businessCard.business_email !== "No business email"
+                            ? primaryColor
+                            : textColor,
+                      },
+                    ]}>
                     {businessCard?.business_email || "No business email"}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.contactItem}
-                  onPress={() => handlePhonePress(businessCard?.business_phone)}>
+                  onPress={() =>
+                    handlePhonePress(businessCard?.business_phone)
+                  }>
                   <View
                     style={[
                       styles.contactIconContainer,
@@ -413,7 +443,17 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
                       color={primaryColor}
                     />
                   </View>
-                  <Text style={[styles.contactText, { color: businessCard?.business_phone && businessCard.business_phone !== "No business phone" ? primaryColor : textColor }]}>
+                  <Text
+                    style={[
+                      styles.contactText,
+                      {
+                        color:
+                          businessCard?.business_phone &&
+                          businessCard.business_phone !== "No business phone"
+                            ? primaryColor
+                            : textColor,
+                      },
+                    ]}>
                     {businessCard?.business_phone || "No business phone"}
                   </Text>
                 </TouchableOpacity>
@@ -824,7 +864,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.shareButton, { backgroundColor: primaryColor }]}
-          onPress={handleShare}>
+          onPress={() => handleShare(businessCard?._id)}>
           <MaterialIcons
             name='share'
             size={18}
@@ -881,108 +921,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 20,
-  },
-  // QR Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 24,
-    width: screenWidth * 0.9,
-    maxWidth: 400,
-    maxHeight: screenHeight * 0.8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 20,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  modalHeader: {
-    alignItems: "center",
-    marginBottom: 24,
-    marginTop: 8,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#333",
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  qrContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f8f9fa",
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
-    minHeight: 200,
-  },
-  qrCodeImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 8,
-  },
-  qrPlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-    opacity: 0.5,
-  },
-  qrPlaceholderText: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 12,
-    textAlign: "center",
-  },
-  modalCardInfo: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  modalCardName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  modalCardRole: {
-    fontSize: 14,
-    color: "#666",
-  },
-  instructionsContainer: {
-    backgroundColor: "#e3f2fd",
-    borderRadius: 12,
-    padding: 16,
-  },
-  instructionsText: {
-    fontSize: 13,
-    color: "#1976d2",
-    textAlign: "center",
-    lineHeight: 18,
-    fontWeight: "500",
   },
   // Existing styles
   saveButton: {
@@ -1386,5 +1324,108 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  // QR Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 24,
+    width: screenWidth * 0.9,
+    maxWidth: 400,
+    maxHeight: screenHeight * 0.8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  modalHeader: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  qrContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    minHeight: 200,
+  },
+  qrCodeImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+  },
+  qrPlaceholder: {
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: 0.5,
+  },
+  qrPlaceholderText: {
+    fontSize: 14,
+    color: "#999",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  modalCardInfo: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalCardName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  modalCardRole: {
+    fontSize: 14,
+    color: "#666",
+  },
+  instructionsContainer: {
+    backgroundColor: "#e3f2fd",
+    borderRadius: 12,
+    padding: 16,
+  },
+  instructionsText: {
+    fontSize: 13,
+    color: "#1976d2",
+    textAlign: "center",
+    lineHeight: 18,
+    fontWeight: "500",
   },
 })

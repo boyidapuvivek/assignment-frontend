@@ -172,7 +172,9 @@ export default function OTPScreen({ route }) {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Header with Logo */}
         <View style={styles.header}>
           <Logo

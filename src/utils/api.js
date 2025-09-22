@@ -172,7 +172,6 @@ export const cardAPI = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        transformRequest: () => formData,
       })
     } else {
       return api.post("/cards/business", data)

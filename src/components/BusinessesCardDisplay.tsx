@@ -13,9 +13,9 @@ import { COLORS } from "../utils/constants"
 import { useAuth } from "../context/AuthContext"
 import { postData, deleteData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
+import { handleShare } from "../utils/cardDisplayFunctions"
 
 interface BusinessCard {
-  id?: string
   _id?: string
   phone?: string
   email?: string
@@ -69,7 +69,7 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
   const [isSaved, setIsSaved] = useState(businessCard?.isSaved || false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const cardId = businessCard?.id || businessCard?._id
+  const cardId = businessCard?._id
 
   const handleCall = () => {
     const phoneNumber = businessCard?.phone || businessCard?.business_phone
@@ -87,11 +87,6 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
     } else {
       Alert.alert("No phone number available")
     }
-  }
-
-  const handleShare = () => {
-    console.log("Share button pressed")
-    Alert.alert("Share", "Share functionality to be implemented")
   }
 
   const handleSaveToggle = async () => {
@@ -223,7 +218,7 @@ const BusinessCardsDisplay: React.FC<CardDisplayProps> = ({
 
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={handleShare}>
+              onPress={() => handleShare(cardId)}>
               <Ionicons
                 name='share'
                 size={20}

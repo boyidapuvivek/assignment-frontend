@@ -34,7 +34,7 @@ export const useGoogleAuth = () => {
     try {
       // Send the access token to your backend
       const response = await fetch(
-        "https://connectree.co/api/auth/google/mobile",
+        "https:/connectree.co/api//auth/google/mobile",
         {
           method: "POST",
           headers: {

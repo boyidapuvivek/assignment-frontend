@@ -9,14 +9,9 @@ import * as Linking from "expo-linking"
 const prefix = Linking.createURL("/")
 
 const linking = {
-  prefixes: [
-    prefix,
-    "com.connectree.mobile://",
-    "https://preeminent-kleicha-70bb07.netlify.app",
-  ],
+  prefixes: [prefix, "com.connectree.mobile://", "https://dev.connectree.co"],
   config: {
     screens: {
-      // Match your actual navigation structure
       Main: {
         screens: {
           TeamCards: "teamcards",
@@ -26,16 +21,8 @@ const linking = {
           LeadsScreen: "leads",
         },
       },
-      Profile: "profile/:userId?", // Added optional userId parameter
-      DetailedCardScreen: "card/:cardId",
-      CardCustomizationScreen: "customize",
-      ViewCard: "view/:cardId",
-      Auth: {
-        screens: {
-          Login: "login",
-          Register: "register",
-        },
-      },
+      Profile: "profile",
+      ViewCard: "card/:cardId",
     },
   },
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, use } from "react"
 import {
   View,
   Text,
@@ -157,7 +157,6 @@ export default function MyCardScreen() {
       setLoading(false)
     }
   }
-
   const handleSave = async (data) => {
     setLoading(true)
     try {
@@ -186,7 +185,9 @@ export default function MyCardScreen() {
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView style={styles.mainContainer}>
+      <ScrollView
+        style={styles.mainContainer}
+        showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <View style={styles.headerContainer}>
           <View style={styles.header}>

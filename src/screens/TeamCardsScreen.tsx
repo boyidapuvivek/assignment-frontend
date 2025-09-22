@@ -33,7 +33,7 @@ interface TeamCard {
   business_email: string
   business_cover_photo?: string
   website?: string
-  address: string
+  address?: string
   linkedin_url?: string
   twitter_url?: string
   facebook_url?: string
@@ -41,33 +41,11 @@ interface TeamCard {
   youtube_url?: string
   custom_notes?: string
   theme: string
-  services: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
-  products: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
   gallery: string[]
   createdBy: {
-    _id: string
+    id: string
     name: string
     email: string
-  }
-  user_id: string
-  views: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  qrCode?: string
-  connectionCount: number
-  cardDesign: {
-    theme: string
-    primaryColor: string
-    secondaryColor: string
   }
 }
 
@@ -129,83 +107,37 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
     try {
       setCreating(true)
 
-      // Create FormData for multipart upload
-      const createData = new FormData()
-
-      // Add form fields
-      createData.append("name", formData.name || "")
-      createData.append("email", formData.email || "")
-      createData.append("phone", formData.phone || "")
-      createData.append("role", formData.role || "")
-      createData.append("company", formData.company || "")
-      createData.append(
-        "business_description",
-        formData.business_description || ""
-      )
-      createData.append("business_phone", formData.business_phone || "")
-      createData.append("business_email", formData.business_email || "")
-      createData.append("website", formData.website || "")
-      createData.append("address", formData.address || "")
-      createData.append("linkedin_url", formData.linkedin_url || "")
-      createData.append("twitter_url", formData.twitter_url || "")
-      createData.append("facebook_url", formData.facebook_url || "")
-      createData.append("instagram_url", formData.instagram_url || "")
-      createData.append("youtube_url", formData.youtube_url || "")
-
-      // Add image files
-      if (imageFiles.profile_image) {
-        createData.append("profile_image", {
-          uri: imageFiles.profile_image.uri,
-          type: imageFiles.profile_image.type,
-          name: imageFiles.profile_image.name,
-        } as any)
+      const createData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+        company: formData.company || "Test",
+        business_description: formData.business_description,
+        business_phone: formData.business_phone,
+        business_email: formData.business_email,
+        website: formData.website,
+        address: formData.address,
+        linkedin_url: formData.linkedin_url,
+        twitter_url: formData.twitter_url,
+        facebook_url: formData.facebook_url,
+        instagram_url: formData.instagram_url,
+        youtube_url: formData.youtube_url,
+        custom_notes: formData.custom_notes,
+        theme: formData.theme || "modern",
+        profile_image: imageFiles?.profile_image?.uri,
+        business_cover_photo: imageFiles?.business_cover_photo?.uri,
+        gallery: imageFiles?.gallery?.map((img: any) => img.uri),
+        department: formData.department,
       }
 
-      if (imageFiles.business_cover_photo) {
-        createData.append("business_cover_photo", {
-          uri: imageFiles.business_cover_photo.uri,
-          type: imageFiles.business_cover_photo.type,
-          name: imageFiles.business_cover_photo.name,
-        } as any)
-      }
-
-      if (imageFiles.business_logo) {
-        createData.append("business_logo", {
-          uri: imageFiles.business_logo.uri,
-          type: imageFiles.business_logo.type,
-          name: imageFiles.business_logo.name,
-        } as any)
-      }
-
-      if (imageFiles.gallery && imageFiles.gallery.length > 0) {
-        imageFiles.gallery.forEach((image: any, index: number) => {
-          createData.append(`gallery_${index}`, {
-            uri: image.uri,
-            type: image.type,
-            name: image.name,
-          } as any)
-        })
-      }
-
-      // Make API call
-      const response = await postData(endpoints.createTeamCard, createData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-
+      const response = await postData(endpoints.createTeamCard, createData)
       Alert.alert("Success", "Team card created successfully!", [
-        {
-          text: "OK",
-          onPress: () => {
-            setShowCreateForm(false)
-            fetchTeamCards() // Refresh the list
-          },
-        },
+        { text: "OK", onPress: () => setShowCreateForm(false) },
       ])
-    } catch (error) {
-      console.error("Error creating team card:", error)
-      Alert.alert("Error", "Failed to create team card. Please try again.")
+      fetchTeamCards()
+    } catch (error: any) {
+      Alert.alert("Error", error?.message || "Failed to create team card")
     } finally {
       setCreating(false)
     }
@@ -394,7 +326,7 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
             <View style={styles.dataContainer}>
               <CardList
                 cards={filteredCards.map((card) => ({
-                  id: card._id,
+                  _id: card._id,
                   name: card.name,
                   email: card.email,
                   phone: card.phone,

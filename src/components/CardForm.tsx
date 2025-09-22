@@ -200,7 +200,9 @@ const CardForm: React.FC<CardFormProps> = ({
   )
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>{title}</Text>
 
       {/* Images Section */}

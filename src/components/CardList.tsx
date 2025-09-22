@@ -5,7 +5,7 @@ import BusinessCardsDisplay from "./BusinessesCardDisplay"
 import { useNavigation } from "@react-navigation/native"
 
 interface Card {
-  id: string
+  _id: string
   name?: string
   email?: string
   phone?: string
@@ -89,7 +89,7 @@ const CardList: React.FC<CardListProps> = ({
       contentContainerStyle={styles.scrollContent}>
       {cards.map((card) => (
         <View
-          key={card.id}
+          key={card._id}
           style={styles.cardContainer}>
           <BusinessCardsDisplay
             businessCard={{

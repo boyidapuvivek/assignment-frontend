@@ -10,10 +10,13 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from "react-native"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
 import { COLORS } from "../utils/constants"
+
+const { width: screenWidth } = Dimensions.get("window")
 
 interface BusinessCardFormProps {
   initialData?: any
@@ -64,7 +67,7 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   isCreating = false,
   title = "Create Business Card",
 }) => {
-  const [currentSection, setCurrentSection] = useState("Personal")
+  const [currentStep, setCurrentStep] = useState(0)
 
   const [formData, setFormData] = useState<FormData>({
     // Personal
@@ -106,50 +109,94 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
   const [galleryImages, setGalleryImages] = useState(initialData.gallery || [])
 
-  const sections = ["Personal", "Business", "Services", "Products", "Gallery"]
+  const sections = [
+    { key: "Personal", title: "Personal", icon: "person" },
+    { key: "Business", title: "Business", icon: "business" },
+    { key: "Services", title: "Services", icon: "construct" },
+    { key: "Products", title: "Products", icon: "cube" },
+    { key: "Gallery", title: "Gallery", icon: "images" },
+  ]
 
   const updateFormData = (field: keyof FormData, value: any): void => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const validateMandatoryFields = (): boolean => {
-    const { name, email, phone, role, company } = formData
+  const validateCurrentStep = (): boolean => {
+    switch (currentStep) {
+      case 0: // Personal
+        const { name, email, phone, role } = formData
 
-    if (!name.trim()) {
-      Alert.alert("Validation Error", "Name is required")
-      setCurrentSection("Personal")
-      return false
+        if (!name.trim()) {
+          Alert.alert("Validation Error", "Name is required")
+          return false
+        }
+        if (!email.trim()) {
+          Alert.alert("Validation Error", "Email is required")
+          return false
+        }
+        if (!phone.trim()) {
+          Alert.alert("Validation Error", "Phone is required")
+          return false
+        }
+        if (!role.trim()) {
+          Alert.alert("Validation Error", "Role is required")
+          return false
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email)) {
+          Alert.alert("Validation Error", "Please enter a valid email address")
+          return false
+        }
+        return true
+
+      case 1: // Business
+        const { company } = formData
+        if (!company.trim()) {
+          Alert.alert("Validation Error", "Company is required")
+          return false
+        }
+        return true
+
+      case 2: // Services - Optional
+      case 3: // Products - Optional
+      case 4: // Gallery - Optional
+        return true
+
+      default:
+        return true
     }
-    if (!email.trim()) {
-      Alert.alert("Validation Error", "Email is required")
-      setCurrentSection("Personal")
-      return false
+  }
+
+  const handleNext = () => {
+    if (validateCurrentStep()) {
+      if (currentStep < sections.length - 1) {
+        setCurrentStep(currentStep + 1)
+      }
     }
-    if (!phone.trim()) {
-      Alert.alert("Validation Error", "Phone is required")
-      setCurrentSection("Personal")
-      return false
+  }
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
     }
-    if (!role.trim()) {
-      Alert.alert("Validation Error", "Role is required")
-      setCurrentSection("Personal")
-      return false
-    }
-    if (!company.trim()) {
-      Alert.alert("Validation Error", "Company is required")
-      setCurrentSection("Business")
-      return false
+  }
+
+  const handleSubmit = (): void => {
+    if (!validateCurrentStep()) return
+
+    const submitData = {
+      ...formData,
+      gallery: galleryImages,
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      Alert.alert("Validation Error", "Please enter a valid email address")
-      setCurrentSection("Personal")
-      return false
+    const allImageFiles = {
+      ...imageFiles,
+      gallery: imageFiles.gallery,
     }
 
-    return true
+    onSave(submitData, allImageFiles)
   }
 
   // Service functions
@@ -279,73 +326,97 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
     }))
   }
 
-  const handleSubmit = (): void => {
-    if (!validateMandatoryFields()) return
-
-    const submitData = {
-      ...formData,
-      gallery: galleryImages,
-    }
-
-    const allImageFiles = {
-      ...imageFiles,
-      gallery: imageFiles.gallery,
-    }
-
-    onSave(submitData, allImageFiles)
-  }
-
-  const renderSectionTabs = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.tabScrollView}
-      contentContainerStyle={styles.tabContainer}>
-      {sections.map((section) => (
-        <TouchableOpacity
-          key={section}
-          style={[
-            styles.tabButton,
-            currentSection === section && styles.activeTabButton,
-          ]}
-          onPress={() => setCurrentSection(section)}>
-          <Text
-            style={[
-              styles.tabText,
-              currentSection === section && styles.activeTabText,
-            ]}>
-            {section}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+  const renderProgressBar = () => (
+    <View style={styles.progressContainer}>
+      <View style={styles.progressBar}>
+        {sections.map((section, index) => (
+          <React.Fragment key={section.key}>
+            <View
+              style={[
+                styles.progressStep,
+                index <= currentStep
+                  ? styles.activeProgressStep
+                  : styles.inactiveProgressStep,
+              ]}>
+              <View
+                style={[
+                  styles.stepCircle,
+                  index <= currentStep
+                    ? styles.activeStepCircle
+                    : styles.inactiveStepCircle,
+                ]}>
+                {index < currentStep ? (
+                  <Ionicons
+                    name='checkmark'
+                    size={12}
+                    color='#fff'
+                  />
+                ) : (
+                  <Text
+                    style={[
+                      styles.stepNumber,
+                      index <= currentStep
+                        ? styles.activeStepNumber
+                        : styles.inactiveStepNumber,
+                    ]}>
+                    {index + 1}
+                  </Text>
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.stepLabel,
+                  index <= currentStep
+                    ? styles.activeStepLabel
+                    : styles.inactiveStepLabel,
+                ]}>
+                {section.title}
+              </Text>
+            </View>
+            {index < sections.length - 1 && (
+              <View
+                style={[
+                  styles.progressLine,
+                  index < currentStep
+                    ? styles.activeProgressLine
+                    : styles.inactiveProgressLine,
+                ]}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </View>
+    </View>
   )
 
   const renderPersonalSection = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Personal Information</Text>
-      <Text style={styles.sectionSubtitle}>
-        All fields marked with * are required
-      </Text>
+      <View style={styles.sectionHeader}>
+        <Ionicons
+          name='person'
+          size={24}
+          color='#007BFF'
+        />
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+      </View>
 
-      <View style={styles.imagePickerRow}>
+      <View style={styles.imageSection}>
         <TouchableOpacity
           onPress={() => pickImage("profile_image")}
-          style={styles.imagePickerContainer}>
+          style={styles.profileImageContainer}>
           {images.profile_image ? (
             <Image
               source={{ uri: images.profile_image }}
               style={styles.profileImagePreview}
             />
           ) : (
-            <View
-              style={[styles.imagePlaceholder, styles.profileImagePlaceholder]}>
+            <View style={styles.profileImagePlaceholder}>
               <Ionicons
                 name='person'
                 size={32}
                 color='#999'
               />
-              <Text style={styles.imagePlaceholderText}>Profile Photo</Text>
+              <Text style={styles.imagePlaceholderText}>Add Photo</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -353,9 +424,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='person'
+          name='person-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -369,9 +440,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='mail'
+          name='mail-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -386,9 +457,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='call'
+          name='call-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -402,9 +473,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='briefcase'
+          name='briefcase-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -420,47 +491,52 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
   const renderBusinessSection = () => (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Business Information</Text>
+      <View style={styles.sectionHeader}>
+        <Ionicons
+          name='business'
+          size={24}
+          color='#007BFF'
+        />
+        <Text style={styles.sectionTitle}>Business Information</Text>
+      </View>
 
-      <View style={styles.imagePickerRow}>
+      <View style={styles.businessImagesRow}>
         <TouchableOpacity
           onPress={() => pickImage("business_cover_photo")}
-          style={styles.imagePickerContainer}>
+          style={styles.businessImageContainer}>
           {images.business_cover_photo ? (
             <Image
               source={{ uri: images.business_cover_photo }}
               style={styles.coverImagePreview}
             />
           ) : (
-            <View
-              style={[styles.imagePlaceholder, styles.coverImagePlaceholder]}>
+            <View style={styles.coverImagePlaceholder}>
               <Ionicons
-                name='image'
-                size={32}
+                name='image-outline'
+                size={24}
                 color='#999'
               />
-              <Text style={styles.imagePlaceholderText}>Cover Photo</Text>
+              <Text style={styles.smallImageText}>Cover</Text>
             </View>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => pickImage("business_logo")}
-          style={styles.imagePickerContainer}>
+          style={styles.businessImageContainer}>
           {images.business_logo ? (
             <Image
               source={{ uri: images.business_logo }}
               style={styles.logoImagePreview}
             />
           ) : (
-            <View
-              style={[styles.imagePlaceholder, styles.logoImagePlaceholder]}>
+            <View style={styles.logoImagePlaceholder}>
               <Ionicons
-                name='business'
-                size={32}
+                name='business-outline'
+                size={24}
                 color='#999'
               />
-              <Text style={styles.imagePlaceholderText}>Business Logo</Text>
+              <Text style={styles.smallImageText}>Logo</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -468,9 +544,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='business'
+          name='business-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -484,9 +560,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.textAreaContainer}>
         <Ionicons
-          name='document-text'
+          name='document-text-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.textAreaIcon}
         />
         <TextInput
@@ -497,16 +573,16 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
             updateFormData("business_description", value)
           }
           multiline
-          numberOfLines={4}
+          numberOfLines={3}
           textAlignVertical='top'
         />
       </View>
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='call'
+          name='call-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -520,9 +596,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='mail'
+          name='mail-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -537,9 +613,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='globe'
+          name='globe-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -553,9 +629,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Ionicons
-          name='location'
+          name='location-outline'
           size={20}
-          color='#666'
+          color='#007BFF'
           style={styles.inputIcon}
         />
         <TextInput
@@ -566,86 +642,92 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
         />
       </View>
 
-      <Text style={styles.subSectionTitle}>Social Media Links</Text>
+      <View style={styles.socialSection}>
+        <Text style={styles.subSectionTitle}>Social Media</Text>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name='logo-linkedin'
-          size={20}
-          color='#0077B5'
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder='LinkedIn URL'
-          value={formData.linkedin_url}
-          onChangeText={(value) => updateFormData("linkedin_url", value)}
-          autoCapitalize='none'
-        />
-      </View>
+        <View style={styles.socialRow}>
+          <View style={styles.socialInput}>
+            <Ionicons
+              name='logo-linkedin'
+              size={18}
+              color='#0077B5'
+              style={styles.socialIcon}
+            />
+            <TextInput
+              style={styles.socialTextInput}
+              placeholder='LinkedIn'
+              value={formData.linkedin_url}
+              onChangeText={(value) => updateFormData("linkedin_url", value)}
+              autoCapitalize='none'
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name='logo-facebook'
-          size={20}
-          color='#1877F2'
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder='Facebook URL'
-          value={formData.facebook_url}
-          onChangeText={(value) => updateFormData("facebook_url", value)}
-          autoCapitalize='none'
-        />
-      </View>
+          <View style={styles.socialInput}>
+            <Ionicons
+              name='logo-facebook'
+              size={18}
+              color='#1877F2'
+              style={styles.socialIcon}
+            />
+            <TextInput
+              style={styles.socialTextInput}
+              placeholder='Facebook'
+              value={formData.facebook_url}
+              onChangeText={(value) => updateFormData("facebook_url", value)}
+              autoCapitalize='none'
+            />
+          </View>
+        </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name='logo-twitter'
-          size={20}
-          color='#1DA1F2'
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder='Twitter URL'
-          value={formData.twitter_url}
-          onChangeText={(value) => updateFormData("twitter_url", value)}
-          autoCapitalize='none'
-        />
-      </View>
+        <View style={styles.socialRow}>
+          <View style={styles.socialInput}>
+            <Ionicons
+              name='logo-twitter'
+              size={18}
+              color='#1DA1F2'
+              style={styles.socialIcon}
+            />
+            <TextInput
+              style={styles.socialTextInput}
+              placeholder='Twitter'
+              value={formData.twitter_url}
+              onChangeText={(value) => updateFormData("twitter_url", value)}
+              autoCapitalize='none'
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name='logo-instagram'
-          size={20}
-          color='#E4405F'
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder='Instagram URL'
-          value={formData.instagram_url}
-          onChangeText={(value) => updateFormData("instagram_url", value)}
-          autoCapitalize='none'
-        />
-      </View>
+          <View style={styles.socialInput}>
+            <Ionicons
+              name='logo-instagram'
+              size={18}
+              color='#E4405F'
+              style={styles.socialIcon}
+            />
+            <TextInput
+              style={styles.socialTextInput}
+              placeholder='Instagram'
+              value={formData.instagram_url}
+              onChangeText={(value) => updateFormData("instagram_url", value)}
+              autoCapitalize='none'
+            />
+          </View>
+        </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name='logo-youtube'
-          size={20}
-          color='#FF0000'
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder='YouTube URL'
-          value={formData.youtube_url}
-          onChangeText={(value) => updateFormData("youtube_url", value)}
-          autoCapitalize='none'
-        />
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name='logo-youtube'
+            size={20}
+            color='#FF0000'
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder='YouTube URL'
+            value={formData.youtube_url}
+            onChangeText={(value) => updateFormData("youtube_url", value)}
+            autoCapitalize='none'
+          />
+        </View>
       </View>
     </View>
   )
@@ -653,18 +735,24 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   const renderServicesSection = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
+        <Ionicons
+          name='construct'
+          size={24}
+          color='#007BFF'
+        />
         <Text style={styles.sectionTitle}>Services</Text>
-        <TouchableOpacity
-          onPress={addService}
-          style={styles.addButton}>
-          <Ionicons
-            name='add'
-            size={16}
-            color='#007BFF'
-          />
-          <Text style={styles.addButtonText}>Add Service</Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        onPress={addService}
+        style={styles.addButton}>
+        <Ionicons
+          name='add-circle-outline'
+          size={24}
+          color='#007BFF'
+        />
+        <Text style={styles.addButtonText}>Add Service</Text>
+      </TouchableOpacity>
 
       {formData.services.map((service, index) => (
         <View
@@ -676,18 +764,18 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
               onPress={() => removeService(index)}
               style={styles.removeButton}>
               <Ionicons
-                name='trash'
+                name='trash-outline'
                 size={18}
-                color='#ff4444'
+                color='#dc3545'
               />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
             <Ionicons
-              name='construct'
+              name='construct-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.inputIcon}
             />
             <TextInput
@@ -700,9 +788,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
           <View style={styles.inputContainer}>
             <Ionicons
-              name='cash'
+              name='cash-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.inputIcon}
             />
             <TextInput
@@ -718,9 +806,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
           <View style={styles.textAreaContainer}>
             <Ionicons
-              name='document-text'
+              name='document-text-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.textAreaIcon}
             />
             <TextInput
@@ -731,7 +819,7 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
                 updateService(index, "description", value)
               }
               multiline
-              numberOfLines={3}
+              numberOfLines={2}
               textAlignVertical='top'
             />
           </View>
@@ -741,13 +829,13 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
       {formData.services.length === 0 && (
         <View style={styles.emptyState}>
           <Ionicons
-            name='construct'
+            name='construct-outline'
             size={48}
             color='#ccc'
           />
           <Text style={styles.emptyStateText}>No services added yet</Text>
           <Text style={styles.emptyStateSubtext}>
-            Tap "Add Service" to get started
+            Add services you offer to customers
           </Text>
         </View>
       )}
@@ -757,18 +845,24 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   const renderProductsSection = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
+        <Ionicons
+          name='cube'
+          size={24}
+          color='#007BFF'
+        />
         <Text style={styles.sectionTitle}>Products</Text>
-        <TouchableOpacity
-          onPress={addProduct}
-          style={styles.addButton}>
-          <Ionicons
-            name='add'
-            size={16}
-            color='#007BFF'
-          />
-          <Text style={styles.addButtonText}>Add Product</Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        onPress={addProduct}
+        style={styles.addButton}>
+        <Ionicons
+          name='add-circle-outline'
+          size={24}
+          color='#007BFF'
+        />
+        <Text style={styles.addButtonText}>Add Product</Text>
+      </TouchableOpacity>
 
       {formData.products.map((product, index) => (
         <View
@@ -780,18 +874,18 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
               onPress={() => removeProduct(index)}
               style={styles.removeButton}>
               <Ionicons
-                name='trash'
+                name='trash-outline'
                 size={18}
-                color='#ff4444'
+                color='#dc3545'
               />
             </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>
             <Ionicons
-              name='cube'
+              name='cube-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.inputIcon}
             />
             <TextInput
@@ -804,9 +898,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
           <View style={styles.inputContainer}>
             <Ionicons
-              name='cash'
+              name='cash-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.inputIcon}
             />
             <TextInput
@@ -822,9 +916,9 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
 
           <View style={styles.textAreaContainer}>
             <Ionicons
-              name='document-text'
+              name='document-text-outline'
               size={20}
-              color='#666'
+              color='#007BFF'
               style={styles.textAreaIcon}
             />
             <TextInput
@@ -835,7 +929,7 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
                 updateProduct(index, "description", value)
               }
               multiline
-              numberOfLines={3}
+              numberOfLines={2}
               textAlignVertical='top'
             />
           </View>
@@ -845,13 +939,13 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
       {formData.products.length === 0 && (
         <View style={styles.emptyState}>
           <Ionicons
-            name='cube'
+            name='cube-outline'
             size={48}
             color='#ccc'
           />
           <Text style={styles.emptyStateText}>No products added yet</Text>
           <Text style={styles.emptyStateSubtext}>
-            Tap "Add Product" to get started
+            Add products you sell to customers
           </Text>
         </View>
       )}
@@ -861,18 +955,24 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   const renderGallerySection = () => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
+        <Ionicons
+          name='images'
+          size={24}
+          color='#007BFF'
+        />
         <Text style={styles.sectionTitle}>Gallery</Text>
-        <TouchableOpacity
-          onPress={pickGalleryImages}
-          style={styles.addButton}>
-          <Ionicons
-            name='add'
-            size={16}
-            color='#007BFF'
-          />
-          <Text style={styles.addButtonText}>Add Images</Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        onPress={pickGalleryImages}
+        style={styles.addButton}>
+        <Ionicons
+          name='add-circle-outline'
+          size={24}
+          color='#007BFF'
+        />
+        <Text style={styles.addButtonText}>Add Images</Text>
+      </TouchableOpacity>
 
       {galleryImages.length > 0 ? (
         <View style={styles.galleryGrid}>
@@ -899,13 +999,11 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
       ) : (
         <View style={styles.emptyGallery}>
           <Ionicons
-            name='images'
+            name='images-outline'
             size={48}
             color='#ccc'
           />
-          <Text style={styles.emptyGalleryText}>
-            No images added to gallery
-          </Text>
+          <Text style={styles.emptyGalleryText}>No images yet</Text>
           <Text style={styles.emptyStateSubtext}>
             Add images to showcase your work
           </Text>
@@ -915,54 +1013,106 @@ const BusinessCardForm: React.FC<BusinessCardFormProps> = ({
   )
 
   const renderCurrentSection = () => {
-    switch (currentSection) {
-      case "Personal":
+    switch (currentStep) {
+      case 0:
         return renderPersonalSection()
-      case "Business":
+      case 1:
         return renderBusinessSection()
-      case "Services":
+      case 2:
         return renderServicesSection()
-      case "Products":
+      case 3:
         return renderProductsSection()
-      case "Gallery":
+      case 4:
         return renderGallerySection()
       default:
         return renderPersonalSection()
     }
   }
 
+  const isLastStep = currentStep === sections.length - 1
+  const isFirstStep = currentStep === 0
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <Text style={styles.title}>{title}</Text>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}>
+      {/* Compact Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.stepCounter}>
+          {currentStep + 1} of {sections.length}
+        </Text>
+      </View>
+
+      {/* Compact Progress Bar */}
+      {renderProgressBar()}
+
+      {/* Main Content */}
       <ScrollView
+        style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
-        style={styles.container}>
-        {renderSectionTabs()}
-        {/* Main Container */}
+        keyboardShouldPersistTaps='handled'>
         <View style={styles.mainContainer}>
-          <ScrollView
-            style={styles.formContent}
-            showsVerticalScrollIndicator={false}>
-            {renderCurrentSection()}
-          </ScrollView>
-          <View style={styles.buttonContainer}>
-            {showCancel && (
-              <TouchableOpacity
-                onPress={onCancel}
-                style={styles.cancelButton}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              onPress={handleSubmit}
-              style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+          {renderCurrentSection()}
+          <View style={styles.bottomNavigation}>
+            <View style={styles.navigationButtons}>
+              {!isFirstStep && (
+                <TouchableOpacity
+                  onPress={handlePrevious}
+                  style={styles.previousButton}
+                  activeOpacity={0.8}>
+                  <Ionicons
+                    name='chevron-back'
+                    size={18}
+                    color='#666'
+                  />
+                  <Text style={styles.previousButtonText}>Back</Text>
+                </TouchableOpacity>
+              )}
+
+              {showCancel && isFirstStep && (
+                <TouchableOpacity
+                  onPress={onCancel}
+                  style={styles.cancelButton}
+                  activeOpacity={0.8}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.spacer} />
+
+              {!isLastStep ? (
+                <TouchableOpacity
+                  onPress={handleNext}
+                  style={styles.nextButton}
+                  activeOpacity={0.8}>
+                  <Text style={styles.nextButtonText}>Next</Text>
+                  <Ionicons
+                    name='chevron-forward'
+                    size={18}
+                    color='#fff'
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={handleSubmit}
+                  style={styles.submitButton}
+                  activeOpacity={0.8}>
+                  <MaterialIcons
+                    name='save'
+                    size={18}
+                    color='#fff'
+                  />
+                  <Text style={styles.submitButtonText}>Save</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       </ScrollView>
+
+      {/* Bottom Navigation */}
     </KeyboardAvoidingView>
   )
 }
@@ -972,86 +1122,247 @@ export default BusinessCardForm
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: "#f8f9fa",
   },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "ios" ? 50 : 20,
+    paddingBottom: 12,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e9ecef",
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+
+  stepCounter: {
+    fontSize: 13,
+    color: "#6c757d",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+
+  // Progress Bar
+  progressContainer: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e9ecef",
+  },
+
+  progressBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  progressStep: {
+    alignItems: "center",
+    flex: 5,
+  },
+
+  stepCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+
+  activeStepCircle: {
+    backgroundColor: "#007BFF",
+  },
+
+  inactiveStepCircle: {
+    backgroundColor: "#f8f9fa",
+    borderWidth: 2,
+    borderColor: "#dee2e6",
+  },
+
+  stepNumber: {
+    fontSize: 10,
+    fontWeight: "700",
+  },
+
+  activeStepNumber: {
+    color: "#fff",
+  },
+
+  inactiveStepNumber: {
+    color: "#6c757d",
+  },
+
+  stepLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  activeStepLabel: {
+    color: "#007BFF",
+  },
+
+  inactiveStepLabel: {
+    color: "#6c757d",
+  },
+
+  progressLine: {
+    height: 2,
+    flex: 1,
+    marginHorizontal: 4,
+    marginBottom: 18,
+  },
+
+  activeProgressLine: {
+    backgroundColor: "#007BFF",
+  },
+
+  inactiveProgressLine: {
+    backgroundColor: "#e9ecef",
+  },
+
+  // Main Content
+  scrollContainer: {
+    flex: 1,
+  },
+
   mainContainer: {
     flex: 1,
     justifyContent: "space-between",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#1a1a1a",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-
-  // Tab Styles
-  tabScrollView: {
-    maxHeight: 50,
-    marginBottom: 20,
-  },
-  tabContainer: {
-    paddingHorizontal: 20,
-    flexDirection: "row",
-  },
-  tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginRight: 12,
-    borderRadius: 25,
-    backgroundColor: "#f8f9fa",
-    minWidth: 80,
-    alignItems: "center",
-  },
-  activeTabButton: {
-    backgroundColor: "#007BFF",
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-  },
-  activeTabText: {
-    color: "#fff",
-  },
-
-  // Form Content
-  formContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
 
   // Section Styles
   section: {
-    marginBottom: 30,
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    padding: 20,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 20,
-    fontStyle: "italic",
-  },
-  subSectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginTop: 20,
-    marginBottom: 15,
-  },
+
   sectionHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginLeft: 8,
+  },
+
+  subSectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 12,
+    marginTop: 8,
+  },
+
+  // Image Sections
+  imageSection: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+
+  profileImageContainer: {
+    alignItems: "center",
+  },
+
+  profileImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "#e9ecef",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+  },
+
+  profileImagePreview: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "#007BFF",
+  },
+
+  businessImagesRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+
+  businessImageContainer: {
+    alignItems: "center",
+  },
+
+  coverImagePlaceholder: {
+    width: 100,
+    height: 60,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+  },
+
+  logoImagePlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+  },
+
+  coverImagePreview: {
+    width: 100,
+    height: 60,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#007BFF",
+  },
+
+  logoImagePreview: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#007BFF",
+  },
+
+  imagePlaceholderText: {
+    marginTop: 4,
+    fontSize: 10,
+    color: "#6c757d",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+
+  smallImageText: {
+    marginTop: 2,
+    fontSize: 9,
+    color: "#6c757d",
+    textAlign: "center",
   },
 
   // Input Styles
@@ -1059,107 +1370,85 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 15,
-    backgroundColor: "#f8f9fa",
-    minHeight: 50,
+    borderColor: "#e9ecef",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#fff",
+    minHeight: 48,
+    marginBottom: 12,
   },
+
   inputIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
+
   input: {
     flex: 1,
-    fontSize: 16,
-    color: "#333",
+    fontSize: 15,
+    color: "#1a1a1a",
     paddingVertical: 0,
   },
+
   textAreaContainer: {
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#e1e5e9",
-    borderRadius: 12,
-    padding: 15,
-    backgroundColor: "#f8f9fa",
+    borderColor: "#e9ecef",
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: "#fff",
     alignItems: "flex-start",
-    marginBottom: 16,
+    marginBottom: 12,
+    minHeight: 70,
   },
+
   textAreaIcon: {
-    marginRight: 12,
+    marginRight: 10,
     marginTop: 2,
   },
+
   textArea: {
     flex: 1,
-    minHeight: 80,
-    fontSize: 16,
-    color: "#333",
+    fontSize: 15,
+    color: "#1a1a1a",
     textAlignVertical: "top",
+    minHeight: 50,
   },
 
-  // Image Picker Styles
-  imagePickerRow: {
+  // Social Media Section
+  socialSection: {
+    marginTop: 16,
+  },
+
+  socialRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 25,
-    flexWrap: "wrap",
-  },
-  imagePickerContainer: {
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  imagePlaceholder: {
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
-    borderStyle: "dashed",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
-  },
-  profileImagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  coverImagePlaceholder: {
-    width: 140,
-    height: 80,
-    borderRadius: 12,
-  },
-  logoImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
-  profileImagePreview: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: "#007BFF",
-  },
-  coverImagePreview: {
-    width: 140,
-    height: 80,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#007BFF",
-  },
-  logoImagePreview: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#007BFF",
-  },
-  imagePlaceholderText: {
-    marginTop: 8,
-    fontSize: 12,
-    color: "#999",
-    textAlign: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
 
-  // Item Container (Services/Products)
+  socialInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    minHeight: 40,
+    width: "48%",
+  },
+
+  socialIcon: {
+    marginRight: 8,
+  },
+
+  socialTextInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#1a1a1a",
+    paddingVertical: 0,
+  },
+
+  // Services/Products Item Container
   itemContainer: {
     backgroundColor: "#f8f9fa",
     padding: 16,
@@ -1168,12 +1457,14 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: "#007BFF",
   },
+
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 15,
   },
+
   itemTitle: {
     fontSize: 16,
     fontWeight: "600",
@@ -1184,19 +1475,24 @@ const styles = StyleSheet.create({
   addButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "#e3f2fd",
-    borderRadius: 20,
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: "#f8f9ff",
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "#007BFF",
+    borderStyle: "dashed",
+    marginBottom: 20,
   },
+
   addButtonText: {
-    marginLeft: 4,
+    marginLeft: 6,
     fontSize: 14,
     color: "#007BFF",
     fontWeight: "600",
   },
+
   removeButton: {
     padding: 8,
     borderRadius: 8,
@@ -1209,26 +1505,31 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
+
   galleryItem: {
-    width: "48%",
+    width: (screenWidth - 80) / 3, // 3 images per row
     aspectRatio: 1,
-    marginBottom: 15,
+    marginBottom: 12,
     position: "relative",
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: "hidden",
+    backgroundColor: "#f8f9fa",
   },
+
   galleryImage: {
     width: "100%",
     height: "100%",
+    resizeMode: "cover",
   },
+
   removeImageButton: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    top: 4,
+    right: 4,
+    backgroundColor: "rgba(220, 53, 69, 0.9)",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1238,77 +1539,134 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 40,
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
+    borderWidth: 1,
+    borderColor: "#e9ecef",
     borderStyle: "dashed",
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: "#f8f9fa",
   },
+
   emptyStateText: {
-    marginTop: 15,
-    fontSize: 16,
-    color: "#666",
-    fontWeight: "500",
-  },
-  emptyStateSubtext: {
-    marginTop: 5,
+    marginTop: 12,
     fontSize: 14,
-    color: "#999",
+    color: "#6c757d",
+    fontWeight: "600",
+  },
+
+  emptyStateSubtext: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#adb5bd",
     textAlign: "center",
   },
+
   emptyGallery: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 50,
-    borderWidth: 2,
-    borderColor: "#e1e5e9",
+    paddingVertical: 40,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
     borderStyle: "dashed",
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: "#f8f9fa",
   },
-  emptyGalleryText: {
-    marginTop: 15,
-    fontSize: 16,
-    color: "#666",
-    fontWeight: "500",
-  },
 
-  // Bottom Button Container
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingBottom: 30,
-    backgroundColor: "#fff",
-  },
-  saveButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 40,
-    width: 100,
-    backgroundColor: "#3abf59ff",
-    borderRadius: 18,
-    shadowColor: "#28a745",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    color: "#fff",
+  emptyGalleryText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: "#6c757d",
     fontWeight: "600",
   },
-  cancelButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 100,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 18,
+
+  // Bottom Navigation
+  bottomNavigation: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    // paddingBottom: Platform.OS === "ios" ? 28 : 12,
   },
+
+  navigationButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  spacer: {
+    flex: 1,
+  },
+
+  previousButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dee2e6",
+  },
+
+  previousButtonText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#6c757d",
+    fontWeight: "600",
+  },
+
+  nextButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: "#007BFF",
+    borderRadius: 20,
+    shadowColor: "#007BFF",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  nextButtonText: {
+    marginRight: 4,
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  submitButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: "#28a745",
+    borderRadius: 20,
+    shadowColor: "#28a745",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  submitButtonText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  cancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#dc3545",
+    borderRadius: 20,
+  },
+
   cancelButtonText: {
-    color: "#ff4444",
-    fontSize: 16,
-    fontWeight: "500",
+    color: "#dc3545",
+    fontSize: 14,
+    fontWeight: "600",
   },
 })

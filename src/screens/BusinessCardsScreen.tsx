@@ -19,6 +19,7 @@ import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData, postData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
+import axios from "axios"
 
 interface BusinessCard {
   _id: string
@@ -164,80 +165,55 @@ export default function BusinessCardsScreen({
     try {
       setCreating(true)
 
-      // Create FormData for multipart upload
-      const createData = new FormData()
+      const createData = {
+        name: formData.name || "",
+        email: formData.email || "",
+        phone: formData.phone || "",
+        company: formData.company || "",
+        role: formData.role || "",
+        business_description: formData.businessDescription || "",
+        business_phone: formData.businessNumber || "",
+        business_email: formData.businessEmail || "",
+        website: formData.website || "",
+        address: formData.location || "",
+        linkedin_url: formData.socialMediaLinks?.[0]?.linkedIn || "",
+        twitter_url: formData.socialMediaLinks?.[0]?.twitter || "",
+        facebook_url: formData.socialMediaLinks?.[0]?.facebook || "",
+        instagram_url: formData.socialMediaLinks?.[0]?.instagram || "",
+        youtube_url: formData.socialMediaLinks?.[0]?.youtube || "",
+        custom_notes: formData.customNotes || "",
+        theme: formData.theme || "modern",
 
-      // Add form fields
-      createData.append("name", formData.username || "")
-      createData.append("email", formData.email || "")
-      createData.append("phone", formData.phoneNumber || "")
-      createData.append("business_email", formData.businessEmail || "")
-      createData.append("business_phone", formData.businessNumber || "")
-      createData.append(
-        "business_description",
-        formData.businessDescription || ""
-      )
-      createData.append("address", formData.location || "")
-      createData.append("company", formData.businessName || "")
+        services: formData.services
+          ? JSON.stringify(formData.services)
+          : JSON.stringify([]),
+        products: formData.products
+          ? JSON.stringify(formData.products)
+          : JSON.stringify([]),
 
-      // Add social media links
-      if (formData.socialMediaLinks && formData.socialMediaLinks[0]) {
-        const social = formData.socialMediaLinks[0]
-        createData.append("facebook_url", social.facebook || "")
-        createData.append("twitter_url", social.twitter || "")
-        createData.append("linkedin_url", social.linkedIn || "")
-        createData.append("instagram_url", social.instagram || "")
+        profile_image: imageFiles?.avatar?.uri || "",
+
+        business_cover_photo: imageFiles?.coverImage?.uri || "",
+
+        business_logo: imageFiles?.businessLogo?.uri || "",
+
+        product_images_urls:
+          formData.products?.map((p: any) => p.imageUrl) || [],
+
+        gallery: imageFiles?.gallery?.map((image: any) => image.uri) || [],
+
+        tempCardId: formData.tempCardId || "",
       }
 
-      // Add services and products as JSON strings
-      if (formData.services && formData.services.length > 0) {
-        createData.append("services", JSON.stringify(formData.services))
-      }
-
-      if (formData.products && formData.products.length > 0) {
-        createData.append("products", JSON.stringify(formData.products))
-      }
-
-      // Add image files
-      if (imageFiles.avatar) {
-        createData.append("profile_image", {
-          uri: imageFiles.avatar.uri,
-          type: imageFiles.avatar.type,
-          name: imageFiles.avatar.fileName,
-        } as any)
-      }
-
-      if (imageFiles.coverImage) {
-        createData.append("business_cover_photo", {
-          uri: imageFiles.coverImage.uri,
-          type: imageFiles.coverImage.type,
-          name: imageFiles.coverImage.fileName,
-        } as any)
-      }
-
-      if (imageFiles.gallery && imageFiles.gallery.length > 0) {
-        imageFiles.gallery.forEach((image: any, index: number) => {
-          createData.append(`gallery_${index}`, {
-            uri: image.uri,
-            type: image.type,
-            name: image.fileName,
-          } as any)
-        })
-      }
-      const payload = JSON.stringify(createData)
-      // Make API call
-      const response = await postData(endpoints.createBusinessCard, payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      // Use postData to send JSON (not FormData here)
+      const response = await postData(endpoints.createBusinessCard, createData)
 
       Alert.alert("Success", "Business card created successfully!", [
         {
           text: "OK",
           onPress: () => {
             setShowCreateForm(false)
-            fetchBusinessCards() // Refresh the list
+            fetchBusinessCards()
           },
         },
       ])
@@ -380,7 +356,7 @@ export default function BusinessCardsScreen({
             <View style={styles.dataContainer}>
               <CardList
                 cards={filteredCards.map((card) => ({
-                  id: card._id,
+                  _id: card._id,
                   name: card.name,
                   email: card.email,
                   phone: card.phone,

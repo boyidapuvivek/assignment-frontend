@@ -69,12 +69,12 @@ export const endpoints = {
 
   // Team Cards endpoints
   getTeamCards: `${BASE_URL}/team-card`,
-  createTeamCard: `${BASE_URL}/cards/team`,
+  createTeamCard: `${BASE_URL}/team-card/create`,
   deleteTeamCard: (id: string) => `${BASE_URL}/team-card/${id}`,
 
   // Business Cards endpoints
   getBusinessCards: `${BASE_URL}/business-cards`,
-  createBusinessCard: `${BASE_URL}/cards/business`,
+  
   deleteBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
 };
 

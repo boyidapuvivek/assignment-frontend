@@ -154,7 +154,9 @@ export default function EditBusinessCardForm({
     switch (activeTab) {
       case "Personal":
         return (
-          <ScrollView style={styles.tabContent}>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
             <TextInput
               style={styles.input}
               placeholder='Name'
@@ -230,7 +232,9 @@ export default function EditBusinessCardForm({
         )
       case "Business":
         return (
-          <ScrollView style={styles.tabContent}>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
             <TextInput
               style={styles.input}
               placeholder='Company'
@@ -308,7 +312,9 @@ export default function EditBusinessCardForm({
         )
       case "Social":
         return (
-          <ScrollView style={styles.tabContent}>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
             {Object.keys(social).map((key) => (
               <TextInput
                 key={key}
@@ -323,7 +329,9 @@ export default function EditBusinessCardForm({
         )
       case "Services":
         return (
-          <ScrollView style={styles.tabContent}>
+          <ScrollView
+            style={styles.tabContent}
+            showsVerticalScrollIndicator={false}>
             {services.map((service, idx) => (
               <View
                 key={service.id}

@@ -1,4 +1,4 @@
-import { Linking, Alert, Platform } from 'react-native'
+import { Linking, Alert, Platform, Share } from 'react-native'
 
 /**
  * Handles opening social media links with native app preference and web fallback
@@ -222,6 +222,19 @@ export const handleLocationPress = async (address: string | undefined) => {
 /**
  * Handles sharing functionality (placeholder for now)
  */
-export const handleShare = (): void => {
-  console.log("Share button pressed")
+export const handleShare = async (id : string)=> {
+  try {
+    if(!id){
+      Alert.alert("Id Empty")
+      return
+    }
+    const url = `https://connectree.co/preview/card/${id}`
+    await Share.share({
+      message:`https://connectree.co/preview/card/${id}`,
+      url: url,
+      title:'Business Card Preview'
+    })
+  } catch (error) {
+    Alert.alert("Error",error?.message)
+  }
 }

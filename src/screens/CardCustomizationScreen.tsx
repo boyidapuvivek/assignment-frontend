@@ -295,15 +295,13 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
       // )
 
       const response = await fetch(
-        `$http://192.168.1.100:5000/api/card-customization/${businessCard._id}`,
+        `${BASE_URL}/card-customization/${businessCard._id}`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         }
       )
-
-      console.log("Customization saved:", response)
 
       Alert.alert("Success", "Customization settings saved successfully!", [
         {
@@ -326,10 +324,7 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
         errorMessage = error.message
       }
 
-      Alert.alert(
-        "Error",
-        `${errorMessage}\n\nPlease check console for details.`
-      )
+      Alert.alert("Error", errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -403,24 +398,6 @@ const CardCustomizationScreen: React.FC<CardCustomizationScreenProps> = ({
                     { backgroundColor: theme.primaryColor },
                   ]}
                 />
-                {/* <View
-                  style={[
-                    styles.colorBox,
-                    { backgroundColor: theme.secondaryColor },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.colorBox,
-                    { backgroundColor: theme.backgroundColor },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.colorBox,
-                    { backgroundColor: theme.textColor },
-                  ]}
-                /> */}
               </View>
               <Text style={styles.themeName}>{theme.name}</Text>
               {isSelected && (

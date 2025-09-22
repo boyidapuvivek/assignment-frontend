@@ -107,7 +107,9 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOTPAndLogin = async (email, otp) => {
     try {
-      const response = await authAPI.verifyOTP(email, otp)
+      // const response = await authAPI.verifyOTP(email, otp)
+      const payload = { email, otp }
+      const response = await postData(endpoints.verifyOTP, payload)
       console.log("OTP verified:", response)
 
       if (response.data?.token && response.data?.user) {

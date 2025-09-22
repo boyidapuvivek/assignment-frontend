@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  SafeAreaView,
   TouchableOpacity,
   Text,
   Dimensions,
@@ -13,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons"
 import CardDisplay from "../components/CardDisplay"
 import { BASE_URL } from "../api/ClientApi"
 import { useNavigation } from "@react-navigation/native"
+import { ScrollView } from "react-native-gesture-handler"
 
 const { height } = Dimensions.get("window")
 
@@ -75,7 +75,7 @@ export default function ViewCardScreen({ route }) {
         products: data.products || [],
         gallery: data.gallery || [],
         qr_code: data.qr_code,
-        isSaved: false, // You can check this from your saved cards API
+        isSaved: false,
         custom_notes: data.custom_notes,
       }
 
@@ -123,7 +123,7 @@ export default function ViewCardScreen({ route }) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -144,13 +144,13 @@ export default function ViewCardScreen({ route }) {
           />
           <Text style={styles.loadingText}>Loading business card...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     )
   }
 
   if (error || !cardData) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -181,13 +181,12 @@ export default function ViewCardScreen({ route }) {
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Custom Header */}
+    <>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -201,16 +200,21 @@ export default function ViewCardScreen({ route }) {
         <Text style={styles.headerTitle}>Business Card</Text>
         <View style={styles.placeholder} />
       </View>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}>
+        {/* Custom Header */}
 
-      {/* Card Display Container */}
-      <View style={styles.cardContainer}>
-        <CardDisplay
-          businessCard={cardData}
-          onSaveToggle={handleSaveToggle}
-          customizationSettings={customizationSettings}
-        />
-      </View>
-    </SafeAreaView>
+        {/* Card Display Container */}
+        <View style={styles.cardContainer}>
+          <CardDisplay
+            businessCard={cardData}
+            onSaveToggle={handleSaveToggle}
+            customizationSettings={customizationSettings}
+          />
+        </View>
+      </ScrollView>
+    </>
   )
 }
 

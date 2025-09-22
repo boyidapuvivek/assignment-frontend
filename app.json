@@ -29,13 +29,10 @@
           "data": [
             {
               "scheme": "https",
-              "host": "preeminent-kleicha-70bb07.netlify.app"
+              "host": "connectree.co"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
       "edgeToEdgeEnabled": true,
