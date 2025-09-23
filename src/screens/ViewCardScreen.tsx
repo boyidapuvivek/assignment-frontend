@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import CardDisplay from "../components/CardDisplay"
+import CardDisplay from "../components/card_display/CardDisplay"
 import { BASE_URL } from "../api/ClientApi"
 import { useNavigation } from "@react-navigation/native"
 import { ScrollView } from "react-native-gesture-handler"

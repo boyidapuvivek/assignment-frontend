@@ -17,9 +17,11 @@ import { handleShare } from "../utils/cardDisplayFunctions"
 
 interface BusinessCard {
   _id?: string
+  user_id?: string
   phone?: string
   email?: string
   address?: string
+  qr_code?: string
   company?: string
   business_email?: string
   business_phone?: string

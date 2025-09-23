@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import CardDisplay from "../components/CardDisplay"
+import CardDisplay from "../components/card_display/CardDisplay"
 import { COLORS } from "../utils/constants"
 import { ScrollView } from "react-native-gesture-handler"
 import Header from "../components/Header"
@@ -18,6 +18,7 @@ interface BusinessCard {
   email?: string
   address?: string
   company?: string
+  qr_code?: string
   business_email?: string
   business_phone?: string
   website?: string
@@ -79,11 +80,13 @@ const DetailedCardScreen: React.FC<DetailedCardScreenProps> = ({
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Card Display */}
-        <View style={styles.cardContainer}>
-          <CardDisplay businessCard={businessCard} />
-        </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.cardContainer}>
+        <CardDisplay
+          businessCard={businessCard}
+          showAllActionButtons={true}
+        />
       </ScrollView>
     </SafeAreaView>
   )

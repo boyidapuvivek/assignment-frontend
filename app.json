@@ -29,7 +29,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "connectree.co"
+              "host": "dev.connectree.co"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
@@ -41,15 +41,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-web-browser",
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.927800798267-7vk3l0b8pd0rp9qsohnruu9blndkin1r"
-        }
-      ]
-    ],
+    "plugins": ["expo-web-browser"],
     "extra": {
       "eas": {
         "projectId": "03129cd9-e5a1-4bb2-8bb1-30ec6f24521a"

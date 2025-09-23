@@ -6,10 +6,12 @@ import { useNavigation } from "@react-navigation/native"
 
 interface Card {
   _id: string
+  user_id: string
   name?: string
   email?: string
   phone?: string
   role?: string
+  qr_code?: string
   department?: string
   profile_image?: string
   company?: string
@@ -87,9 +89,9 @@ const CardList: React.FC<CardListProps> = ({
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.scrollContent}>
-      {cards.map((card) => (
+      {cards.map((card, index) => (
         <View
-          key={card._id}
+          key={`${card._id}-${index}`}
           style={styles.cardContainer}>
           <BusinessCardsDisplay
             businessCard={{

@@ -76,6 +76,9 @@ export const endpoints = {
   getBusinessCards: `${BASE_URL}/business-cards`,
   
   deleteBusinessCard: (id: string) => `${BASE_URL}/business-cards/${id}`,
+
+  submitLeads: `${BASE_URL}/leads/submit`,
+  sendMyCard: `${BASE_URL}/send-my-card/`,
 };
 
 export default api

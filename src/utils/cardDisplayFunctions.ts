@@ -1,5 +1,7 @@
-import { Linking, Alert, Platform, Share } from 'react-native'
-
+import { Linking, Alert, Platform, Share, PermissionsAndroid } from "react-native"
+import RNFS from 'react-native-fs';
+import { postData } from "../api/apiServices";
+import { endpoints } from "../api/ClientApi";
 /**
  * Handles opening social media links with native app preference and web fallback
  */
@@ -25,8 +27,10 @@ export const handleSocialMediaPress = async (
     let lower = platform.toLowerCase()
     if (webUrl.includes("linkedin.com")) lower = "linkedin"
     if (webUrl.includes("instagram.com")) lower = "instagram"
-    if (webUrl.includes("twitter.com") || webUrl.includes("x.com")) lower = "twitter"
-    if (webUrl.includes("youtube.com") || webUrl.includes("youtu.be")) lower = "youtube"
+    if (webUrl.includes("twitter.com") || webUrl.includes("x.com"))
+      lower = "twitter"
+    if (webUrl.includes("youtube.com") || webUrl.includes("youtu.be"))
+      lower = "youtube"
 
     // Extract identifiers from URL for deep linking
     const getMatch = (pattern: RegExp): string | null => {
@@ -44,10 +48,9 @@ export const handleSocialMediaPress = async (
       } else {
         candidates.push("instagram://app")
       }
-    } else if (lower === "twitter" || lower === "x" ) {
+    } else if (lower === "twitter" || lower === "x") {
       // e.g., https://twitter.com/{handle} or https://x.com/{handle}
-      const handle =
-        getMatch(/(?:twitter|x)\.com\/([A-Za-z0-9_]+)/i)
+      const handle = getMatch(/(?:twitter|x)\.com\/([A-Za-z0-9_]+)/i)
       if (handle) {
         candidates.push(`twitter://user?screen_name=${handle}`)
       } else {
@@ -68,7 +71,11 @@ export const handleSocialMediaPress = async (
       const handle = getMatch(/youtube\.com\/(@[A-Za-z0-9_\.\-]+)/i)
       if (videoId) {
         // Prefer platform-specific schemes
-        candidates.push(Platform.OS === "android" ? `vnd.youtube://${videoId}` : `youtube://watch?v=${videoId}`)
+        candidates.push(
+          Platform.OS === "android"
+            ? `vnd.youtube://${videoId}`
+            : `youtube://watch?v=${videoId}`
+        )
       }
       if (channelId) {
         candidates.push(`youtube://www.youtube.com/channel/${channelId}`)
@@ -82,7 +89,7 @@ export const handleSocialMediaPress = async (
     // Simple LinkedIn handling for Android
     if (lower === "linkedin" && Platform.OS === "android") {
       console.log("LinkedIn web URL:", webUrl) // Debug log
-      
+
       // 1. Try opening the web URL - Android App Links will route to LinkedIn app if installed
       try {
         console.log("Trying web URL (App Links):", webUrl) // Debug log
@@ -92,7 +99,7 @@ export const handleSocialMediaPress = async (
       } catch (error) {
         console.log("Failed to open web URL:", error) // Debug log
       }
-      
+
       // 2. If web URL failed, LinkedIn app likely not installed - go to Play Store
       console.log("Web URL failed, going to Play Store") // Debug log
       try {
@@ -146,13 +153,18 @@ export const handleSocialMediaPress = async (
  * Handles opening phone dialer with the provided phone number
  */
 export const handlePhonePress = async (phoneNumber: string | undefined) => {
-  if (!phoneNumber || phoneNumber.trim() === "" || phoneNumber === "No phone number" || phoneNumber === "No business phone") {
+  if (
+    !phoneNumber ||
+    phoneNumber.trim() === "" ||
+    phoneNumber === "No phone number" ||
+    phoneNumber === "No business phone"
+  ) {
     Alert.alert("No Phone", "No phone number available")
     return
   }
 
   try {
-    const phoneUrl = `tel:${phoneNumber.replace(/\s+/g, '')}`
+    const phoneUrl = `tel:${phoneNumber.replace(/\s+/g, "")}`
     await Linking.openURL(phoneUrl)
   } catch (error) {
     console.error("Error opening dialer:", error)
@@ -164,7 +176,12 @@ export const handlePhonePress = async (phoneNumber: string | undefined) => {
  * Handles opening email app with the provided email address
  */
 export const handleEmailPress = async (email: string | undefined) => {
-  if (!email || email.trim() === "" || email === "No email" || email === "No business email") {
+  if (
+    !email ||
+    email.trim() === "" ||
+    email === "No email" ||
+    email === "No business email"
+  ) {
     Alert.alert("No Email", "No email address available")
     return
   }
@@ -182,7 +199,11 @@ export const handleEmailPress = async (email: string | undefined) => {
  * Handles opening map app with the provided address
  */
 export const handleLocationPress = async (address: string | undefined) => {
-  if (!address || address.trim() === "" || address === "Location not provided") {
+  if (
+    !address ||
+    address.trim() === "" ||
+    address === "Location not provided"
+  ) {
     Alert.alert("No Location", "No address available")
     return
   }
@@ -190,14 +211,14 @@ export const handleLocationPress = async (address: string | undefined) => {
   try {
     // Encode the address for URL
     const encodedAddress = encodeURIComponent(address)
-    
+
     // Try different map URL schemes
     const mapUrls = [
       // Google Maps (works on both platforms)
       `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
       // Platform specific fallbacks
-      Platform.OS === "ios" 
-        ? `http://maps.apple.com/?q=${encodedAddress}` 
+      Platform.OS === "ios"
+        ? `http://maps.apple.com/?q=${encodedAddress}`
         : `geo:0,0?q=${encodedAddress}`,
     ]
 
@@ -222,19 +243,81 @@ export const handleLocationPress = async (address: string | undefined) => {
 /**
  * Handles sharing functionality (placeholder for now)
  */
-export const handleShare = async (id : string)=> {
+export const handleShare = async (id: string) => {
   try {
-    if(!id){
+    if (!id) {
       Alert.alert("Id Empty")
       return
     }
     const url = `https://connectree.co/preview/card/${id}`
     await Share.share({
-      message:`https://connectree.co/preview/card/${id}`,
+      message: `https://connectree.co/preview/card/${id}`,
       url: url,
-      title:'Business Card Preview'
+      title: "Business Card Preview",
     })
   } catch (error) {
-    Alert.alert("Error",error?.message)
+    Alert.alert("Error", error?.message)
   }
 }
+
+
+export const handleSaveVCard = async (businessCard: any) => {
+
+ try {
+    // Permission request needed for Android 6+
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'Need permission to save vCard to your device',
+          buttonPositive: 'OK',
+        }
+      );
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Permission denied', 'Cannot save vCard without permission');
+        return;
+      }
+    }
+
+    const vcard = `BEGIN:VCARD
+                  VERSION:3.0
+                  FN:${businessCard.name || ''}
+                  ORG:${businessCard.company || ''}
+                  TEL;TYPE=WORK,VOICE:${businessCard.businessphone || ''}
+                  EMAIL;TYPE=WORK:${businessCard.businessemail || ''}
+                  END:VCARD`;
+
+    // Path to Downloads
+    const downloadPath = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+    const filePath = `${downloadPath}/${businessCard.name}.vcf`;
+
+    // Write vCard to downloads
+    await RNFS.writeFile(filePath, vcard, 'utf8');
+
+    Alert.alert('Success', `vCard saved to Downloads: FileManager/Downloads/${businessCard?.name}.vcf`);
+  } catch (error) {
+    Alert.alert('Error', error.message);
+  }
+
+}
+
+export const sendCard = async (senderId, recipientId) => {
+  try {
+    const response = await postData(endpoints.sendMyCard,
+      {
+        senderId,
+        recipientId
+      }
+    )
+
+    if (response.status === 200) {
+      Alert.alert('Success', 'Card sent successfully');
+    } else {
+      Alert.alert('Failed', 'Failed to send card');
+    }
+  } catch (error) {
+    Alert.alert('Error', 'An error occurred while sending the card');
+    console.error(error);
+  }
+};

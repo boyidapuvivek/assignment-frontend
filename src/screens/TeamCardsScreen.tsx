@@ -25,6 +25,7 @@ interface TeamCard {
   email: string
   phone: string
   role: string
+  qr_code: string
   department: string
   profile_image?: string
   company: string
@@ -331,6 +332,7 @@ export default function TeamCardsScreen({ navigation }: TeamCardsScreenProps) {
                   email: card.email,
                   phone: card.phone,
                   role: card.role,
+                  qr_code: card.qr_code,
                   department: card.department,
                   profile_image: card.profile_image,
                   company: card.company,

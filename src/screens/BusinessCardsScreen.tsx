@@ -357,11 +357,13 @@ export default function BusinessCardsScreen({
               <CardList
                 cards={filteredCards.map((card) => ({
                   _id: card._id,
+                  user_id: card.user_id,
                   name: card.name,
                   email: card.email,
                   phone: card.phone,
                   role: card.role,
                   company: card.company,
+                  qr_code: card.qr_code,
                   business_description: card.business_description,
                   business_phone: card.business_phone,
                   business_email: card.business_email,
