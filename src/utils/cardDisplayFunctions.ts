@@ -284,12 +284,12 @@ export const handleSaveVCard = async (businessCard: any) => {
                   VERSION:3.0
                   FN:${businessCard.name || ''}
                   ORG:${businessCard.company || ''}
-                  TEL;TYPE=WORK,VOICE:${businessCard.businessphone || ''}
-                  EMAIL;TYPE=WORK:${businessCard.businessemail || ''}
+                  TEL;TYPE=WORK,VOICE:${businessCard.phone || ''}
+                  EMAIL;TYPE=WORK:${businessCard.email || ''}
                   END:VCARD`;
 
     // Path to Downloads
-    const downloadPath = Platform.OS === 'android' ? RNFS.DownloadDirectoryPath : RNFS.DocumentDirectoryPath;
+    const downloadPath = Platform.OS === 'android' ? RNFS.ExternalDirectoryPath : RNFS.DocumentDirectoryPath;
     const filePath = `${downloadPath}/${businessCard.name}.vcf`;
 
     // Write vCard to downloads
@@ -304,6 +304,7 @@ export const handleSaveVCard = async (businessCard: any) => {
 
 export const sendCard = async (senderId, recipientId) => {
   try {
+    
     const response = await postData(endpoints.sendMyCard,
       {
         senderId,

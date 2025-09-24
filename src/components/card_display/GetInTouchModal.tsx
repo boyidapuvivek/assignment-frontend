@@ -43,12 +43,24 @@ const GetInTouchModal: React.FC<GetInTouchModalProps> = ({
       Alert.alert("All fields are required")
       return
     }
+
     const cardId = businessCard._id
-    const userId = {
-      _id: businessCard?.user_id,
-      name: businessCard?.name,
-      email: businessCard?.email,
+    // Check if user_id is an object with _id—else, treat as string
+    let userId
+    if (
+      businessCard?.user_id &&
+      typeof businessCard.user_id === "object" &&
+      businessCard.user_id._id
+    ) {
+      userId = businessCard.user_id
+    } else {
+      userId = {
+        _id: businessCard?.user_id || "",
+        name: businessCard?.name || "",
+        email: businessCard?.email || "",
+      }
     }
+
     setLoading(true)
     try {
       const payload = {

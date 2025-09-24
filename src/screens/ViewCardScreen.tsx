@@ -56,6 +56,7 @@ export default function ViewCardScreen({ route }) {
         id: data._id,
         name: data.name,
         email: data.email,
+        user_id: data.user_id,
         phone: data.phone,
         company: data.company,
         role: data.role,
@@ -211,6 +212,7 @@ export default function ViewCardScreen({ route }) {
             businessCard={cardData}
             onSaveToggle={handleSaveToggle}
             customizationSettings={customizationSettings}
+            showAllActionButtons={true}
           />
         </View>
       </ScrollView>

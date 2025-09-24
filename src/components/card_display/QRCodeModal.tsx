@@ -1,13 +1,13 @@
 import React from "react"
+import { Modal } from "react-native"
 import {
-  Modal,
   View,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  Image,
   Text,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
+import QRCode from "react-native-qrcode-svg"
 
 interface QRCodeModalProps {
   visible: boolean
@@ -24,6 +24,11 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   primaryColor,
   styles,
 }) => {
+  // Compose the URL using the business card's user id (change the key as needed)
+  const link = businessCard?._id
+    ? `https://dev.connectree.co/card/${businessCard._id}`
+    : ""
+
   return (
     <Modal
       visible={visible}
@@ -44,7 +49,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   color='#666'
                 />
               </TouchableOpacity>
-
               {/* Header */}
               <View style={styles.modalHeader}>
                 <MaterialIcons
@@ -57,14 +61,14 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   Scan to view {businessCard?.name} business card
                 </Text>
               </View>
-
-              {/* QR Code or Placeholder */}
+              {/* QR Code */}
               <View style={styles.qrContainer}>
-                {businessCard?.qr_code ? (
-                  <Image
-                    source={{ uri: businessCard.qr_code }}
-                    style={styles.qrCodeImage}
-                    resizeMode='contain'
+                {link ? (
+                  <QRCode
+                    value={link}
+                    size={200}
+                    color={primaryColor}
+                    backgroundColor='#fff'
                   />
                 ) : (
                   <View style={styles.qrPlaceholder}>
@@ -79,7 +83,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   </View>
                 )}
               </View>
-
               {/* Card Info */}
               <View style={styles.modalCardInfo}>
                 <Text style={styles.modalCardName}>
@@ -90,8 +93,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
                   {businessCard?.company && `· ${businessCard.company}`}
                 </Text>
               </View>
-
-              {/* Instructions */}
               <View style={styles.instructionsContainer}>
                 <Text style={styles.instructionsText}>
                   Point your camera at the QR code to instantly access this

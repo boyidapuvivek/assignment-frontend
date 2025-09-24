@@ -140,9 +140,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   const [showGetInTouchModal, setShowGetInTouchModal] = useState(false)
 
   const senderId = user?._id
+  const recipientId = businessCard?.user_id || businessCard?.user_id?._id
 
   const cardId = businessCard?.id || businessCard?._id
-
   // Dynamic colors from customization
   const primaryColor = customizationSettings.primaryColor || "#2196F3"
   const secondaryColor = customizationSettings.secondaryColor || "#3b82f6"
@@ -377,7 +377,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               onPress={async () => {
                 try {
                   setLoading(true)
-                  await sendCard(senderId, businessCard?.user_id)
+                  await sendCard(senderId, recipientId)
                 } finally {
                   setLoading(false)
                 }
@@ -452,7 +452,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
         visible={showGetInTouchModal}
         onClose={() => setShowGetInTouchModal(false)}
         businessCard={businessCard}
-        primaryColor={primaryColor}
+        primaryColor={"#000000"}
       />
     </View>
   )
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 20,
   },
-  // Existing styles
+
   saveButton: {
     position: "absolute",
     top: 15,
