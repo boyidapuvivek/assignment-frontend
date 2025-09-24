@@ -58,6 +58,38 @@ interface CustomizationSettings {
   logo?: string
 }
 
+const defaultCustomizationData = {
+  primaryColor: "#2563eb",
+  secondaryColor: "#3b82f6",
+  backgroundColor: "#ffffff",
+  textColor: "#1f2937",
+  accentColor: "#71cde6",
+  fontFamily: "Inter",
+  fontSize: 16,
+  fontWeight: "normal",
+  layout: "modern",
+  cardShape: "rounded",
+  borderRadius: 12,
+  shadow: true,
+  showQR: true,
+  showPersonalContact: true,
+  showBusinessContact: true,
+  showSocialMedia: true,
+  showProducts: true,
+  showServices: true,
+  showGallery: true,
+  showLogo: false,
+  logoPosition: "top-right",
+  backgroundType: "solid",
+  animations: false,
+  hoverEffects: true,
+  gradient: {
+    enabled: false,
+    direction: "to-right",
+    colors: [],
+  },
+}
+
 export default function MyCardScreen() {
   const { user, updateUser } = useAuth()
   const [businessCard, setBusinessCard] = useState(null)
@@ -67,37 +99,7 @@ export default function MyCardScreen() {
 
   // Add customization settings state
   const [customizationSettings, setCustomizationSettings] =
-    useState<CustomizationSettings>({
-      primaryColor: "#2563eb",
-      secondaryColor: "#3b82f6",
-      backgroundColor: "#ffffff",
-      textColor: "#1f2937",
-      accentColor: "#71cde6",
-      fontFamily: "Inter",
-      fontSize: 16,
-      fontWeight: "normal",
-      layout: "modern",
-      cardShape: "rounded",
-      borderRadius: 12,
-      shadow: true,
-      showQR: true,
-      showPersonalContact: true,
-      showBusinessContact: true,
-      showSocialMedia: true,
-      showProducts: true,
-      showServices: true,
-      showGallery: true,
-      showLogo: false,
-      logoPosition: "top-right",
-      backgroundType: "solid",
-      animations: false,
-      hoverEffects: true,
-      gradient: {
-        enabled: false,
-        direction: "to-right",
-        colors: [],
-      },
-    })
+    useState<CustomizationSettings>(defaultCustomizationData)
 
   useFocusEffect(
     useCallback(() => {
