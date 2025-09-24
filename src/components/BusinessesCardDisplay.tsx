@@ -14,43 +14,7 @@ import { useAuth } from "../context/AuthContext"
 import { postData, deleteData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 import { handleShare } from "../utils/cardDisplayFunctions"
-
-interface BusinessCard {
-  _id?: string
-  user_id?: string
-  phone?: string
-  email?: string
-  address?: string
-  qr_code?: string
-  company?: string
-  business_email?: string
-  business_phone?: string
-  website?: string
-  linkedin_url?: string
-  twitter_url?: string
-  facebook_url?: string
-  instagram_url?: string
-  youtube_url?: string
-  services?: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
-  products?: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
-  gallery?: Array<{
-    url: string
-  }>
-  business_cover_photo?: string
-  profile_image?: string
-  name?: string
-  role?: string
-  business_description?: string
-  isSaved?: boolean
-}
+import { BusinessCard } from "../types/cards"
 
 interface CardDisplayProps {
   businessCard: BusinessCard

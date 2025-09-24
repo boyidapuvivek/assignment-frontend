@@ -20,52 +20,7 @@ import Header from "../components/Header"
 import { getData, postData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
 import axios from "axios"
-
-interface BusinessCard {
-  _id: string
-  user_id: string
-  name: string
-  email: string
-  phone: string
-  company: string
-  role: string
-  profile_image?: string
-  business_description?: string
-  business_phone?: string
-  business_email?: string
-  business_cover_photo?: string
-  business_logo?: string
-  website?: string
-  address?: string
-  linkedin_url?: string
-  twitter_url?: string
-  facebook_url?: string
-  instagram_url?: string
-  youtube_url?: string
-  custom_notes?: string
-  theme: string
-  services: Array<{
-    id: string
-    name: string
-    price: string
-    duration?: string
-    category?: string
-    description?: string
-  }>
-  products: Array<{
-    id: string
-    name: string
-    price: string
-    category?: string
-    description?: string
-    image?: string
-  }>
-  gallery: string[]
-  qr_code?: string
-  views: number
-  created_at: string
-  updated_at: string
-}
+import { BusinessCard } from "../types/cards"
 
 interface BusinessCardsScreenProps {
   navigation: any

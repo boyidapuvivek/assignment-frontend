@@ -18,31 +18,7 @@ import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
-
-interface Lead {
-  _id: string
-  name: string
-  email: string
-  message: string
-  cardId: {
-    _id: string
-    name: string
-    company: string
-  }
-  userId: string
-  followUpStatus: "pending" | "contacted" | "completed"
-  ipAddress: string
-  userAgent: string
-  submittedDate: string
-}
-
-interface LeadStats {
-  total: number
-  contacted: number
-  pending: number
-  completed: number
-}
-
+import { Lead, LeadStats } from "../types/leads"
 const API_BASE_URL = "http://192.168.3.172:5000/api"
 
 export default function LeadsScreen() {

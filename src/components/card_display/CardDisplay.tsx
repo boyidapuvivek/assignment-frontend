@@ -37,61 +37,10 @@ import LoadingSpinner from "../LoadingSpinner"
 import QRCodeModal from "./QRCodeModal"
 import RenderTabContent from "./RenderTabContent"
 import GetInTouchModal from "./GetInTouchModal"
+import { BusinessCard } from "../../types/cards"
+import { CustomizationSettings } from "../../types/customization"
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
-
-interface BusinessCard {
-  id?: string
-  _id?: string
-  phone?: string
-  email?: string
-  address?: string
-  company?: string
-  business_email?: string
-  business_phone?: string
-  website?: string
-  linkedin_url?: string
-  twitter_url?: string
-  facebook_url?: string
-  instagram_url?: string
-  youtube_url?: string
-  services?: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
-  products?: Array<{
-    name: string
-    description?: string
-    price: number
-  }>
-  gallery?: Array<{
-    url: string
-  }>
-  business_cover_photo?: string
-  profile_image?: string
-  name?: string
-  role?: string
-  business_description?: string
-  isSaved?: boolean
-  qr_code?: string
-}
-
-interface CustomizationSettings {
-  primaryColor?: string
-  secondaryColor?: string
-  backgroundColor?: string
-  textColor?: string
-  showPersonalContact?: boolean
-  showBusinessContact?: boolean
-  showSocialMedia?: boolean
-  showServices?: boolean
-  showProducts?: boolean
-  showGallery?: boolean
-  showQR?: boolean
-  enableAnimations?: boolean
-  enableInteractions?: boolean
-}
 
 interface CardDisplayProps {
   businessCard: BusinessCard

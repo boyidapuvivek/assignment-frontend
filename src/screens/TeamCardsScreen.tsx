@@ -18,37 +18,38 @@ import { COLORS } from "../utils/constants"
 import Header from "../components/Header"
 import { getData, postData } from "../api/apiServices"
 import { endpoints } from "../api/ClientApi"
+import { TeamCard } from "../types/team"
 
-interface TeamCard {
-  _id: string
-  name: string
-  email: string
-  phone: string
-  role: string
-  qr_code: string
-  department: string
-  profile_image?: string
-  company: string
-  business_description: string
-  business_phone: string
-  business_email: string
-  business_cover_photo?: string
-  website?: string
-  address?: string
-  linkedin_url?: string
-  twitter_url?: string
-  facebook_url?: string
-  instagram_url?: string
-  youtube_url?: string
-  custom_notes?: string
-  theme: string
-  gallery: string[]
-  createdBy: {
-    id: string
-    name: string
-    email: string
-  }
-}
+// interface TeamCard {
+//   _id: string
+//   name: string
+//   email: string
+//   phone: string
+//   role: string
+//   qr_code: string
+//   department: string
+//   profile_image?: string
+//   company: string
+//   business_description: string
+//   business_phone: string
+//   business_email: string
+//   business_cover_photo?: string
+//   website?: string
+//   address?: string
+//   linkedin_url?: string
+//   twitter_url?: string
+//   facebook_url?: string
+//   instagram_url?: string
+//   youtube_url?: string
+//   custom_notes?: string
+//   theme: string
+//   gallery: string[]
+//   createdBy: {
+//     id: string
+//     name: string
+//     email: string
+//   }
+// }
 
 interface TeamCardsScreenProps {
   navigation: any

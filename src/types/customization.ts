@@ -1,0 +1,30 @@
+export interface CustomizationSettings {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  accentColor: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: string;
+  layout: string;
+  cardShape: string;
+  borderRadius: number;
+  shadow: boolean;
+  showQR: boolean;
+  showPersonalContact: boolean;
+  showBusinessContact: boolean;
+  showSocialMedia: boolean;
+  showProducts: boolean;
+  showServices: boolean;
+  showGallery: boolean;
+  showLogo: boolean;
+  logoPosition: string;
+  backgroundType: string;
+  animations: boolean;
+  hoverEffects: boolean;
+  gradientEnabled: boolean;
+  direction: string;
+  colors: string;
+  logo?: string;
+}

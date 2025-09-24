@@ -84,7 +84,6 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      // Call send-otp API instead of direct registration
       const response = await postData(endpoints.register, {
         name,
         email,
