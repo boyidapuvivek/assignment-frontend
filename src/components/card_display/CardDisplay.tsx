@@ -92,7 +92,6 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   const recipientId = businessCard?.user_id || businessCard?.user_id?._id
 
   const cardId = businessCard?.id || businessCard?._id
-  // Dynamic colors from customization
   const primaryColor = customizationSettings.primaryColor || "#2196F3"
   const secondaryColor = customizationSettings.secondaryColor || "#3b82f6"
   const backgroundColor = customizationSettings.backgroundColor || "#ffffff"

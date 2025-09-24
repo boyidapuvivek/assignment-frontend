@@ -1,8 +1,10 @@
 const { getDefaultConfig } = require("expo/metro-config")
 const { mergeConfig } = require("metro-config")
+const { withNativeWind } = require("nativewind/metro")
 
 const defaultConfig = getDefaultConfig(__dirname)
 
+// First, create your custom config including SVG transformer
 const customConfig = {
   transformer: {
     babelTransformerPath: require.resolve("react-native-svg-transformer"),
@@ -14,4 +16,10 @@ const customConfig = {
   },
 }
 
-module.exports = mergeConfig(defaultConfig, customConfig)
+// Merge default and custom config
+const mergedConfig = mergeConfig(defaultConfig, customConfig)
+
+// Finally, wrap with nativewind support, passing merged config and options if any
+module.exports = withNativeWind(mergedConfig, {
+  input: "./global.css", // your nativewind input file, adjust if different
+})
