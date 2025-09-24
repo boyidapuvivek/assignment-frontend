@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { authAPI } from "../../utils/api"
-import Logo from "../../../assets/logo.svg"
+import Logo from "../../../assets/icons/logo.svg"
 import { COLORS } from "../../utils/constants"
 import { postData } from "../../api/apiServices"
 import { endpoints } from "../../api/ClientApi"
@@ -84,9 +84,9 @@ export default function OTPScreen({ route }) {
       if (result.success) {
         Alert.alert(
           "Success",
-          isRegistration
-            ? "Account created successfully!"
-            : "OTP verified successfully!",
+          isRegistration ?
+            "Account created successfully!"
+          : "OTP verified successfully!",
           [
             {
               text: "OK",
@@ -227,19 +227,18 @@ export default function OTPScreen({ route }) {
 
             {/* Timer and Resend */}
             <View style={styles.resendContainer}>
-              {!canResend ? (
+              {!canResend ?
                 <Text style={styles.timerText}>
                   Resend code in {formatTime(timer)}
                 </Text>
-              ) : (
-                <TouchableOpacity
+              : <TouchableOpacity
                   onPress={handleResendOTP}
                   disabled={resendLoading}>
                   <Text style={styles.resendText}>
                     {resendLoading ? "Sending..." : "Resend Code"}
                   </Text>
                 </TouchableOpacity>
-              )}
+              }
             </View>
 
             {/* Verify Button */}

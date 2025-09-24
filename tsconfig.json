@@ -14,14 +14,13 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
-  "include": [
-    "src",
-    "index.ts",
-    "index.tsx",
-    "nativewind-env.d.ts"
-  ],
+  "include": ["src", "index.ts", "index.tsx", "nativewind-env.d.ts"],
   "exclude": [
     "node_modules",
     "babel.config.js",

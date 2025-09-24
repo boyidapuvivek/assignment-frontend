@@ -9,12 +9,12 @@ import {
   Platform,
   ScrollView,
 } from "react-native"
-import { useAuth } from "../../context/AuthContext"
+import { useAuth } from "@/context/AuthContext"
 import { useNavigation } from "@react-navigation/native"
 import { authAPI } from "../../utils/api"
 import { makeRedirectUri, useAuthRequest } from "expo-auth-session"
 import * as WebBrowser from "expo-web-browser"
-import Logo from "../../../assets/logo.svg"
+import Logo from "../../../assets/icons/logo.svg"
 import { COLORS } from "../../utils/constants"
 import { FormData, AuthResult } from "../types/auth"
 
