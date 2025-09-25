@@ -7,8 +7,8 @@ import {
   Alert,
   StyleSheet,
 } from "react-native"
-import { FormData, AuthFormProps } from "../../types/auth"
-import { COLORS } from "../../utils/constants"
+import { FormData, AuthFormProps } from "@types/auth"
+import { COLORS } from "@utils/constants"
 
 interface ForgotPasswordFormProps extends AuthFormProps {
   onBackToLogin: () => void

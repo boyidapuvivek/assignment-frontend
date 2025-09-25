@@ -19,10 +19,10 @@ import {
   FontAwesome5,
   Feather,
 } from "@expo/vector-icons"
-import { COLORS } from "../../utils/constants"
-import { useAuth } from "../../context/AuthContext"
-import { postData, deleteData, getData } from "../../api/apiServices"
-import { endpoints } from "../../api/ClientApi"
+import { COLORS } from "@utils/constants"
+import { useAuth } from "@context/AuthContext"
+import { postData, deleteData, getData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
 import {
   handleSocialMediaPress,
   handlePhonePress,
@@ -31,14 +31,14 @@ import {
   handleShare,
   handleSaveVCard,
   sendCard,
-} from "../../utils/cardDisplayFunctions"
+} from "@utils/cardDisplayFunctions"
 import { Share } from "react-native"
 import LoadingSpinner from "../LoadingSpinner"
 import QRCodeModal from "./QRCodeModal"
 import RenderTabContent from "./RenderTabContent"
 import GetInTouchModal from "./GetInTouchModal"
-import { BusinessCard } from "../../types/cards"
-import { CustomizationSettings } from "../../types/customization"
+import { BusinessCard } from "@types/cards"
+import { CustomizationSettings } from "@types/customization"
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window")
 

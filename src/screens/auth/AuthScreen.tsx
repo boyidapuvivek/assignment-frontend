@@ -11,17 +11,17 @@ import {
 } from "react-native"
 import { useAuth } from "@/context/AuthContext"
 import { useNavigation } from "@react-navigation/native"
-import { authAPI } from "../../utils/api"
+import { authAPI } from "@utils/api"
 import { makeRedirectUri, useAuthRequest } from "expo-auth-session"
 import * as WebBrowser from "expo-web-browser"
-import Logo from "../../../assets/icons/logo.svg"
-import { COLORS } from "../../utils/constants"
+import Logo from "@assets/icons/logo.svg"
+import { COLORS } from "@utils/constants"
 import { FormData, AuthResult } from "../types/auth"
 
 // Import form components
-import LoginForm from "../../components/auth/LoginForm"
-import RegisterForm from "../../components/auth/RegisterForm"
-import ForgotPasswordForm from "../../components/auth/ForgotPasswordForm"
+import LoginForm from "@components/auth/LoginForm"
+import RegisterForm from "@components/auth/RegisterForm"
+import ForgotPasswordForm from "@components/auth/ForgotPasswordForm"
 
 import {
   GoogleSignin,

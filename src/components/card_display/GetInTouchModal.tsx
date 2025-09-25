@@ -13,8 +13,8 @@ import {
   Alert,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { postData } from "../../api/apiServices"
-import { endpoints } from "../../api/ClientApi"
+import { postData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
 
 const { width, height } = Dimensions.get("window")
 

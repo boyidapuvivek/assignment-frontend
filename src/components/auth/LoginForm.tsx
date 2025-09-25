@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import Google from "../../../assets/icons/google_icon.svg"
-import { COLORS } from "../../utils/constants"
-import { FormData, AuthFormProps } from "../../types/auth"
+import Google from "@assets/icons/google_icon.svg"
+import { COLORS } from "@utils/constants"
+import { FormData, AuthFormProps } from "@types/auth"
 
 interface LoginFormProps extends AuthFormProps {
   onGoogleLogin: () => Promise<void>

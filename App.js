@@ -6,6 +6,7 @@ import { AuthProvider } from "./src/context/AuthContext"
 import AppNavigator from "./src/navigation/AppNavigator"
 import { GoogleSignin } from "@react-native-google-signin/google-signin"
 import * as Linking from "expo-linking"
+import { PaperProvider } from "react-native-paper"
 
 const prefix = Linking.createURL("/")
 
@@ -32,10 +33,8 @@ export default function App() {
   useEffect(() => {
     // Configure Google Sign-in
     GoogleSignin.configure({
-      iosClientId:
-        "927800798267-7vk3l0b8pd0rp9qsohnruu9blndkin1r.apps.googleusercontent.com",
-      webClientId:
-        "927800798267-osn2cmpqovt0rnmh6aspnrte5clf54o4.apps.googleusercontent.com",
+      iosClientId: process.env.IOS_CLIENT_ID,
+      webClientId: process.env.WEB_CLIENT_ID,
     })
 
     // Handle initial deep link when app opens from closed state
@@ -69,11 +68,13 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <NavigationContainer linking={linking}>
-          <AppNavigator />
-        </NavigationContainer>
-      </AuthProvider>
+      <PaperProvider>
+        <AuthProvider>
+          <NavigationContainer linking={linking}>
+            <AppNavigator />
+          </NavigationContainer>
+        </AuthProvider>
+      </PaperProvider>
     </GestureHandlerRootView>
   )
 }
