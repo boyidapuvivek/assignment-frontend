@@ -9,14 +9,14 @@ import {
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useFocusEffect } from "@react-navigation/native"
-import { useAuth } from "../context/AuthContext"
-import CardList from "../components/CardList"
-import LoadingSpinner from "../components/LoadingSpinner"
-import SearchBar from "../components/SearchBar"
-import { COLORS } from "../utils/constants"
-import Header from "../components/Header"
-import { getData, deleteData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
+import { useAuth } from "@context/AuthContext"
+import CardList from "@components/CardList"
+import LoadingSpinner from "@components/LoadingSpinner"
+import SearchBar from "@components/SearchBar"
+import { COLORS } from "@utils/constants"
+import Header from "@components/Header"
+import { getData, deleteData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
 
 interface SavedCard {
   _id: string

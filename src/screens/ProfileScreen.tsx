@@ -11,11 +11,11 @@ import {
 } from "react-native"
 import { MaterialIcons, Ionicons, Feather } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
-import { useAuth } from "../context/AuthContext"
-import LoadingSpinner from "../components/LoadingSpinner"
-import { COLORS } from "../utils/constants"
-import Header from "../components/Header"
-import { IMAGE_BASE_URL } from "../api/ClientApi"
+import { useAuth } from "@context/AuthContext"
+import LoadingSpinner from "@components/LoadingSpinner"
+import { COLORS } from "@utils/constants"
+import Header from "@components/Header"
+import { IMAGE_BASE_URL } from "@api/ClientApi"
 
 export default function ProfileScreen() {
   const navigation = useNavigation()

@@ -1,7 +1,7 @@
 import React from "react"
 import { createStackNavigator } from "@react-navigation/stack"
-import AuthScreen from "../screens/auth/AuthScreen"
-import OTPScreen from "../screens/auth/OTPScreen"
+import AuthScreen from "@screens/auth/AuthScreen"
+import OTPScreen from "@screens/auth/OTPScreen"
 
 const Stack = createStackNavigator()
 

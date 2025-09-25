@@ -10,14 +10,14 @@ import {
   Dimensions,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { COLORS } from "../utils/constants"
-import Header from "../components/Header"
-import CustomButton from "../components/CustomButton"
-import CardDisplay from "../components/card_display/CardDisplay"
-import { getData, putData, postData, deleteData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
-import { useAuth } from "../context/AuthContext"
-import { BASE_URL } from "../api/ClientApi"
+import { COLORS } from "@utils/constants"
+import Header from "@components/Header"
+import CustomButton from "@components/CustomButton"
+import CardDisplay from "@components/card_display/CardDisplay"
+import { getData, putData, postData, deleteData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
+import { useAuth } from "@context/AuthContext"
+import { BASE_URL } from "@api/ClientApi"
 
 const { width: screenWidth } = Dimensions.get("window")
 

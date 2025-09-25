@@ -1,7 +1,7 @@
 import { Linking, Alert, Platform, Share, PermissionsAndroid } from "react-native"
 import RNFS from 'react-native-fs';
-import { postData } from "../api/apiServices";
-import { endpoints } from "../api/ClientApi";
+import { postData } from "@api/apiServices";
+import { endpoints } from "@api/ClientApi";
 /**
  * Handles opening social media links with native app preference and web fallback
  */

@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native"
 import { MaterialIcons, Ionicons } from "@expo/vector-icons"
-import { COLORS } from "../utils/constants"
+import { COLORS } from "@utils/constants"
 
 interface Lead {
   _id: string

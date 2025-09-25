@@ -9,12 +9,12 @@ import {
   Linking,
 } from "react-native"
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons"
-import { COLORS } from "../utils/constants"
-import { useAuth } from "../context/AuthContext"
-import { postData, deleteData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
-import { handleShare } from "../utils/cardDisplayFunctions"
-import { BusinessCard } from "../types/cards"
+import { COLORS } from "@utils/constants"
+import { useAuth } from "@context/AuthContext"
+import { postData, deleteData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
+import { handleShare } from "@utils/cardDisplayFunctions"
+import { BusinessCard } from "@types/cards"
 
 interface CardDisplayProps {
   businessCard: BusinessCard

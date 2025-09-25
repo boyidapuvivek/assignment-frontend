@@ -10,17 +10,17 @@ import {
   Modal,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { useAuth } from "../context/AuthContext"
-import CardList from "../components/CardList"
-import LoadingSpinner from "../components/LoadingSpinner"
-import SearchBar from "../components/SearchBar"
-import BusinessCardForm from "../components/BusinessCardForm"
-import { COLORS } from "../utils/constants"
-import Header from "../components/Header"
-import { getData, postData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
+import { useAuth } from "@context/AuthContext"
+import CardList from "@components/CardList"
+import LoadingSpinner from "@components/LoadingSpinner"
+import SearchBar from "@components/SearchBar"
+import BusinessCardForm from "@components/BusinessCardForm"
+import { COLORS } from "@utils/constants"
+import Header from "@components/Header"
+import { getData, postData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
 import axios from "axios"
-import { BusinessCard } from "../types/cards"
+import { BusinessCard } from "@types/cards"
 
 interface BusinessCardsScreenProps {
   navigation: any

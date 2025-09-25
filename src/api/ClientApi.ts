@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import axios from "axios"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "@context/AuthContext"
 import { useEffect } from "react"
-import CardCustomizationScreen from "../screens/CardCustomizationScreen"
+import CardCustomizationScreen from "@screens/CardCustomizationScreen"
 
 const BASE_URL = "https://connectree.co/api"
 const IMAGE_BASE_URL = "https://connectree.co"

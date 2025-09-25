@@ -9,16 +9,16 @@ import {
   TouchableOpacity,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { useAuth } from "../context/AuthContext"
-import CardList from "../components/CardList"
-import LoadingSpinner from "../components/LoadingSpinner"
-import SearchBar from "../components/SearchBar"
-import TeamCardForm from "../components/TeamCardForm"
-import { COLORS } from "../utils/constants"
-import Header from "../components/Header"
-import { getData, postData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
-import { TeamCard } from "../types/team"
+import { useAuth } from "@context/AuthContext"
+import CardList from "@components/CardList"
+import LoadingSpinner from "@components/LoadingSpinner"
+import SearchBar from "@components/SearchBar"
+import TeamCardForm from "@components/TeamCardForm"
+import { COLORS } from "@utils/constants"
+import Header from "@components/Header"
+import { getData, postData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
+import { TeamCard } from "@types/team"
 
 // interface TeamCard {
 //   _id: string

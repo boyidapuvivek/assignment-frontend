@@ -1,6 +1,6 @@
 import React from "react"
 import { View, ActivityIndicator, StyleSheet } from "react-native"
-import { COLORS } from "../utils/constants"
+import { COLORS } from "@utils/constants"
 
 const LoadingSpinner: React.FC = ({ size = 40 }: number) => {
   return (

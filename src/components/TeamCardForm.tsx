@@ -14,7 +14,7 @@ import {
 } from "react-native"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import * as ImagePicker from "expo-image-picker"
-import { COLORS } from "../utils/constants"
+import { COLORS } from "@utils/constants"
 
 const { width: screenWidth } = Dimensions.get("window")
 

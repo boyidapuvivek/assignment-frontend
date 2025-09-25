@@ -5,12 +5,12 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons"
-import MyCardScreen from "../screens/MyCardScreen"
-import TeamCardsScreen from "../screens/TeamCardsScreen"
-import BusinessCardsScreen from "../screens/BusinessCardsScreen"
-import { COLORS } from "../utils/constants"
-import SavedCardsScreen from "../screens/SavedCardsScreen"
-import LeadsScreen from "../screens/LeadsScreen"
+import MyCardScreen from "@screens/MyCardScreen"
+import TeamCardsScreen from "@screens/TeamCardsScreen"
+import BusinessCardsScreen from "@screens/BusinessCardsScreen"
+import { COLORS } from "@utils/constants"
+import SavedCardsScreen from "@screens/SavedCardsScreen"
+import LeadsScreen from "@screens/LeadsScreen"
 
 const Tab = createBottomTabNavigator()
 

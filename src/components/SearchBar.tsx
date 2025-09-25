@@ -8,7 +8,7 @@ import {
   Keyboard,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { COLORS } from "../utils/constants"
+import { COLORS } from "@utils/constants"
 
 interface SearchBarProps {
   placeholder?: string

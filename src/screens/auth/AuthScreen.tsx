@@ -16,7 +16,7 @@ import { makeRedirectUri, useAuthRequest } from "expo-auth-session"
 import * as WebBrowser from "expo-web-browser"
 import Logo from "@assets/icons/logo.svg"
 import { COLORS } from "@utils/constants"
-import { FormData, AuthResult } from "../types/auth"
+import { FormData, AuthResult } from "@types/auth"
 
 // Import form components
 import LoginForm from "@components/auth/LoginForm"

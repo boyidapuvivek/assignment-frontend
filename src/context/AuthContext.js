@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { authAPI } from "../utils/api"
-import { getData, postData } from "../api/apiServices"
-import { endpoints } from "../api/ClientApi"
+import { authAPI } from "@utils/api"
+import { getData, postData } from "@api/apiServices"
+import { endpoints } from "@api/ClientApi"
 
 const AuthContext = createContext()
 

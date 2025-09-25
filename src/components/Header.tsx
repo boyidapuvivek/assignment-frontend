@@ -2,10 +2,10 @@ import React, { useEffect } from "react"
 import { StyleSheet, View, TouchableOpacity, Image, Text } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
 import { useNavigation, CommonActions } from "@react-navigation/native"
-import { useAuth } from "../context/AuthContext"
-import { COLORS } from "../utils/constants"
+import { useAuth } from "@context/AuthContext"
+import { COLORS } from "@utils/constants"
 import Logo from "@assets/icons/icon_logo.svg"
-import { BASE_URL, IMAGE_BASE_URL } from "../api/ClientApi"
+import { BASE_URL, IMAGE_BASE_URL } from "@api/ClientApi"
 
 const Header = ({ outOfTabNavigation }: boolean) => {
   const navigation = useNavigation()

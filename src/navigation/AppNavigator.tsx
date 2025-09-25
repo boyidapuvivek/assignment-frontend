@@ -1,14 +1,14 @@
 import React from "react"
 import { createStackNavigator } from "@react-navigation/stack"
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "@context/AuthContext"
 import AuthNavigator from "./AuthNavigator"
 import BottomTabNavigator from "./BottomTabNavigator"
-import ProfileScreen from "../screens/ProfileScreen"
+import ProfileScreen from "@screens/ProfileScreen"
 import { ActivityIndicator, View } from "react-native"
-import MyCardScreen from "../screens/MyCardScreen"
-import DetailedCardScreen from "../screens/DetailedCardScreen"
-import CardCustomizationScreen from "../screens/CardCustomizationScreen"
-import ViewCardScreen from "../screens/ViewCardScreen"
+import MyCardScreen from "@screens/MyCardScreen"
+import DetailedCardScreen from "@screens/DetailedCardScreen"
+import CardCustomizationScreen from "@screens/CardCustomizationScreen"
+import ViewCardScreen from "@screens/ViewCardScreen"
 
 const Stack = createStackNavigator()
 

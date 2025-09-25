@@ -9,7 +9,7 @@ import {
   TextStyle,
 } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
-import { COLORS } from "../utils/constants"
+import { COLORS } from "@utils/constants"
 
 interface CustomButtonProps {
   title: string
