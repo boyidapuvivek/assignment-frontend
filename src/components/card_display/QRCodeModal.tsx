@@ -1,108 +1,49 @@
 import React from "react"
-import { Modal } from "react-native"
-import {
-  View,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
-  Text,
-} from "react-native"
-import { MaterialIcons } from "@expo/vector-icons"
+import { View, Modal, TouchableOpacity, Text } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 import QRCode from "react-native-qrcode-svg"
 
-interface QRCodeModalProps {
-  visible: boolean
-  onClose: () => void
-  businessCard: any
-  primaryColor: string
-  styles: any
-}
-
-const QRCodeModal: React.FC<QRCodeModalProps> = ({
-  visible,
-  onClose,
-  businessCard,
-  primaryColor,
-  styles,
-}) => {
-  // Compose the URL using the business card's user id (change the key as needed)
-  const link = businessCard?._id
-    ? `https://dev.connectree.co/card/${businessCard._id}`
-    : ""
-
+const QRCodeModal = ({ visible, onClose, businessCard, primaryColor }) => {
   return (
     <Modal
       visible={visible}
-      transparent
+      transparent={true}
       animationType='fade'
       onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalContainer}>
-              {/* Close Button */}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={onClose}>
-                <MaterialIcons
-                  name='close'
-                  size={20}
-                  color='#666'
-                />
-              </TouchableOpacity>
-              {/* Header */}
-              <View style={styles.modalHeader}>
-                <MaterialIcons
-                  name='qr-code'
-                  size={32}
-                  color={primaryColor}
-                />
-                <Text style={styles.modalTitle}>QR Code</Text>
-                <Text style={styles.modalSubtitle}>
-                  Scan to view {businessCard?.name} business card
-                </Text>
+      <View className='flex-1 bg-black/50 justify-center items-center px-5'>
+        <View className='bg-white rounded-xl w-full max-w-sm shadow-lg'>
+          <View className='flex-row justify-between items-center p-5 border-b border-gray-100'>
+            <Text className='text-lg font-semibold text-gray-800'>QR Code</Text>
+            <TouchableOpacity
+              onPress={onClose}
+              className='p-1'>
+              <Ionicons
+                name='close'
+                size={24}
+                color='#666'
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View className='items-center py-8 px-5'>
+            {businessCard?._id ? (
+              <QRCode
+                value={`https://connectree.co/card/${businessCard?._id}`}
+                size={200}
+                color={primaryColor || "#2196F3"}
+                backgroundColor='white'
+              />
+            ) : (
+              <View className='w-50 h-50 bg-gray-200 rounded-lg items-center justify-center'>
+                <Text className='text-gray-500'>No QR Code</Text>
               </View>
-              {/* QR Code */}
-              <View style={styles.qrContainer}>
-                {link ? (
-                  <QRCode
-                    value={link}
-                    size={200}
-                    color={primaryColor}
-                    backgroundColor='#fff'
-                  />
-                ) : (
-                  <View style={styles.qrPlaceholder}>
-                    <MaterialIcons
-                      name='qr-code'
-                      size={48}
-                      color='#ccc'
-                    />
-                    <Text style={styles.qrPlaceholderText}>
-                      QR Code Not Available
-                    </Text>
-                  </View>
-                )}
-              </View>
-              {/* Card Info */}
-              <View style={styles.modalCardInfo}>
-                <Text style={styles.modalCardName}>
-                  {businessCard?.name} Business Card
-                </Text>
-                <Text style={styles.modalCardRole}>
-                  {businessCard?.role}{" "}
-                  {businessCard?.company && `· ${businessCard.company}`}
-                </Text>
-              </View>
-              <View style={styles.instructionsContainer}>
-                <Text style={styles.instructionsText}>
-                  Point your camera at the QR code to instantly access this
-                  business card
-                </Text>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+            )}
+            <Text className='text-center mt-5 text-sm text-gray-600 leading-5'>
+              Scan to view {businessCard?.name || "this"} business card
+            </Text>
+          </View>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     </Modal>
   )
 }

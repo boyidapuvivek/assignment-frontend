@@ -32,7 +32,10 @@
               "host": "dev.connectree.co"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "edgeToEdgeEnabled": true,
@@ -42,7 +45,10 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-web-browser"],
+    "plugins": [
+      "expo-web-browser",
+      "expo-font"
+    ],
     "extra": {
       "eas": {
         "projectId": "03129cd9-e5a1-4bb2-8bb1-30ec6f24521a"

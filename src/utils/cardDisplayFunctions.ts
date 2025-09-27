@@ -23,14 +23,14 @@ export const handleSocialMediaPress = async (
 
     // Prepare candidate deep links for native apps
     const candidates: string[] = []
+    
     // If the URL itself hints the platform, prefer that
     let lower = platform.toLowerCase()
     if (webUrl.includes("linkedin.com")) lower = "linkedin"
     if (webUrl.includes("instagram.com")) lower = "instagram"
-    if (webUrl.includes("twitter.com") || webUrl.includes("x.com"))
-      lower = "twitter"
-    if (webUrl.includes("youtube.com") || webUrl.includes("youtu.be"))
-      lower = "youtube"
+    if (webUrl.includes("twitter.com") || webUrl.includes("x.com")) lower = "twitter"
+    if (webUrl.includes("youtube.com") || webUrl.includes("youtu.be")) lower = "youtube"
+    if (webUrl.includes("facebook.com") || webUrl.includes("fb.com")) lower = "facebook"
 
     // Extract identifiers from URL for deep linking
     const getMatch = (pattern: RegExp): string | null => {
@@ -38,7 +38,36 @@ export const handleSocialMediaPress = async (
       return m && m[1] ? m[1] : null
     }
 
-    if (lower === "instagram") {
+    if (lower === "facebook") {
+      // Facebook URL patterns:
+      // https://www.facebook.com/profile.php?id=123456789
+      // https://www.facebook.com/username
+      // https://www.facebook.com/pages/PageName/123456789
+      
+      // Extract numeric ID from profile.php?id= URLs
+      const numericId = getMatch(/facebook\.com\/profile\.php\?id=([0-9]+)/i)
+      
+      // Extract username from direct profile URLs
+      const username = getMatch(/facebook\.com\/([A-Za-z0-9._-]+)(?:\?|$)/i)
+      
+      // Extract page ID from pages URLs
+      const pageId = getMatch(/facebook\.com\/pages\/[^\/]+\/([0-9]+)/i)
+      
+      if (numericId) {
+        // Use numeric ID for deep linking
+        candidates.push(`fb://profile/${numericId}`)
+      } else if (pageId) {
+        // Use page ID for deep linking
+        candidates.push(`fb://page/${pageId}`)
+      } else if (username && !username.includes('pages') && !username.includes('profile.php')) {
+        // Use username for deep linking (filter out 'pages' and 'profile.php' false matches)
+        candidates.push(`fb://profile/${username}`)
+      }
+      
+      // Fallback to opening Facebook app
+      candidates.push("fb://")
+
+    } else if (lower === "instagram") {
       // e.g., https://www.instagram.com/{username}
       const username =
         getMatch(/instagram\.com\/(?:[^\/]+\/)?([A-Za-z0-9_.]+)/i) ||
@@ -48,6 +77,7 @@ export const handleSocialMediaPress = async (
       } else {
         candidates.push("instagram://app")
       }
+
     } else if (lower === "twitter" || lower === "x") {
       // e.g., https://twitter.com/{handle} or https://x.com/{handle}
       const handle = getMatch(/(?:twitter|x)\.com\/([A-Za-z0-9_]+)/i)
@@ -56,12 +86,14 @@ export const handleSocialMediaPress = async (
       } else {
         candidates.push("twitter://timeline")
       }
+
     } else if (lower === "linkedin") {
       // Extract username from LinkedIn URL: https://www.linkedin.com/in/{username}
       const username = getMatch(/linkedin\.com\/in\/([A-Za-z0-9-_%]+)/i)
       if (username) {
         candidates.push(`linkedin://in/${username}`)
       }
+
     } else if (lower === "youtube") {
       // Channels: https://www.youtube.com/channel/{id}
       // Users: https://www.youtube.com/@handle
@@ -69,6 +101,7 @@ export const handleSocialMediaPress = async (
       const channelId = getMatch(/youtube\.com\/channel\/([A-Za-z0-9_-]+)/i)
       const videoId = getMatch(/[?&]v=([A-Za-z0-9_-]{6,})/i)
       const handle = getMatch(/youtube\.com\/(@[A-Za-z0-9_\.\-]+)/i)
+      
       if (videoId) {
         // Prefer platform-specific schemes
         candidates.push(
@@ -89,7 +122,6 @@ export const handleSocialMediaPress = async (
     // Simple LinkedIn handling for Android
     if (lower === "linkedin" && Platform.OS === "android") {
       console.log("LinkedIn web URL:", webUrl) // Debug log
-
       // 1. Try opening the web URL - Android App Links will route to LinkedIn app if installed
       try {
         console.log("Trying web URL (App Links):", webUrl) // Debug log
@@ -109,7 +141,6 @@ export const handleSocialMediaPress = async (
     }
 
     let handled = false
-
     if (!handled) {
       for (const appUrl of candidates) {
         try {
@@ -124,6 +155,7 @@ export const handleSocialMediaPress = async (
         }
       }
     }
+
     if (handled) return
 
     // Fallback: open in browser (attempt directly even if canOpenURL returns false)
@@ -302,9 +334,18 @@ export const handleSaveVCard = async (businessCard: any) => {
 
 }
 
-export const sendCard = async (senderId, recipientId) => {
+  // Send Card handler
+  // const handleSendCard = async () => {
+  //   try {
+  //     await sendCard(user?.id, businessCard?.userid?.id || businessCard?.userid)
+  //     Alert.alert("Success", "Card sent successfully")
+  //   } catch (error) {
+  //     Alert.alert("Error", "Failed to send card")
+  //   }
+  // }
+
+export const handleSendCard = async (senderId,recipientId) => {
   try {
-    
     const response = await postData(endpoints.sendMyCard,
       {
         senderId,

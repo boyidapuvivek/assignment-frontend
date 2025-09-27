@@ -1,453 +1,232 @@
 import React from "react"
-import { View, Text, TouchableOpacity, Image } from "react-native"
+import { View, Image, Text, TouchableOpacity, ScrollView } from "react-native"
 import { MaterialIcons } from "@expo/vector-icons"
+
+import Phone from "@assets/icons/card_display/phone.svg"
+import Mail from "@assets/icons/card_display/mail.svg"
+import Ping from "@assets/icons/card_display/ping.svg"
+import Globe from "@assets/icons/card_display/globe_blue.svg"
 
 const RenderTabContent = ({
   activeTab,
   businessCard,
   customizationSettings,
   primaryColor,
-  textColor,
-  styles,
-  handlePhonePress,
-  handleEmailPress,
-  handleLocationPress,
-  handleSocialMediaPress,
-}: any) => {
-  switch (activeTab) {
-    case "Contact":
-      return (
-        <View style={styles.contactSection}>
-          {customizationSettings.showPersonalContact && (
-            <>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>
-                Personal Contact
-              </Text>
-              {/* Phone */}
-              <TouchableOpacity
-                style={styles.contactItem}
-                onPress={() => handlePhonePress(businessCard?.phone)}>
-                <View
-                  style={[
-                    styles.contactIconContainer,
-                    { backgroundColor: primaryColor + "20" },
-                  ]}>
-                  <MaterialIcons
-                    name='phone'
-                    size={18}
-                    color={primaryColor}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.contactText,
-                    { color: businessCard?.phone ? textColor : primaryColor },
-                  ]}>
-                  {businessCard?.phone || "No phone number"}
-                </Text>
-              </TouchableOpacity>
-              {/* Email */}
-              <TouchableOpacity
-                style={styles.contactItem}
-                onPress={() => handleEmailPress(businessCard?.email)}>
-                <View
-                  style={[
-                    styles.contactIconContainer,
-                    { backgroundColor: primaryColor + "20" },
-                  ]}>
-                  <MaterialIcons
-                    name='email'
-                    size={18}
-                    color={primaryColor}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.contactText,
-                    { color: businessCard?.email ? textColor : primaryColor },
-                  ]}>
-                  {businessCard?.email || "No email"}
-                </Text>
-              </TouchableOpacity>
-              {/* Address */}
-              {businessCard?.address && (
-                <TouchableOpacity
-                  style={styles.contactItem}
-                  onPress={() => handleLocationPress(businessCard?.address)}>
-                  <View
-                    style={[
-                      styles.contactIconContainer,
-                      { backgroundColor: primaryColor + "20" },
-                    ]}>
-                    <MaterialIcons
-                      name='location-on'
-                      size={18}
-                      color={primaryColor}
-                    />
-                  </View>
-                  <Text style={[styles.contactText, { color: primaryColor }]}>
-                    {businessCard.address}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-          {customizationSettings.showBusinessContact && (
-            <>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>
-                Business Contact
-              </Text>
-              <View style={styles.contactItem}>
-                <View
-                  style={[
-                    styles.contactIconContainer,
-                    { backgroundColor: `${primaryColor}20` },
-                  ]}>
-                  <MaterialIcons
-                    name='business'
-                    size={18}
-                    color={primaryColor}
-                  />
-                </View>
-                <Text style={[styles.contactText, { color: textColor }]}>
-                  {businessCard?.company || "No company name"}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.contactItem}
-                onPress={() => handleEmailPress(businessCard?.business_email)}>
-                <View
-                  style={[
-                    styles.contactIconContainer,
-                    { backgroundColor: `${primaryColor}20` },
-                  ]}>
-                  <MaterialIcons
-                    name='email'
-                    size={18}
-                    color={primaryColor}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.contactText,
-                    {
-                      color:
-                        businessCard?.business_email &&
-                        businessCard.business_email !== "No business email"
-                          ? primaryColor
-                          : textColor,
-                    },
-                  ]}>
-                  {businessCard?.business_email || "No business email"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.contactItem}
-                onPress={() => handlePhonePress(businessCard?.business_phone)}>
-                <View
-                  style={[
-                    styles.contactIconContainer,
-                    { backgroundColor: `${primaryColor}20` },
-                  ]}>
-                  <MaterialIcons
-                    name='phone'
-                    size={18}
-                    color={primaryColor}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.contactText,
-                    {
-                      color:
-                        businessCard?.business_phone &&
-                        businessCard.business_phone !== "No business phone"
-                          ? primaryColor
-                          : textColor,
-                    },
-                  ]}>
-                  {businessCard?.business_phone || "No business phone"}
-                </Text>
-              </TouchableOpacity>
-              {businessCard?.website && (
-                <TouchableOpacity
-                  style={styles.contactItem}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard.website, "Website")
-                  }>
-                  <View
-                    style={[
-                      styles.contactIconContainer,
-                      { backgroundColor: `${primaryColor}20` },
-                    ]}>
-                    <MaterialIcons
-                      name='language'
-                      size={18}
-                      color={primaryColor}
-                    />
-                  </View>
-                  <Text style={[styles.contactText, { color: primaryColor }]}>
-                    {businessCard.website}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-
-          {customizationSettings.showSocialMedia && (
-            <>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>
-                Social Media
-              </Text>
-              <View style={styles.socialMediaContainer}>
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard?.youtube_url, "Youtube")
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#FF0000" },
-                    ]}>
-                    <MaterialIcons
-                      name='video-library'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Youtube</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(businessCard?.twitter_url, "Twitter")
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#1DA1F2" },
-                    ]}>
-                    <MaterialIcons
-                      name='alternate-email'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Twitter</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(
-                      businessCard?.linkedin_url,
-                      "LinkedIn"
-                    )
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#0077B5" },
-                    ]}>
-                    <MaterialIcons
-                      name='work'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>LinkedIn</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.socialIcon}
-                  onPress={() =>
-                    handleSocialMediaPress(
-                      businessCard?.instagram_url,
-                      "Instagram"
-                    )
-                  }>
-                  <View
-                    style={[
-                      styles.socialIconBg,
-                      { backgroundColor: "#E4405F" },
-                    ]}>
-                    <MaterialIcons
-                      name='camera-alt'
-                      size={20}
-                      color='#fff'
-                    />
-                  </View>
-                  <Text style={styles.socialLabel}>Instagram</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      )
-
-    case "Services":
-      if (!customizationSettings.showServices) return null
-      return (
-        <View style={styles.contactSection}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            Our Services
+}) => {
+  if (activeTab === "Contact") {
+    return (
+      <ScrollView
+        className='flex-1 p-4'
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.3,
+          shadowRadius: 10,
+          elevation: 10,
+        }}>
+        <View className='bg-white opacity-70 rounded-2xl py-3 px-7 gap-3'>
+          {/* Personal Contact Section */}
+          <Text className='text-xl font-poppins-semibold text-black '>
+            Personal Contact
           </Text>
-          {businessCard?.services && businessCard.services.length > 0 ? (
-            businessCard.services.map((service, index) => (
-              <View
-                key={index}
-                style={[styles.serviceCard, { borderLeftColor: primaryColor }]}>
-                <View style={styles.serviceHeader}>
-                  <View
-                    style={[
-                      styles.serviceIconContainer,
-                      { backgroundColor: `${primaryColor}20` },
-                    ]}>
-                    <MaterialIcons
-                      name='work'
-                      size={24}
-                      color={primaryColor}
-                    />
-                  </View>
-                  <View style={styles.serviceDetails}>
-                    <Text style={[styles.serviceName, { color: textColor }]}>
-                      {service.name}
-                    </Text>
-                    <Text style={styles.serviceDescription}>
-                      {service.description || "Professional service"}
-                    </Text>
-                  </View>
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.priceLabel}>Starting from</Text>
-                    <Text style={[styles.priceText, { color: primaryColor }]}>
-                      ₹{service.price}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noDataText}>No services added yet</Text>
-          )}
+
           <TouchableOpacity
-            style={[styles.inquireButton, { backgroundColor: primaryColor }]}>
-            <MaterialIcons
-              name='help'
-              size={20}
-              color='#fff'
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* call logic for personal phone */
+            }}>
+            <Phone
+              height={18}
+              width={18}
             />
-            <Text style={styles.inquireButtonText}>Inquire Now</Text>
+            <Text
+              className='ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.personal_phone ||
+                businessCard?.phone ||
+                "0000000000"}
+            </Text>
           </TouchableOpacity>
-        </View>
-      )
 
-    case "Products":
-      if (!customizationSettings.showProducts) return null
-      return (
-        <View style={styles.contactSection}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            Our Products
-          </Text>
-          {businessCard?.products && businessCard.products.length > 0 ? (
-            businessCard.products.map((product, index) => (
-              <View
-                key={index}
-                style={styles.productCard}>
-                <View style={styles.productImageContainer}>
-                  <View
-                    style={[
-                      styles.productImagePlaceholder,
-                      { backgroundColor: `${primaryColor}20` },
-                    ]}>
-                    <MaterialIcons
-                      name='inventory'
-                      size={32}
-                      color={primaryColor}
-                    />
-                  </View>
-                </View>
-                <View style={styles.productInfo}>
-                  <Text style={[styles.productName, { color: textColor }]}>
-                    {product.name}
-                  </Text>
-                  <Text style={styles.productDescription}>
-                    {product.description || "Quality product"}
-                  </Text>
-                  <View style={styles.productPriceContainer}>
-                    <Text
-                      style={[styles.productPrice, { color: primaryColor }]}>
-                      ₹{product.price}
-                    </Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.addToCartButton,
-                        { backgroundColor: primaryColor },
-                      ]}>
-                      <MaterialIcons
-                        name='add-shopping-cart'
-                        size={18}
-                        color='#fff'
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noDataText}>No products added yet</Text>
-          )}
           <TouchableOpacity
-            style={[styles.viewAllButton, { borderColor: primaryColor }]}>
-            <MaterialIcons
-              name='shopping-cart'
-              size={20}
-              color={primaryColor}
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* email logic for personal email */
+            }}>
+            <Mail
+              height={18}
+              width={18}
             />
-            <Text style={[styles.viewAllButtonText, { color: primaryColor }]}>
-              View All Products
+            <Text
+              className='ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.personal_email ||
+                businessCard?.email ||
+                "persona@gmail.com"}
             </Text>
           </TouchableOpacity>
         </View>
-      )
 
-    case "Gallery":
-      if (!customizationSettings.showGallery) return null
-      return (
-        <View style={styles.contactSection}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>
-            Gallery
+        <View className='bg-white opacity-70 rounded-2xl py-3 px-7 gap-3 mt-7'>
+          {/* Business Contact Section */}
+          <Text
+            className='text-xl font-poppins-semibold text-black'
+            numberOfLines={1}>
+            Business Contact
           </Text>
-          {businessCard?.gallery && businessCard.gallery.length > 0 ? (
-            <View style={styles.galleryGrid}>
-              {businessCard.gallery.map((image, index) => (
-                <View
-                  key={index}
-                  style={styles.galleryItem}>
-                  <Image
-                    source={{ uri: image.url }}
-                    style={styles.galleryImage}
-                    resizeMode='cover'
-                  />
-                  <View style={styles.galleryOverlay}>
-                    <MaterialIcons
-                      name='zoom-in'
-                      size={16}
-                      color='#fff'
-                    />
-                  </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noDataText}>No gallery images added yet</Text>
-          )}
+
+          <TouchableOpacity
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* call logic for business phone */
+            }}>
+            <Phone
+              height={18}
+              width={18}
+            />
+            <Text
+              className='ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.business_phone ||
+                businessCard?.phone ||
+                "0000000000"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* email logic for business email */
+            }}>
+            <Mail
+              height={18}
+              width={18}
+            />
+            <Text
+              className='ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.business_email ||
+                businessCard?.email ||
+                "persona@gmail.com"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* location logic */
+            }}>
+            <Ping
+              height={18}
+              width={18}
+            />
+            <Text
+              className=' ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.address ||
+                businessCard?.location ||
+                "Visakhapatnam"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className='flex-row items-center px-2'
+            onPress={() => {
+              /* web logic */
+            }}>
+            <Globe
+              height={18}
+              width={18}
+            />
+            <Text
+              className='ml-3 text-base font-poppins-regular text-black flex-1'
+              numberOfLines={1}>
+              {businessCard?.website || "connctree.co"}
+            </Text>
+          </TouchableOpacity>
         </View>
-      )
-    default:
-      return null
+      </ScrollView>
+    )
   }
+
+  if (activeTab === "Services") {
+    return (
+      <ScrollView className='flex-1 p-4'>
+        <Text className='text-lg font-semibold text-gray-800 mb-4'>
+          Our Services
+        </Text>
+        {businessCard?.services?.map((service, index) => (
+          <View
+            key={index}
+            className='bg-white rounded-xl mb-3 shadow-sm border border-gray-100'>
+            <View className='p-4'>
+              <Text
+                className='text-base font-semibold text-gray-800 mb-1'
+                numberOfLines={1}>
+                {service.name}
+              </Text>
+              <Text className='text-sm text-gray-600 leading-5 mb-2'>
+                {service.description}
+              </Text>
+              <Text
+                className='text-base font-semibold'
+                style={{ color: primaryColor || "#2196F3" }}>
+                {service.price}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    )
+  }
+
+  if (activeTab === "Products") {
+    return (
+      <ScrollView className='flex-1 p-4'>
+        <Text className='text-lg font-semibold text-gray-800 mb-4'>
+          Our Products
+        </Text>
+        {businessCard?.products?.map((product, index) => (
+          <View
+            key={index}
+            className='bg-white rounded-xl mb-3 shadow-sm border border-gray-100'>
+            <View className='p-4'>
+              <Text className='text-base font-semibold text-gray-800 mb-1'>
+                {product.name}
+              </Text>
+              <Text className='text-sm text-gray-600 leading-5 mb-2'>
+                {product.description}
+              </Text>
+              <Text
+                className='text-base font-semibold'
+                style={{ color: primaryColor || "#2196F3" }}>
+                {product.price}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    )
+  }
+
+  if (activeTab === "Gallery") {
+    return (
+      <ScrollView className='flex-1 p-4'>
+        <View className='flex-row flex-wrap justify-between'>
+          {businessCard?.gallery?.map((image, index) => (
+            <Image
+              key={index}
+              source={{ uri: image }}
+              className='w-[48%] aspect-square rounded-lg mb-2'
+              resizeMode='cover'
+            />
+          ))}
+        </View>
+      </ScrollView>
+    )
+  }
+
+  return null
 }
 
 export default RenderTabContent

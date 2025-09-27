@@ -242,12 +242,12 @@ export default function MyCardScreen() {
                 ) : (
                   <>
                     {/* Card Display Section - Updated with customizationSettings */}
-                    <View style={styles.cardContainer}>
-                      <CardDisplay
-                        businessCard={businessCard}
-                        customizationSettings={customizationSettings}
-                      />
-                    </View>
+                    {/* <View style={styles.cardContainer}> */}
+                    <CardDisplay
+                      businessCard={businessCard}
+                      customizationSettings={customizationSettings}
+                    />
+                    {/* </View> */}
 
                     {/* Quick Actions Section */}
                     <View style={styles.actionsContainer}>
@@ -374,14 +374,6 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
   },
   actionsContainer: {
     backgroundColor: COLORS.white,

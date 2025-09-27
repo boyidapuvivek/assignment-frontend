@@ -751,7 +751,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   sectionContent: {
-    padding: 20,
     paddingTop: 0,
   },
   // Tab styles
@@ -871,7 +870,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   previewContainer: {
-    padding: 20,
     paddingTop: 0,
   },
   buttonContainer: {
